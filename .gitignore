@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# 환경변수 — API 키, DB 비밀번호 포함
+backend/.env
+backend/.env.*
+
+# 업로드 파일
+backend/uploads/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# 프론트엔드
+my-app/node_modules/
+my-app/dist/
+my-app/.env
+my-app/.env.*
