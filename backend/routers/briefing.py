@@ -1,0 +1,195 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from models import Document, User
+from routers.auth import get_current_user, get_db
+from groq import Groq
+from datetime import datetime, timezone, timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+router = APIRouter()
+
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
+# Groq 클라이언트 — 모듈 로드 시 한 번만 생성
+groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
+
+
+def _generate_briefing_text(docs: list[Document]) -> str:
+    """문서 목록을 받아 문서별 요약 + 전체 요약 형태의 브리핑 생성."""
+
+    parts = []
+    for i, doc in enumerate(docs, 1):
+        body = (doc.summary or doc.raw_text or "").strip()[:800]
+        if not body:
+            body = "(본문 없음)"
+        parts.append(f"[문서 {i}] {doc.title}\n{body}")
+
+    combined = "\n\n".join(parts)[:9000]
+
+    try:
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.3,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "당신은 문서 관리 도구 Neatly의 AI 브리핑 어시스턴트입니다.\n"
+                        "제공된 문서들을 분석해 아래 형식으로 브리핑을 작성하세요.\n\n"
+                        "형식 규칙:\n"
+                        "1. 각 문서마다 아래 블록을 반복 출력:\n"
+                        "   ▪ 문서 제목\n"
+                        "   핵심 내용을 2문장으로 요약\n"
+                        "   → 할 일: 이 문서에서 해야 할 행동 한 줄 (없으면 생략)\n"
+                        "\n"
+                        "2. 모든 문서 블록이 끝난 후 마지막에:\n"
+                        "   ◆ 전체 요약\n"
+                        "   오늘 가장 중요한 내용 2~3문장, 우선순위 순서로\n"
+                        "\n"
+                        "규칙:\n"
+                        "- 마크다운 기호(#, **, -, ``` 등) 사용 금지\n"
+                        "- 제공된 문서 내용만 근거로 작성\n"
+                        "- 내용이 없는 문서는 '내용 확인 필요'로 표시"
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"다음 문서 {len(docs)}개를 분석해 브리핑을 작성해주세요:\n\n{combined}",
+                },
+            ],
+            max_tokens=1000,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="AI 브리핑 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
+
+
+def _date_label(date_str: str) -> str:
+    """'YYYY-MM-DD' → 'YYYY년 MM월 DD일'"""
+    d = datetime.strptime(date_str, "%Y-%m-%d")
+    return d.strftime("%Y년 %m월 %d일")
+
+
+def _today_str() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+# POST /briefing/generate — AI 일간 브리핑 생성 (Premium 전용)
+# date      : YYYY-MM-DD (없으면 오늘)
+# folder_id : 있으면 해당 폴더 문서만 요약 (날짜 무관, DB 저장 없이 반환)
+@router.post("/briefing/generate")
+def generate_daily_briefing(
+    date: str | None = None,
+    folder_id: str | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.plan != "PREMIUM":
+        raise HTTPException(status_code=403, detail="Premium 플랜에서 사용할 수 있습니다.")
+
+    target_date = date or _today_str()
+    try:
+        day_start = datetime.strptime(target_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
+    day_end = day_start + timedelta(days=1)
+
+    if folder_id:
+        # 폴더 브리핑: 날짜 무관, 해당 폴더 전체 문서
+        docs = db.query(Document).filter(
+            Document.user_id == current_user.id,
+            Document.deleted_at == None,
+            Document.folder_id == folder_id,
+        ).order_by(Document.created_at.desc()).all()
+        if not docs:
+            raise HTTPException(status_code=404, detail="해당 폴더에 문서가 없습니다.")
+        briefing_text = _generate_briefing_text(docs)
+        return {"id": None, "title": "폴더 브리핑", "content": briefing_text}
+
+    # 날짜 브리핑: 해당 날짜에 생성된 문서
+    docs = db.query(Document).filter(
+        Document.user_id == current_user.id,
+        Document.deleted_at == None,
+        Document.created_at >= day_start,
+        Document.created_at < day_end,
+    ).order_by(Document.created_at.desc()).all()
+
+    if not docs:
+        raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서가 없습니다.")
+
+    briefing_text = _generate_briefing_text(docs)
+    title = f"AI 일간 브리핑 — {_date_label(target_date)}"
+
+    existing = db.query(Document).filter(
+        Document.user_id == current_user.id,
+        Document.title == title,
+        Document.deleted_at == None,
+    ).first()
+
+    if existing:
+        existing.raw_text = briefing_text
+        existing.summary = briefing_text[:300]
+        db.commit()
+        db.refresh(existing)
+        return {"id": str(existing.id), "title": existing.title, "content": briefing_text}
+
+    new_doc = Document(
+        user_id=current_user.id,
+        title=title,
+        raw_text=briefing_text,
+        summary=briefing_text[:300],
+        status="DONE",
+    )
+    db.add(new_doc)
+    db.commit()
+    db.refresh(new_doc)
+    return {"id": str(new_doc.id), "title": new_doc.title, "content": briefing_text}
+
+
+# GET /briefing/date?date=YYYY-MM-DD — 특정 날짜 브리핑 조회 (없으면 null)
+@router.get("/briefing/date")
+def get_briefing_by_date(
+    date: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.plan != "PREMIUM":
+        return {"briefing": None}
+    try:
+        label = _date_label(date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
+
+    title = f"AI 일간 브리핑 — {label}"
+    doc = db.query(Document).filter(
+        Document.user_id == current_user.id,
+        Document.title == title,
+        Document.deleted_at == None,
+    ).first()
+
+    if not doc:
+        return {"briefing": None}
+    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text}}
+
+
+# GET /briefing/today — 오늘 브리핑 조회 (하위 호환 유지)
+@router.get("/briefing/today")
+def get_today_briefing(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.plan != "PREMIUM":
+        return {"briefing": None}
+    today_label = _date_label(_today_str())
+    title = f"AI 일간 브리핑 — {today_label}"
+    doc = db.query(Document).filter(
+        Document.user_id == current_user.id,
+        Document.title == title,
+        Document.deleted_at == None,
+    ).first()
+    if not doc:
+        return {"briefing": None}
+    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text}}
