@@ -1,0 +1,399 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 상단 인사 + 플랜 배지 */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.greeting {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.planBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: 5px;
+  padding: 3px 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 통계 행 */
+.statsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.statCard {
+  flex: 1;
+  padding: 18px 20px;
+  background: var(--color-sidebar);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-gray);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.statValue {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* 최근 문서 섹션 */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.recentList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+
+.recentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 4px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.1s;
+  border-radius: 4px;
+  margin: 0 -4px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.recentRow:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recentRow:hover {
+  background: var(--color-hover);
+}
+
+.recentTitle {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.recentDate {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  flex-shrink: 0;
+}
+
+/* Premium 유도 카드 */
+.premiumCard {
+  padding: 22px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--color-bg);
+}
+
+.premiumCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 브리핑 날짜 선택 */
+.dateInput {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--color-text-gray);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.dateInput:hover {
+  border-color: var(--color-text-gray);
+}
+
+.dateInput:focus {
+  border-color: var(--color-accent);
+}
+
+.dateInput:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 브리핑 폴더 선택 드롭다운 */
+.folderSelect {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--color-text-gray);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.folderSelect:hover {
+  border-color: var(--color-text-gray);
+}
+
+.folderSelect:focus {
+  border-color: var(--color-accent);
+}
+
+.folderSelect:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.premiumCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.premiumBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.premiumCardDesc {
+  font-size: 13.5px;
+  color: var(--color-text-gray);
+  line-height: 1.65;
+}
+
+/* 블러 미리보기 영역 */
+.premiumPreview {
+  position: relative;
+  padding: 16px;
+  background: var(--color-sidebar);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.premiumPreviewText {
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.7;
+  filter: blur(4px);
+  user-select: none;
+}
+
+.premiumOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(1px);
+}
+
+.premiumOverlayText {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.upgradeButton {
+  font-size: 12px;
+  padding: 7px 18px;
+  background: var(--color-text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 기능 목록 */
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+.featureItemLocked {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--color-text-gray);
+}
+
+.featureDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.upgradeButtonOutline {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 12px;
+  padding: 7px 18px;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.upgradeButtonOutline:hover {
+  background: var(--color-hover);
+  opacity: 1;
+}
+
+/* 실제 브리핑 텍스트 영역 */
+.briefingContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.briefingText {
+  font-size: 13.5px;
+  color: var(--color-text);
+  line-height: 1.9;
+  white-space: pre-wrap;
+  padding: 18px 20px;
+  background: var(--color-sidebar);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-accent);
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.briefingLoading {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  padding: 8px 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.briefingEmpty {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  padding: 8px 0;
+}
+
+/* Gmail 동기화 행 */
+.gmailSyncRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.syncMeta {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--color-text-gray);
+}
+
+.newEmailBadge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+
+@media (max-width: 767px) {
+  .greeting {
+    font-size: 20px;
+  }
+
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .premiumCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dateInput,
+  .folderSelect {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .gmailSyncRow {
+    flex-wrap: wrap;
+  }
+
+  .syncMeta {
+    margin-left: 0;
+    width: 100%;
+  }
+}

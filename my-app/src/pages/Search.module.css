@@ -1,0 +1,185 @@
+.container {
+  max-width: 720px;
+  padding: 48px 0;
+}
+
+.heading {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+}
+
+.searchBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.searchButton {
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-family: inherit;
+  font-weight: 500;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.searchButton:hover {
+  opacity: 0.85;
+}
+
+.searchButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.resultCount {
+  font-size: 12.5px;
+  color: var(--color-text-gray);
+  margin-bottom: 16px;
+  letter-spacing: 0.01em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Notion-style 검색 결과 행 */
+.resultCard {
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 0.1s;
+  border-radius: 0;
+}
+
+.resultCard:hover {
+  background: var(--color-hover);
+  border-radius: 6px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.4;
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.cardDate {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.cardSnippet {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+/* 검색어 강조 — accent 색상 */
+.highlight {
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--color-accent-soft);
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tagBadge {
+  font-size: 11.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-sidebar);
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+}
+
+.senderMeta {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  margin-top: 4px;
+}
+
+/* 이메일 출처 배지 */
+.emailBadge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 20px 0;
+  }
+
+  .heading {
+    font-size: 18px;
+  }
+
+  .searchBar {
+    flex-direction: column;
+  }
+
+  .searchButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

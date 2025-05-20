@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --color-text:         #1a1915;
+  --color-text-gray:    #8a8784;
+  --color-bg:           #ffffff;
+  --color-sidebar:      #f7f6f3;
+  --color-border:       #e8e7e4;
+  --color-hover:        #f0efec;
+  --color-button:       #1a1915;
+  --color-button-text:  #ffffff;
+  --color-accent:       #5e5ef6; /* Neatly 고유 포인트 색상 — 인디고 */
+  --color-accent-soft:  #eeeeff; /* accent 배경용 */
+}
+
+/* 기본 리셋 */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+/* 제목 */
+h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 24px;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+p {
+  color: var(--color-text-gray);
+  font-size: 14px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 24px 0;
+}
+
+/* 버튼 */
+button {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-button-text);
+  background: var(--color-button);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  letter-spacing: -0.01em;
+}
+
+button:hover {
+  opacity: 0.82;
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  resize: none;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-text-gray);
+  opacity: 0.6;
+}
+
+ul {
+  list-style: none;
+}

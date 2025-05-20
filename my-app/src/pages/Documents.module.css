@@ -1,0 +1,409 @@
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 280px;
+  padding: 7px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.sortButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.sortGroup {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sortButtonActive {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sortButton {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.sortButton:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.sortActive {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 파일 드래그 앤 드롭 업로드 영역 */
+.uploadZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px;
+  margin: 4px 0 16px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.uploadZone:hover {
+  background: var(--color-hover);
+  border-color: var(--color-text-gray);
+}
+
+.uploadZoneDragOver {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px;
+  margin: 4px 0 16px;
+  border: 1.5px dashed var(--color-accent);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--color-accent-soft);
+}
+
+.uploadZoneLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px;
+  margin: 4px 0 16px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 10px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.uploadZoneMain {
+  font-size: 13px;
+  color: var(--color-text-gray);
+}
+
+.uploadZoneSub {
+  font-size: 11px;
+  color: var(--color-text-gray);
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}
+
+.uploadZoneStatus {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.uploadError {
+  font-size: 13px;
+  color: #d03b3b;
+  margin-bottom: 12px;
+}
+
+/* Notion-style 행 목록 */
+.list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+}
+
+.card {
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 0.1s;
+  border-radius: 0;
+  margin: 0;
+}
+
+.card:hover {
+  background: var(--color-hover);
+  border-radius: 6px;
+}
+
+.cardDragOver {
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  border-top: 2px solid var(--color-accent);
+}
+
+/* 카드 내부 — 핸들과 본문을 가로로 배치 */
+.cardRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardDragHandle {
+  cursor: grab;
+  color: var(--color-text-gray);
+  font-size: 12px;
+  padding: 2px 0;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.1s;
+  user-select: none;
+  line-height: 1;
+}
+
+.card:hover .cardDragHandle,
+.cardDragOver:hover .cardDragHandle {
+  opacity: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.cardDate {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  flex-shrink: 0;
+}
+
+.cardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardDeleteBtn {
+  display: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cardDeleteBtn:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+.card:hover .cardDeleteBtn,
+.cardDragOver:hover .cardDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dragGhost {
+  position: absolute;
+  top: -1000px;
+  padding: 5px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.cardContent {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 태그 필터 */
+.tagFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tagFilterChip {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.tagFilterChip:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.tagFilterClear {
+  font-size: 12px;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: none;
+  padding: 3px 6px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tagFilterClear:hover {
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.tagFilterActive {
+  font-size: 12px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 카드 하단 태그 배지 */
+.cardTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.cardTagBadge {
+  font-size: 11px;
+  color: var(--color-text-gray);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+
+.cardTagBadge:hover {
+  border-color: var(--color-text-gray);
+  opacity: 1;
+}
+
+.cardTagBadgeActive {
+  font-size: 11px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .pageTitle {
+    font-size: 18px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .searchInput {
+    max-width: 100%;
+  }
+
+  .sortGroup {
+    flex-wrap: wrap;
+  }
+
+  .cardTitle {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 767px) {
+  /* 터치에서 hover 없으므로 삭제 버튼 항상 표시 */
+  .cardDeleteBtn {
+    opacity: 1;
+  }
+
+  /* 드래그 핸들은 터치에서 쓸 수 없으므로 숨김 */
+  .cardDragHandle {
+    display: none;
+  }
+}

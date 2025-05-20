@@ -1,0 +1,268 @@
+.container {
+  padding: 48px 0;
+  max-width: 720px;
+}
+
+.backButton {
+  background: transparent;
+  color: var(--color-text-gray);
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  color: var(--color-text);
+}
+
+/* 제목 + 버튼 묶음을 양 끝에 배치 */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* 우측 버튼 묶음 */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.subject {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 스팸으로 표시 버튼 */
+.spamButton {
+  font-size: 13px;
+  padding: 8px 18px;
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.spamButton:hover {
+  border-color: var(--color-text-gray);
+  color: var(--color-text);
+}
+
+.deleteButton {
+  font-size: 13px;
+  padding: 8px 18px;
+  background: transparent;
+  color: #e03e3e;
+  border: 1px solid #e03e3e;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.deleteButton:hover {
+  background: #e03e3e;
+  color: #fff;
+}
+
+/* 스팸 처리 완료 후 비활성 */
+.spammedButton {
+  font-size: 13px;
+  padding: 8px 18px;
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: default;
+  white-space: nowrap;
+  opacity: 0.5;
+}
+
+/* 변환 전 활성 버튼 */
+.convertButton {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 8px 18px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 변환 완료 후 비활성 버튼 */
+.convertedButton {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 8px 18px;
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* Standard 미만 — Plans 페이지 유도 버튼 */
+.lockedButton {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 8px 18px;
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lockedButton:hover {
+  border-color: var(--color-text-gray);
+  color: var(--color-text);
+}
+
+/* 발신자 · 날짜 메타 */
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.from {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.date {
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+.errorMsg {
+  font-size: 13px;
+  color: #e03e3e;
+  margin-top: 12px;
+}
+
+/* AI 요약 박스 */
+.summaryBox {
+  background: var(--color-sidebar);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-gray);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+}
+
+.summaryText {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.summaryTextBlurred {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text);
+  margin: 0;
+  filter: blur(4px);
+  user-select: none;
+}
+
+.summaryOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(1px);
+  border-radius: 6px;
+}
+
+.summaryOverlayText {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.upgradeButton {
+  font-size: 12px;
+  padding: 6px 14px;
+  background: var(--color-text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 20px 0;
+}
+
+/* 플레인 텍스트 본문 */
+.body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
+/* HTML 이메일을 격리해서 렌더링하는 iframe */
+.emailFrame {
+  width: 100%;
+  min-height: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 20px 0;
+  }
+
+  .subject {
+    font-size: 18px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    flex-shrink: unset;
+    width: 100%;
+  }
+
+  .emailFrame {
+    min-height: 300px;
+  }
+}

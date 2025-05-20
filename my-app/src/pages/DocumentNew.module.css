@@ -1,0 +1,146 @@
+.container {
+  padding: 48px 60px;
+  max-width: 720px;
+}
+
+.titleInput {
+  display: block;
+  width: 100%;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  border: none;
+  outline: none;
+  background: transparent;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.titleInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+.contentInput {
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  font-size: 15px;
+  color: var(--color-text);
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.8;
+  resize: vertical; /* 세로만 크기 조절 가능 */
+  font-family: inherit;
+}
+
+.contentInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+.limitError {
+  font-size: 13px;
+  color: #e03e3e;
+  margin-bottom: 12px;
+}
+
+.folderSelect {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.saveButton {
+  background: var(--color-text);
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.slashMenu {
+  position: fixed;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  min-width: 220px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.slashMenuItem,
+.slashMenuItemActive {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text);
+  gap: 16px;
+}
+
+.slashMenuItemActive {
+  background: var(--color-hover);
+}
+
+.slashMenuItem:hover {
+  background: var(--color-hover);
+}
+
+.slashMenuLabel {
+  font-weight: 500;
+}
+
+.slashMenuHint {
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 20px 0;
+  }
+
+  .titleInput {
+    font-size: 22px;
+  }
+
+  .contentInput {
+    min-height: 200px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}

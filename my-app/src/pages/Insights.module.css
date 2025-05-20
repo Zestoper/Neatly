@@ -1,0 +1,138 @@
+.container {
+  padding: 48px 60px;
+  max-width: 720px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+}
+
+.statsRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.statCard {
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  min-width: 140px;
+}
+
+.statLabel {
+  color: var(--color-text-gray);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  color: var(--color-text);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+/* 바 차트 */
+.chart {
+  display: flex;
+  align-items: flex-end; /* 막대를 아래 기준으로 정렬 */
+  gap: 12px;
+  height: 120px;          /* 차트 전체 높이 고정 */
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.barCount {
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+.bar {
+  width: 32px;
+  background: var(--color-text);
+  border-radius: 4px 4px 0 0; /* 위쪽 모서리만 둥글게 */
+  min-height: 4px;
+}
+
+.barLabel {
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+/* 최근 문서 목록 */
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.recentItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.recentItem:hover .recentTitle {
+  color: var(--color-text);
+}
+
+.recentTitle {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.recentDate {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 20px 0;
+  }
+
+  .pageTitle {
+    font-size: 18px;
+  }
+
+  .statsRow {
+    flex-wrap: wrap;
+  }
+
+  .statCard {
+    min-width: calc(50% - 8px);
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  /* 차트가 넘칠 경우 가로 스크롤 */
+  .chart {
+    overflow-x: auto;
+  }
+}

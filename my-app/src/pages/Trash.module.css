@@ -1,0 +1,124 @@
+.container {
+  max-width: 680px;
+  padding: 48px 0;
+}
+
+.heading {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+}
+
+.subheading {
+  font-size: 13px;
+  color: var(--color-text-gray);
+  margin-bottom: 24px;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--color-text-gray);
+  padding: 32px 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 6px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.1s;
+  border-radius: 0;
+}
+
+.row:hover {
+  background: var(--color-hover);
+  border-radius: 6px;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.restoreButton {
+  font-size: 12.5px;
+  font-family: inherit;
+  padding: 5px 14px;
+  background: var(--color-hover);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.restoreButton:hover {
+  background: var(--color-border);
+  opacity: 1;
+}
+
+.deleteButton {
+  font-size: 12.5px;
+  font-family: inherit;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.deleteButton:hover {
+  color: #c0392b;
+  border-color: #c0392b;
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .heading {
+    font-size: 18px;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

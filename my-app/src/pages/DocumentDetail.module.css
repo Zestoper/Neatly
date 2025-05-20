@@ -1,0 +1,549 @@
+.container {
+  padding: 48px 0;
+  max-width: 720px;
+}
+
+.backButton {
+  background: transparent;
+  color: var(--color-text-gray);
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  color: var(--color-text);
+  opacity: 1;
+}
+
+/* 읽기 모드 */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 24px;
+}
+
+.body {
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
+/* emailFrame : 이메일 원본 HTML을 렌더링하는 iframe */
+.emailFrame {
+  margin-top: 16px;
+  width: 100%;
+  min-height: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  /* height를 고정하지 않고 내용에 따라 늘어나도록 JS 없이 min-height로 처리 */
+}
+
+.folderBadge {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--color-text-gray);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.folderSelect {
+  display: block;
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--color-text-gray);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* AI 요약 박스 */
+.summaryBox {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--color-sidebar);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.summaryText {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.7;
+}
+
+/* FREE 플랜일 때 텍스트 흐림 처리 */
+.summaryTextBlurred {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.7;
+  filter: blur(4px);       /* 텍스트 자체를 흐리게 */
+  user-select: none;        /* 드래그해서 텍스트 복사 방지 */
+}
+
+/* 흐린 텍스트 위에 덮는 반투명 오버레이 */
+.summaryOverlay {
+  position: absolute;  /* summaryBox 기준으로 위치 고정 */
+  inset: 0;            /* top/right/bottom/left 모두 0 = 박스 전체를 덮음 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.15); /* 살짝 밝은 반투명막 */
+  backdrop-filter: blur(1px);            /* 오버레이 자체도 약간 흐리게 */
+  border-radius: 8px;
+}
+
+.summaryOverlayText {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* 업그레이드 버튼 */
+.upgradeButton {
+  font-size: 12px;
+  padding: 6px 14px;
+  background: var(--color-text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 마크다운 렌더링 영역 */
+.markdownBody {
+  margin-top: 20px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.markdownBody h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 24px 0 12px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+.markdownBody h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 20px 0 10px;
+  color: var(--color-text);
+}
+
+.markdownBody h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+  color: var(--color-text);
+}
+
+.markdownBody p {
+  margin: 10px 0;
+}
+
+.markdownBody ul,
+.markdownBody ol {
+  margin: 10px 0;
+  padding-left: 24px;
+}
+
+.markdownBody li {
+  margin: 4px 0;
+}
+
+.markdownBody blockquote {
+  margin: 12px 0;
+  padding: 8px 16px;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-sidebar);
+  border-radius: 0 6px 6px 0;
+  color: var(--color-text-gray);
+}
+
+.markdownBody code {
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.markdownBody pre {
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.markdownBody pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.markdownBody a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.markdownBody table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.markdownBody th,
+.markdownBody td {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdownBody th {
+  background: var(--color-sidebar);
+  font-weight: 600;
+}
+
+.markdownBody hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 20px 0;
+}
+
+.markdownBody input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+/* 토글 블록 */
+.markdownBody details {
+  margin: 10px 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.markdownBody summary {
+  padding: 8px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--color-sidebar);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.markdownBody summary::before {
+  content: "▶";
+  font-size: 10px;
+  color: var(--color-text-gray);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.markdownBody details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.markdownBody details > :not(summary) {
+  padding: 10px 14px;
+}
+
+/* 편집 모드 미리보기 토글 */
+.editBodyWrap {
+  margin-bottom: 8px;
+}
+
+.editBodyToolbar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.previewTab {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.previewTab:hover {
+  color: var(--color-text);
+}
+
+.previewTabActive {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--color-accent);
+  cursor: pointer;
+  border-bottom: 2px solid var(--color-accent);
+  margin-bottom: -1px;
+  font-weight: 600;
+}
+
+/* 편집창 아래 마크다운 힌트 한 줄 */
+.markdownHint {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--color-text-gray);
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+}
+
+/* 슬래시 커맨드 드롭다운 */
+.slashMenu {
+  position: fixed;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  min-width: 220px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.slashMenuItem,
+.slashMenuItemActive {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text);
+  gap: 16px;
+}
+
+.slashMenuItemActive {
+  background: var(--color-hover);
+}
+
+.slashMenuItem:hover {
+  background: var(--color-hover);
+}
+
+.slashMenuLabel {
+  font-weight: 500;
+}
+
+.slashMenuHint {
+  font-size: 12px;
+  color: var(--color-text-gray);
+}
+
+/* 수정 모드 */
+.editTitle {
+  display: block;
+  width: 100%;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  border: none;
+  outline: none;
+  background: transparent;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.editBody {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  font-size: 15px;
+  color: var(--color-text);
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.8;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.saveButton {
+  background: var(--color-text);
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cancelButton,
+.editButton {
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.deleteButton {
+  background: transparent;
+  color: #e03e3e;
+  border: 1px solid #e03e3e;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 읽기 모드 태그 목록 — 폴더 배지 바로 아래에 가로로 나열 */
+.tagReadList {
+  display: flex;
+  flex-wrap: wrap;   /* 태그가 많으면 다음 줄로 넘김 */
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+/* 수정 모드 태그 에디터 — 배지 목록 + 입력창을 묶는 컨테이너 */
+.tagEditor {
+  margin-top: 16px;
+}
+
+/* 태그 배지들을 가로로 나열하는 행 */
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+/* 개별 태그 배지 — 회색 pill 형태 */
+.tagBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-gray);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;   /* 완전한 pill 모양 */
+  padding: 2px 10px;
+}
+
+/* 태그 제거 버튼 (×) — 배지 안 오른쪽에 붙음 */
+.tagRemoveBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tagRemoveBtn:hover {
+  color: var(--color-text);
+}
+
+/* 태그 이름 입력창 — 수정 모드에서 Enter로 태그 추가 */
+.tagInput {
+  font-size: 13px;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  outline: none;
+  width: 200px;
+  font-family: inherit;
+}
+
+.tagInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+
+@media (max-width: 767px) {
+  .container {
+    padding: 24px 0;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .editTitle {
+    font-size: 22px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .emailFrame {
+    min-height: 300px;
+  }
+
+  .slashMenu {
+    max-width: calc(100vw - 32px);
+  }
+
+  .tagInput {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .markdownBody h1 {
+    font-size: 20px;
+  }
+
+  .markdownBody h2 {
+    font-size: 17px;
+  }
+
+  .markdownBody table {
+    font-size: 12px;
+    display: block;
+    overflow-x: auto;
+  }
+}
