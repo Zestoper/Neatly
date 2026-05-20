@@ -12,7 +12,7 @@ engine = create_engine(
     pool_size=10,        # 상시 유지할 커넥션 수
     max_overflow=20,     # pool_size 초과 시 추가로 열 수 있는 커넥션 수
     pool_pre_ping=True,  # 쿼리 전 커넥션 생존 여부 확인 — 끊긴 커넥션 자동 교체
-    pool_recycle=3600,   # 1시간마다 커넥션 재생성 — MySQL 8시간 타임아웃 방지
+    pool_recycle=1800,   # 30분마다 커넥션 재생성
 )
 
 # autocommit=False : 명시적 commit() 호출 시에만 DB에 저장
