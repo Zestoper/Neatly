@@ -32,11 +32,13 @@
     left: 0;
     top: 0;
     height: 100vh;
+    height: 100dvh; /* iOS Safari 주소창 제외한 실제 높이 */
     z-index: 100;
     width: 280px;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.14);
     transform: translateX(0);
     transition: transform 0.22s ease;
+    overflow: hidden;
   }
 
   /* 모바일 — 접힌 상태는 완전히 숨김 (48px 스트립 제거) */
@@ -45,6 +47,7 @@
     left: 0;
     top: 0;
     height: 100vh;
+    height: 100dvh;
     z-index: 100;
     width: 280px;
     transform: translateX(-100%);
@@ -118,9 +121,12 @@
   flex-direction: column;
   gap: 1px;
   flex: 1;
+  min-height: 0; /* flex 자식이 내용 크기로 늘어나는 것 방지 — 이게 없으면 overflow-y: auto가 동작 안 함 */
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch; /* iOS Safari 모멘텀 스크롤 */
+  overscroll-behavior: contain;
 }
 
 .nav::-webkit-scrollbar {
