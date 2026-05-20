@@ -53,10 +53,16 @@ class ConnectionManager:
         self.rooms: dict[str, list[tuple[WebSocket, str, str]]] = {}
 
     async def connect(self, room_id: str, ws: WebSocket, user_id: str, user_name: str):
-        # WebSocket 연결을 수락하고 해당 방의 목록에 추가
         await ws.accept()
-        # setdefault : room_id 키가 없으면 빈 리스트로 초기화 후 반환
-        self.rooms.setdefault(room_id, []).append((ws, user_id, user_name))
+        room = self.rooms.setdefault(room_id, [])
+        # 같은 user_id의 기존 연결이 있으면 교체 (재연결 시 중복 broadcast 방지)
+        for old_ws, uid, _ in [item for item in room if item[1] == user_id]:
+            try:
+                await old_ws.close()
+            except Exception:
+                pass
+        self.rooms[room_id] = [item for item in room if item[1] != user_id]
+        self.rooms[room_id].append((ws, user_id, user_name))
 
     def disconnect(self, room_id: str, ws: WebSocket):
         # 특정 WebSocket을 해당 방의 목록에서 제거 (연결 끊김 시 호출)

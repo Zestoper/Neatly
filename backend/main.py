@@ -43,6 +43,10 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 app.include_router(documents_router)
 app.include_router(ai_router)
 app.include_router(users_router)

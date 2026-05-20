@@ -283,8 +283,9 @@ def gmail_callback(code: str, state: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
 
-    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-    # http://localhost 에서 개발할 때 필요 — 배포 시(https) 삭제
+    # HTTP(localhost)에서만 HTTPS 검증 우회 — 프로덕션(HTTPS)에서는 설정하지 않음
+    if not os.environ.get("BACKEND_URL", "").startswith("https"):
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     oauth = make_oauth_session(state=state)
     token = oauth.fetch_token(

@@ -1,28 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom"; // Link : 페이지 이동 컴포넌트
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { loginUser, getMe } from "../api/auth";
+import { warmUpServer } from "../api/client";
 import { useToast } from "../context/ToastContext";
-import styles from "./Auth.module.css";  // Auth.module.css : Login, Register 공용 스타일
+import styles from "./Auth.module.css";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [warming, setWarming] = useState(false);
     const { showToast } = useToast();
 
+    // 페이지 진입 즉시 서버를 미리 깨움 — 콜드 스타트 대기 시간을 로그인 전에 소모
+    useEffect(() => {
+        setWarming(true);
+        warmUpServer().finally(() => setWarming(false));
+    }, []);
+
     const handleLogin = async () => {
+        if (!email.trim() || !password) return;
         setLoading(true);
         try {
-            const data = await loginUser(email, password);
-            localStorage.setItem("token", data.access_token);
-            const me = await getMe(); // 로그인 직후 사용자 정보 조회
-            localStorage.setItem("plan", me.plan); // plan : FREE / STANDARD / PREMIUM
-            window.location.href = "/";
-        } catch {
-            showToast("이메일 또는 비밀번호를 다시 확인해주세요.");
+            await attemptLogin();
         } finally {
             setLoading(false);
         }
+    };
+
+    const attemptLogin = async (retryCount = 0) => {
+        try {
+            const data = await loginUser(email, password);
+            localStorage.setItem("token", data.access_token);
+            const me = await getMe();
+            localStorage.setItem("plan", me.plan);
+            localStorage.setItem("userName", me.name || me.email);
+            window.location.href = "/";
+        } catch (err: unknown) {
+            const isNetworkError = !((err as { response?: unknown })?.response);
+            // 네트워크 오류(타임아웃, 연결 실패)면 최대 2회 재시도
+            if (isNetworkError && retryCount < 2) {
+                await attemptLogin(retryCount + 1);
+            } else {
+                showToast("이메일 또는 비밀번호를 다시 확인해주세요.");
+            }
+        }
+    };
+
+    const buttonLabel = () => {
+        if (loading) return "로그인 중...";
+        if (warming) return "서버 준비 중...";
+        return "로그인";
     };
 
     return (
@@ -45,8 +73,12 @@ export default function Login() {
                     onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
                 />
 
-                <button className={styles.button} onClick={handleLogin} disabled={loading}>
-                    {loading ? "로그인 중..." : "로그인"}
+                <button
+                    className={styles.button}
+                    onClick={handleLogin}
+                    disabled={loading || warming}
+                >
+                    {buttonLabel()}
                 </button>
 
                 <p className={styles.footer}>

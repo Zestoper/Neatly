@@ -1,8 +1,20 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000",
+    baseURL: BASE_URL,
+    timeout: 90000, // 90초 — Render 콜드 스타트(최대 ~60초)를 커버
 });
+
+// 서버를 미리 깨우는 함수 — 로그인/회원가입 페이지 진입 시 호출
+export async function warmUpServer() {
+    try {
+        await axios.get(`${BASE_URL}/health`, { timeout: 90000 });
+    } catch {
+        // 실패해도 무시 — 이미 깨어 있거나 네트워크 오류
+    }
+}
 
 // 인터셉터 : 모든 요청이 나가기 전에 실행 — 토큰을 자동으로 헤더에 추가
 api.interceptors.request.use((config) => {
