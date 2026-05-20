@@ -12,7 +12,7 @@ export default function Login() {
     const [warming, setWarming] = useState(false);
     const { showToast } = useToast();
 
-    // 페이지 진입 즉시 서버를 미리 깨움 — 콜드 스타트 대기 시간을 로그인 전에 소모
+    // 페이지 진입 즉시 서버 미리 깨우기 — 콜드 스타트 대기를 로그인 전에 소모
     useEffect(() => {
         setWarming(true);
         warmUpServer().finally(() => setWarming(false));
@@ -47,16 +47,14 @@ export default function Login() {
         }
     };
 
-    const buttonLabel = () => {
-        if (loading) return "로그인 중...";
-        if (warming) return "서버 준비 중...";
-        return "로그인";
-    };
-
     return (
         <div className={styles.page}>
             <div className={styles.card}>
                 <p className={styles.title}>Neatly</p>
+
+                {warming && (
+                    <p className={styles.warmingNote}>서버를 시작하는 중입니다...</p>
+                )}
 
                 <input
                     className={styles.input}
@@ -76,9 +74,9 @@ export default function Login() {
                 <button
                     className={styles.button}
                     onClick={handleLogin}
-                    disabled={loading || warming}
+                    disabled={loading}
                 >
-                    {buttonLabel()}
+                    {loading ? "로그인 중..." : "로그인"}
                 </button>
 
                 <p className={styles.footer}>
