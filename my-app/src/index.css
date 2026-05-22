@@ -11,6 +11,9 @@
   --color-button-text:  #ffffff;
   --color-accent:       #5e5ef6; /* Neatly 고유 포인트 색상 — 인디고 */
   --color-accent-soft:  #eeeeff; /* accent 배경용 */
+  --color-surface:      #f7f6f3;
+  --color-surface-hover: #f0efec;
+  --color-text-muted:   #8a8784;
 }
 
 /* 기본 리셋 */
