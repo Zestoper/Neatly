@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDocuments, uploadDocument, deleteDocument, moveDocumentToFolder } from "../api/documents";
 import { useRefresh } from "../context/RefreshContext";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Documents.module.css";
 
 type Tag = {
@@ -44,6 +45,7 @@ export default function Documents() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     // uploadError : 업로드 실패 메시지 — null이면 에러 없음
     const [fileDragOver, setFileDragOver] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     // fileDragOver : 파일을 드롭존 위에 드래그 중일 때 true — 강조 스타일 적용
 
     // orderKey : 현재 뷰에 해당하는 localStorage 키
@@ -127,16 +129,29 @@ export default function Documents() {
         localStorage.setItem(orderKey, JSON.stringify(newOrder));
     };
 
-    const handleDeleteCard = async (e: React.MouseEvent, docId: string) => {
+    const handleDeleteCard = (e: React.MouseEvent, docId: string) => {
         e.stopPropagation();
         if (folderFilter) {
-            if (!window.confirm("이 문서를 폴더에서 제거할까요?")) return;
-            await moveDocumentToFolder(docId, null);
+            setConfirmModal({
+                message: "이 문서를 폴더에서 제거할까요?",
+                confirmLabel: "제거",
+                onConfirm: async () => {
+                    setConfirmModal(null);
+                    await moveDocumentToFolder(docId, null);
+                    bump();
+                },
+            });
         } else {
-            if (!window.confirm("이 문서를 휴지통으로 이동할까요?")) return;
-            await deleteDocument(docId);
+            setConfirmModal({
+                message: "이 문서를 휴지통으로 이동할까요?",
+                confirmLabel: "휴지통으로 이동",
+                onConfirm: async () => {
+                    setConfirmModal(null);
+                    await deleteDocument(docId);
+                    bump();
+                },
+            });
         }
-        bump();
     };
 
     // 파일 하나를 받아 업로드 + AI 요약 → 목록 맨 앞에 추가
@@ -389,6 +404,15 @@ export default function Documents() {
                     ))
                 )}
             </div>
+        {confirmModal && (
+            <ConfirmModal
+                message={confirmModal.message}
+                confirmLabel={confirmModal.confirmLabel ?? "확인"}
+                danger
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(null)}
+            />
+        )}
         </div>
     );
 }

@@ -6,6 +6,7 @@ import {
 } from "../api/chat";
 import type { ChatRoom, Contact } from "../api/chat";
 import { useToast } from "../context/ToastContext";
+import ConfirmModal from "./ConfirmModal";
 
 const IMG_PREFIX = "__img__:";
 const WS_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000").replace(/^http/, "ws");
@@ -116,6 +117,7 @@ export default function ChatModal() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const myUserId = useRef(getMyUserId());
     const [uploading, setUploading] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
 
     // ── Presence WS — 컴포넌트 마운트 시 연결, 언마운트 시 해제 ──────
     // 모달이 닫혀 있어도 알림을 받기 위해 항상 유지
@@ -272,12 +274,18 @@ export default function ChatModal() {
     }, []);
 
     // ── 채팅방 나가기 ────────────────────────────────────
-    const handleLeaveRoom = async () => {
+    const handleLeaveRoom = () => {
         if (!activeRoom) return;
-        if (!window.confirm(`"${formatRoomName(activeRoom.name)}" 채팅방에서 나가시겠습니까?`)) return;
-        await leaveRoom(activeRoom.id);
-        setRooms((prev) => prev.filter((r) => r.id !== activeRoom.id));
-        closeRoom();
+        setConfirmModal({
+            message: `"${formatRoomName(activeRoom.name)}" 채팅방에서 나가시겠습니까?`,
+            confirmLabel: "나가기",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await leaveRoom(activeRoom.id);
+                setRooms((prev) => prev.filter((r) => r.id !== activeRoom.id));
+                closeRoom();
+            },
+        });
     };
 
     // ── 멤버 초대 ────────────────────────────────────────
@@ -401,11 +409,17 @@ export default function ChatModal() {
         setMenuOpenId(null);
     };
 
-    const handleRemoveFriend = async (friendId: string) => {
-        if (!window.confirm("친구를 삭제하시겠습니까?")) return;
-        await removeFriend(friendId);
-        setFriends((prev) => prev.filter((f) => f.id !== friendId));
-        setMenuOpenId(null);
+    const handleRemoveFriend = (friendId: string) => {
+        setConfirmModal({
+            message: "친구를 삭제하시겠습니까?",
+            confirmLabel: "삭제",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await removeFriend(friendId);
+                setFriends((prev) => prev.filter((f) => f.id !== friendId));
+                setMenuOpenId(null);
+            },
+        });
     };
 
     // ── 필터링 ──────────────────────────────────────────
@@ -843,6 +857,15 @@ export default function ChatModal() {
                     )}
                 </div>
             )}
+        {confirmModal && (
+            <ConfirmModal
+                message={confirmModal.message}
+                confirmLabel={confirmModal.confirmLabel ?? "확인"}
+                danger
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(null)}
+            />
+        )}
         </>
     );
 }
