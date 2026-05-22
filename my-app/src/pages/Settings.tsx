@@ -205,12 +205,12 @@ export default function Settings() {
                             허용하기
                         </button>
                     )}
-                    {notifPerm === "denied" && (
-                        <button className={styles.connectButton} onClick={handleRequestNotif}>
-                            허용하기
-                        </button>
-                    )}
                 </div>
+                {notifPerm === "denied" && (
+                    <p className={styles.notifDeniedGuide}>
+                        브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽 자물쇠 아이콘을 클릭한 뒤 <strong>알림 → 허용</strong>으로 변경해주세요.
+                    </p>
+                )}
             </section>
 
             <section className={styles.section}>
