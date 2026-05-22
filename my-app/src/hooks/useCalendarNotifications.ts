@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { getTodayEvents } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 
-const POLL_INTERVAL = 60 * 1000;
+const POLL_INTERVAL = 10 * 1000;
 
 function getTodayStr() {
     const d = new Date();
