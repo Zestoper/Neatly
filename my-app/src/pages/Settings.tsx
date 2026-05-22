@@ -21,6 +21,20 @@ export default function Settings() {
     const [gmailConnected, setGmailConnected] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
 
+    const [notifPerm, setNotifPerm] = useState<NotificationPermission | null>(null);
+
+    useEffect(() => {
+        if ("Notification" in window) setNotifPerm(Notification.permission);
+    }, []);
+
+    const handleRequestNotif = () => {
+        Notification.requestPermission().then((perm) => {
+            setNotifPerm(perm);
+            if (perm === "granted") showToast("알림이 허용되었습니다.");
+            else if (perm === "denied") showToast("알림이 차단되었습니다. 브라우저 설정에서 변경해주세요.", "error");
+        });
+    };
+
     useEffect(() => {
         getMe().then((data) => {
             setEmail(data.email);
@@ -164,6 +178,26 @@ export default function Settings() {
                     <button className={styles.saveButton} onClick={handleChangePassword} disabled={pwSaving}>
                         {pwSaving ? "변경 중..." : "변경"}
                     </button>
+                </div>
+            </section>
+
+            <section className={styles.section}>
+                <p className={styles.sectionLabel}>알림</p>
+                <div className={styles.field}>
+                    <label className={styles.label}>브라우저 알림</label>
+                    <span className={styles.connectionStatus}>
+                        {notifPerm === "granted" && "허용됨"}
+                        {notifPerm === "denied" && "차단됨 (브라우저 설정에서 변경)"}
+                        {notifPerm === "default" && "허용되지 않음"}
+                        {notifPerm === null && "지원 안 됨"}
+                    </span>
+                    {notifPerm === "granted" ? (
+                        <span className={styles.notifGranted}>사용 중</span>
+                    ) : notifPerm === "default" ? (
+                        <button className={styles.connectButton} onClick={handleRequestNotif}>
+                            허용하기
+                        </button>
+                    ) : null}
                 </div>
             </section>
 
