@@ -211,6 +211,14 @@ export default function Calendar() {
                 <button className={styles.navBtn} onClick={prevMonth}>&lt;</button>
                 <h1 className={styles.title}>{year}년 {month}월</h1>
                 <button className={styles.navBtn} onClick={nextMonth}>&gt;</button>
+                {(year !== today.getFullYear() || month !== today.getMonth() + 1) && (
+                    <button
+                        className={styles.todayBtn}
+                        onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }}
+                    >
+                        오늘
+                    </button>
+                )}
             </div>
 
             <div className={styles.grid}>

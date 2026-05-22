@@ -5,6 +5,7 @@ import { getFolders } from "../api/folders";
 import { api } from "../api/client";
 import { generateBriefing, getBriefingByDate } from "../api/briefing";
 import { syncEmails, getSyncStatus } from "../api/emailSync";
+import { getTodayEvents, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import styles from "./Dashboard.module.css";
 
@@ -47,13 +48,19 @@ export default function Dashboard() {
                 setDocuments(docsData);
                 setUserName(meData.data.name ?? null);
                 setGmailConnected(!!meData.data.gmail_access_token);
-            } catch (error) {
-                console.error("데이터 불러오기 실패", error);
+            } catch {
+                // 데이터 로드 실패 — 빈 상태 유지
             } finally {
                 setLoading(false);
             }
         };
         init();
+    }, []);
+
+    const [todayEvents, setTodayEvents] = useState<CalendarEvent[]>([]);
+
+    useEffect(() => {
+        getTodayEvents().then(setTodayEvents).catch(() => {});
     }, []);
 
     const [gmailConnected, setGmailConnected] = useState(false);
@@ -218,6 +225,31 @@ export default function Dashboard() {
                             >
                                 <span className={styles.recentTitle}>{doc.title}</span>
                                 <span className={styles.recentDate}>{formatDate(doc.created_at)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 오늘 일정 섹션 */}
+            {todayEvents.length > 0 && (
+                <div className={styles.section}>
+                    <p className={styles.sectionLabel}>오늘 일정</p>
+                    <div className={styles.recentList}>
+                        {todayEvents.map((ev) => (
+                            <div
+                                key={ev.id}
+                                className={styles.recentRow}
+                                onClick={() => navigate("/calendar")}
+                            >
+                                <span className={styles.recentTitle}>{ev.title}</span>
+                                <span className={styles.recentDate}>
+                                    {new Date(ev.event_date).toLocaleTimeString("ko-KR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false,
+                                    })}
+                                </span>
                             </div>
                         ))}
                     </div>
