@@ -31,8 +31,12 @@ export default function Settings() {
         Notification.requestPermission().then((perm) => {
             setNotifPerm(perm);
             if (perm === "granted") showToast("알림이 허용되었습니다.");
-            else if (perm === "denied") showToast("알림이 차단되었습니다. 브라우저 설정에서 변경해주세요.", "error");
+            else if (perm === "denied") showToast("주소창 왼쪽 자물쇠 아이콘 → 알림 → 허용으로 변경해주세요.", "error");
         });
+    };
+
+    const handleBlockNotif = () => {
+        showToast("주소창 왼쪽 자물쇠 아이콘 → 알림 → 차단으로 변경해주세요.");
     };
 
     useEffect(() => {
@@ -187,17 +191,25 @@ export default function Settings() {
                     <label className={styles.label}>브라우저 알림</label>
                     <span className={styles.connectionStatus}>
                         {notifPerm === "granted" && "허용됨"}
-                        {notifPerm === "denied" && "차단됨 (브라우저 설정에서 변경)"}
+                        {notifPerm === "denied" && "차단됨"}
                         {notifPerm === "default" && "허용되지 않음"}
                         {notifPerm === null && "지원 안 됨"}
                     </span>
-                    {notifPerm === "granted" ? (
-                        <span className={styles.notifGranted}>사용 중</span>
-                    ) : notifPerm === "default" ? (
+                    {notifPerm === "granted" && (
+                        <button className={styles.disconnectButton} onClick={handleBlockNotif}>
+                            차단하기
+                        </button>
+                    )}
+                    {notifPerm === "default" && (
                         <button className={styles.connectButton} onClick={handleRequestNotif}>
                             허용하기
                         </button>
-                    ) : null}
+                    )}
+                    {notifPerm === "denied" && (
+                        <button className={styles.connectButton} onClick={handleRequestNotif}>
+                            허용하기
+                        </button>
+                    )}
                 </div>
             </section>
 
