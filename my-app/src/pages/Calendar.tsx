@@ -41,6 +41,7 @@ export default function Calendar() {
 
     const [year, setYear] = useState(today.getFullYear());
     const [month, setMonth] = useState(today.getMonth() + 1);
+    const [notifPerm, setNotifPerm] = useState<NotificationPermission | null>(null);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [docs, setDocs] = useState<Doc[]>([]);
     const [modal, setModal] = useState<ModalState>(null);
@@ -58,6 +59,15 @@ export default function Calendar() {
     };
 
     useEffect(() => { load(); }, [year, month]);
+
+    useEffect(() => {
+        if (!("Notification" in window)) return;
+        setNotifPerm(Notification.permission);
+    }, []);
+
+    const requestNotifPermission = () => {
+        Notification.requestPermission().then((perm) => setNotifPerm(perm));
+    };
 
     useEffect(() => {
         getDocuments()
@@ -162,6 +172,19 @@ export default function Calendar() {
 
     return (
         <div className={styles.container}>
+            {notifPerm === "default" && (
+                <div className={styles.notifBanner}>
+                    일정 알림을 받으려면 알림 허용이 필요합니다.
+                    <button className={styles.notifBannerBtn} onClick={requestNotifPermission}>
+                        알림 허용
+                    </button>
+                </div>
+            )}
+            {notifPerm === "denied" && (
+                <div className={styles.notifBannerDenied}>
+                    브라우저 알림이 차단되어 있습니다. 브라우저 설정에서 허용해 주세요.
+                </div>
+            )}
             <div className={styles.header}>
                 <button className={styles.navBtn} onClick={prevMonth}>&lt;</button>
                 <h1 className={styles.title}>{year}년 {month}월</h1>

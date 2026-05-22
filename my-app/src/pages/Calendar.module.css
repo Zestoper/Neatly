@@ -4,6 +4,40 @@
   gap: 20px;
 }
 
+.notifBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--color-accent);
+}
+
+.notifBannerBtn {
+  margin-left: auto;
+  padding: 5px 14px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.notifBannerDenied {
+  background: #fff5f5;
+  border: 1px solid #e53e3e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #e53e3e;
+}
+
 .header {
   display: flex;
   align-items: center;

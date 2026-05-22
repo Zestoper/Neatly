@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { getTodayEvents } from "../api/calendar";
+import { useToast } from "../context/ToastContext";
 
 const STORAGE_KEY = "notified_calendar_events";
-const POLL_INTERVAL = 60 * 1000; // 1분마다 확인
+const POLL_INTERVAL = 60 * 1000;
 
 function getNotified(): Set<string> {
     try {
@@ -20,7 +21,6 @@ function markNotified(id: string) {
 }
 
 function clearOldNotified() {
-    // 날짜가 바뀌면 이전 알림 기록을 초기화
     const lastDate = localStorage.getItem("notified_date");
     const today = new Date().toISOString().slice(0, 10);
     if (lastDate !== today) {
@@ -30,22 +30,24 @@ function clearOldNotified() {
 }
 
 export function useCalendarNotifications() {
-    const permissionRef = useRef<NotificationPermission>("default");
+    const { showToast } = useToast();
+    const showToastRef = useRef(showToast);
+    showToastRef.current = showToast;
 
     useEffect(() => {
-        if (!("Notification" in window)) return;
-
-        // 권한 요청 (이미 granted/denied면 바로 반환)
-        Notification.requestPermission().then((perm) => {
-            permissionRef.current = perm;
-        });
-
         clearOldNotified();
 
-        const check = async () => {
-            if (permissionRef.current !== "granted") return;
-            clearOldNotified();
+        const notify = (title: string, body: string) => {
+            // 브라우저 알림이 가능하면 사용, 아니면 토스트로 대체
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { body, icon: "/favicon.ico" });
+            } else {
+                showToastRef.current(`${body}`);
+            }
+        };
 
+        const check = async () => {
+            clearOldNotified();
             try {
                 const events = await getTodayEvents();
                 const notified = getNotified();
@@ -57,17 +59,13 @@ export function useCalendarNotifications() {
                     const now = new Date();
                     const diffMin = (eventTime.getTime() - now.getTime()) / 60000;
 
-                    // 이미 지났거나 10분 이내인 일정만 알림
                     if (diffMin <= 10) {
                         const timeStr = eventTime.toLocaleTimeString("ko-KR", {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: false,
                         });
-                        new Notification("Neatly 일정 알림", {
-                            body: `${timeStr} ${ev.title}`,
-                            icon: "/favicon.ico",
-                        });
+                        notify("Neatly 일정 알림", `${timeStr} ${ev.title}`);
                         markNotified(ev.id);
                     }
                 }
@@ -76,7 +74,13 @@ export function useCalendarNotifications() {
             }
         };
 
-        check();
+        // 브라우저 알림 권한 확인 후 즉시 체크
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission().then(() => check());
+        } else {
+            check();
+        }
+
         const timer = setInterval(check, POLL_INTERVAL);
         return () => clearInterval(timer);
     }, []);
