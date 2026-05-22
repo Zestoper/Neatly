@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
     getEvents,
     createEvent,
@@ -6,10 +7,13 @@ import {
     deleteEvent,
     type CalendarEvent,
 } from "../api/calendar";
+import { getDocuments } from "../api/documents";
 import { useToast } from "../context/ToastContext";
 import styles from "./Calendar.module.css";
 
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+
+type Doc = { id: string; title: string };
 
 function getDaysInMonth(year: number, month: number) {
     return new Date(year, month, 0).getDate();
@@ -38,12 +42,15 @@ export default function Calendar() {
     const [year, setYear] = useState(today.getFullYear());
     const [month, setMonth] = useState(today.getMonth() + 1);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [docs, setDocs] = useState<Doc[]>([]);
     const [modal, setModal] = useState<ModalState>(null);
 
     const [formTitle, setFormTitle] = useState("");
     const [formDesc, setFormDesc] = useState("");
     const [formDate, setFormDate] = useState("");
     const [formTime, setFormTime] = useState("09:00");
+    const [formDocId, setFormDocId] = useState<string>("");
+    const [docSearch, setDocSearch] = useState("");
     const [saving, setSaving] = useState(false);
 
     const load = () => {
@@ -52,11 +59,23 @@ export default function Calendar() {
 
     useEffect(() => { load(); }, [year, month]);
 
+    useEffect(() => {
+        getDocuments()
+            .then((data: Doc[]) => setDocs(data.filter((d) => d.title)))
+            .catch(() => {});
+    }, []);
+
+    const filteredDocs = docSearch.trim()
+        ? docs.filter((d) => d.title.toLowerCase().includes(docSearch.toLowerCase()))
+        : docs;
+
     const openCreate = (date: string) => {
         setFormTitle("");
         setFormDesc("");
         setFormDate(date);
         setFormTime("09:00");
+        setFormDocId("");
+        setDocSearch("");
         setModal({ mode: "create", date });
     };
 
@@ -66,6 +85,8 @@ export default function Calendar() {
         setFormDesc(ev.description ?? "");
         setFormDate(toLocalDateString(dt));
         setFormTime(`${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`);
+        setFormDocId(ev.document_id ?? "");
+        setDocSearch(ev.document?.title ?? "");
         setModal({ mode: "edit", event: ev });
     };
 
@@ -76,14 +97,16 @@ export default function Calendar() {
         setSaving(true);
         try {
             const isoDate = `${formDate}T${formTime}:00`;
+            const docId = formDocId || null;
             if (modal?.mode === "create") {
-                await createEvent(formTitle.trim(), isoDate, formDesc.trim() || undefined);
+                await createEvent(formTitle.trim(), isoDate, formDesc.trim() || undefined, docId);
                 showToast("일정이 추가되었습니다.");
             } else if (modal?.mode === "edit") {
                 await updateEvent(modal.event.id, {
                     title: formTitle.trim(),
                     description: formDesc.trim() || undefined,
                     event_date: isoDate,
+                    document_id: docId,
                 });
                 showToast("일정이 수정되었습니다.");
             }
@@ -135,6 +158,8 @@ export default function Calendar() {
     ];
     while (cells.length % 7 !== 0) cells.push(null);
 
+    const editEvent = modal?.mode === "edit" ? modal.event : null;
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -166,8 +191,9 @@ export default function Calendar() {
                                 {dayEvents.map((ev) => (
                                     <button
                                         key={ev.id}
-                                        className={styles.eventChip}
+                                        className={ev.document_id ? styles.eventChipLinked : styles.eventChip}
                                         onClick={(e) => { e.stopPropagation(); openEdit(ev); }}
+                                        title={ev.document ? ev.document.title : undefined}
                                     >
                                         {new Date(ev.event_date).toLocaleTimeString("ko-KR", {
                                             hour: "2-digit",
@@ -175,6 +201,7 @@ export default function Calendar() {
                                             hour12: false,
                                         })}{" "}
                                         {ev.title}
+                                        {ev.document_id && <span className={styles.docDot} />}
                                     </button>
                                 ))}
                             </div>
@@ -221,14 +248,63 @@ export default function Calendar() {
                             value={formDesc}
                             onChange={(e) => setFormDesc(e.target.value)}
                             placeholder="메모"
-                            rows={3}
+                            rows={2}
                         />
+
+                        <label className={styles.label}>문서 연결 (선택)</label>
+                        <div className={styles.docPicker}>
+                            <input
+                                className={styles.input}
+                                value={docSearch}
+                                onChange={(e) => {
+                                    setDocSearch(e.target.value);
+                                    if (!e.target.value) setFormDocId("");
+                                }}
+                                placeholder="문서 검색..."
+                            />
+                            {formDocId && (
+                                <button
+                                    className={styles.docClearBtn}
+                                    onClick={() => { setFormDocId(""); setDocSearch(""); }}
+                                    title="연결 해제"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                            {docSearch && !formDocId && filteredDocs.length > 0 && (
+                                <ul className={styles.docDropdown}>
+                                    {filteredDocs.slice(0, 8).map((d) => (
+                                        <li
+                                            key={d.id}
+                                            className={styles.docDropdownItem}
+                                            onClick={() => {
+                                                setFormDocId(d.id);
+                                                setDocSearch(d.title);
+                                            }}
+                                        >
+                                            {d.title}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {/* 수정 모드에서 연결된 문서 바로가기 */}
+                        {editEvent?.document && (
+                            <Link
+                                to={`/documents/${editEvent.document.id}`}
+                                className={styles.docLink}
+                                onClick={closeModal}
+                            >
+                                문서 열기: {editEvent.document.title}
+                            </Link>
+                        )}
 
                         <div className={styles.modalActions}>
                             {modal.mode === "edit" && (
                                 <button
                                     className={styles.deleteBtn}
-                                    onClick={() => handleDelete((modal as { mode: "edit"; event: CalendarEvent }).event.id)}
+                                    onClick={() => handleDelete(editEvent!.id)}
                                 >
                                     삭제
                                 </button>

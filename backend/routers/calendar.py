@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from models import CalendarEvent, User
+from models import CalendarEvent, User, Document
 from routers.auth import get_current_user
 from database import get_db
 from pydantic import BaseModel
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -13,20 +13,29 @@ class EventCreate(BaseModel):
     title: str
     description: str | None = None
     event_date: datetime
+    document_id: str | None = None
 
 
 class EventUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     event_date: datetime | None = None
+    document_id: str | None = None
 
 
-def _event_dict(ev: CalendarEvent) -> dict:
+def _event_dict(ev: CalendarEvent, db: Session) -> dict:
+    doc = None
+    if ev.document_id:
+        d = db.query(Document).filter(Document.id == ev.document_id).first()
+        if d:
+            doc = {"id": str(d.id), "title": d.title}
     return {
         "id": str(ev.id),
         "title": ev.title,
         "description": ev.description,
         "event_date": ev.event_date.isoformat(),
+        "document_id": str(ev.document_id) if ev.document_id else None,
+        "document": doc,
         "created_at": ev.created_at.isoformat(),
     }
 
@@ -46,7 +55,7 @@ def list_events(
         end = datetime(year, month, last_day, 23, 59, 59)
         q = q.filter(CalendarEvent.event_date >= start, CalendarEvent.event_date <= end)
     events = q.order_by(CalendarEvent.event_date).all()
-    return [_event_dict(e) for e in events]
+    return [_event_dict(e, db) for e in events]
 
 
 @router.get("/events/today")
@@ -67,7 +76,7 @@ def today_events(
         .order_by(CalendarEvent.event_date)
         .all()
     )
-    return [_event_dict(e) for e in events]
+    return [_event_dict(e, db) for e in events]
 
 
 @router.post("/events")
@@ -81,11 +90,12 @@ def create_event(
         title=body.title,
         description=body.description,
         event_date=body.event_date,
+        document_id=body.document_id,
     )
     db.add(ev)
     db.commit()
     db.refresh(ev)
-    return _event_dict(ev)
+    return _event_dict(ev, db)
 
 
 @router.put("/events/{event_id}")
@@ -107,9 +117,12 @@ def update_event(
         ev.description = body.description
     if body.event_date is not None:
         ev.event_date = body.event_date
+    # document_id는 None으로 명시적으로 보내도 반영 (연결 해제)
+    if "document_id" in body.model_fields_set:
+        ev.document_id = body.document_id
     db.commit()
     db.refresh(ev)
-    return _event_dict(ev)
+    return _event_dict(ev, db)
 
 
 @router.delete("/events/{event_id}")
