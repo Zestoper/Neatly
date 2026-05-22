@@ -9,7 +9,7 @@ function getTodayStr() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-type NotifState = Record<string, { reminded?: boolean; started?: boolean }>;
+type NotifState = Record<string, { started?: boolean }>;
 
 function loadState(): NotifState {
     try {
@@ -36,13 +36,6 @@ export function useCalendarNotifications() {
     alertRef.current = showCalendarAlert;
 
     useEffect(() => {
-        const notify = (body: string) => {
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("Neatly 일정 알림", { body, icon: "/favicon.ico" });
-            }
-            alertRef.current("일정 알림", body);
-        };
-
         const check = async () => {
             try {
                 const events = await getTodayEvents();
@@ -50,28 +43,33 @@ export function useCalendarNotifications() {
                 let changed = false;
 
                 for (const ev of events) {
+                    const s = state[ev.id] ?? {};
+                    if (s.started) continue;
+
                     const eventTime = new Date(ev.event_date);
                     const now = new Date();
                     const diffMin = (eventTime.getTime() - now.getTime()) / 60000;
-                    const s = state[ev.id] ?? {};
 
-                    const timeStr = eventTime.toLocaleTimeString("ko-KR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                    });
+                    // 정시 알림: 이벤트 시작 1분 이내
+                    if (diffMin <= 0 && diffMin > -1) {
+                        const timeStr = eventTime.toLocaleTimeString("ko-KR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                        });
 
-                    // 정시 알림: 일정 시작 1분 이내 (diffMin이 -1 ~ 0 사이)
-                    if (diffMin > -1 && diffMin <= 0 && !s.started) {
-                        notify(`${timeStr} ${ev.title} 시작`);
+                        const links: { label: string; path: string }[] = [];
+                        if (ev.document) links.push({ label: "문서로 이동", path: `/documents/${ev.document.id}` });
+                        if (ev.email_id) links.push({ label: "이메일로 이동", path: `/emails/${ev.email_id}` });
+
+                        const body = `${timeStr} ${ev.title} 시간입니다`;
+
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification("Neatly 일정 알림", { body, icon: "/favicon.ico" });
+                        }
+                        alertRef.current("일정 알림", body, links.length > 0 ? links : undefined);
+
                         s.started = true;
-                        changed = true;
-                    }
-
-                    // 사전 알림: 10분 전 ~ 1분 전 (아직 안 됐고 사전 알림 안 한 것만)
-                    if (diffMin > 0 && diffMin <= 10 && !s.reminded) {
-                        notify(`${timeStr} ${ev.title} — ${Math.round(diffMin)}분 후 시작`);
-                        s.reminded = true;
                         changed = true;
                     }
 
