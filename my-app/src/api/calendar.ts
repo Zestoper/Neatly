@@ -5,6 +5,8 @@ export type CalendarEvent = {
     title: string;
     description: string | null;
     event_date: string;
+    document_id: string | null;
+    document: { id: string; title: string } | null;
     created_at: string;
 };
 
@@ -22,14 +24,15 @@ export const createEvent = async (
     title: string,
     event_date: string,
     description?: string,
+    document_id?: string | null,
 ): Promise<CalendarEvent> => {
-    const res = await api.post("/calendar/events", { title, event_date, description });
+    const res = await api.post("/calendar/events", { title, event_date, description, document_id });
     return res.data;
 };
 
 export const updateEvent = async (
     id: string,
-    data: Partial<Pick<CalendarEvent, "title" | "description" | "event_date">>,
+    data: Partial<Pick<CalendarEvent, "title" | "description" | "event_date" | "document_id">>,
 ): Promise<CalendarEvent> => {
     const res = await api.put(`/calendar/events/${id}`, data);
     return res.data;

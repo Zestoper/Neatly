@@ -127,6 +127,41 @@
   color: #fff;
 }
 
+.eventChipLinked {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--color-accent-soft);
+  border: none;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 11px;
+  color: var(--color-accent);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.eventChipLinked:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.docDot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
 /* Modal */
 .overlay {
   position: fixed;
@@ -251,6 +286,68 @@
 
 .deleteBtn:hover {
   background: #fff5f5;
+}
+
+/* 문서 선택 */
+.docPicker {
+  position: relative;
+}
+
+.docClearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 2px 4px;
+}
+
+.docDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.docDropdownItem {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.docDropdownItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.docLink {
+  display: block;
+  font-size: 12px;
+  color: var(--color-accent);
+  text-decoration: none;
+  padding: 4px 0;
+  margin-top: -4px;
+}
+
+.docLink:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {
