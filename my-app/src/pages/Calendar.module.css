@@ -371,6 +371,16 @@
   background: var(--color-surface-hover);
 }
 
+.docDropdownItem span {
+  display: block;
+}
+
+.emailFrom {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
 .docLink {
   display: block;
   font-size: 12px;

@@ -14,6 +14,8 @@ class EventCreate(BaseModel):
     description: str | None = None
     event_date: datetime
     document_id: str | None = None
+    email_id: str | None = None
+    email_subject: str | None = None
 
 
 class EventUpdate(BaseModel):
@@ -21,6 +23,8 @@ class EventUpdate(BaseModel):
     description: str | None = None
     event_date: datetime | None = None
     document_id: str | None = None
+    email_id: str | None = None
+    email_subject: str | None = None
 
 
 def _event_dict(ev: CalendarEvent, db: Session) -> dict:
@@ -36,6 +40,8 @@ def _event_dict(ev: CalendarEvent, db: Session) -> dict:
         "event_date": ev.event_date.isoformat(),
         "document_id": str(ev.document_id) if ev.document_id else None,
         "document": doc,
+        "email_id": ev.email_id,
+        "email_subject": ev.email_subject,
         "created_at": ev.created_at.isoformat(),
     }
 
@@ -91,6 +97,8 @@ def create_event(
         description=body.description,
         event_date=body.event_date,
         document_id=body.document_id,
+        email_id=body.email_id,
+        email_subject=body.email_subject,
     )
     db.add(ev)
     db.commit()
@@ -117,9 +125,11 @@ def update_event(
         ev.description = body.description
     if body.event_date is not None:
         ev.event_date = body.event_date
-    # document_id는 None으로 명시적으로 보내도 반영 (연결 해제)
     if "document_id" in body.model_fields_set:
         ev.document_id = body.document_id
+    if "email_id" in body.model_fields_set:
+        ev.email_id = body.email_id
+        ev.email_subject = body.email_subject
     db.commit()
     db.refresh(ev)
     return _event_dict(ev, db)

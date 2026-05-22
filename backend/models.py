@@ -121,8 +121,10 @@ class CalendarEvent(Base):
     title       = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     event_date  = Column(DateTime, nullable=False)
-    document_id = Column(String(36), ForeignKey("Document.id"), nullable=True)
-    created_at  = Column(DateTime, default=datetime.utcnow)
+    document_id   = Column(String(36), ForeignKey("Document.id"), nullable=True)
+    email_id      = Column(String(255), nullable=True)
+    email_subject = Column(String(500), nullable=True)
+    created_at    = Column(DateTime, default=datetime.utcnow)
 
 
 class Document(Base):
