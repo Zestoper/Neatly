@@ -8,8 +8,11 @@ import {
     type CalendarEvent,
 } from "../api/calendar";
 import { getDocuments } from "../api/documents";
+import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import styles from "./Calendar.module.css";
+
+type Email = { id: string; subject: string; from_: string };
 
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -44,6 +47,7 @@ export default function Calendar() {
     const [notifPerm, setNotifPerm] = useState<NotificationPermission | null>(null);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [docs, setDocs] = useState<Doc[]>([]);
+    const [emails, setEmails] = useState<Email[]>([]);
     const [modal, setModal] = useState<ModalState>(null);
 
     const [formTitle, setFormTitle] = useState("");
@@ -52,6 +56,9 @@ export default function Calendar() {
     const [formTime, setFormTime] = useState("09:00");
     const [formDocId, setFormDocId] = useState<string>("");
     const [docSearch, setDocSearch] = useState("");
+    const [formEmailId, setFormEmailId] = useState<string>("");
+    const [formEmailSubject, setFormEmailSubject] = useState<string>("");
+    const [emailSearch, setEmailSearch] = useState("");
     const [saving, setSaving] = useState(false);
 
     const load = () => {
@@ -73,11 +80,16 @@ export default function Calendar() {
         getDocuments()
             .then((data: Doc[]) => setDocs(data.filter((d) => d.title)))
             .catch(() => {});
+        api.get("/emails").then((res) => setEmails(res.data)).catch(() => {});
     }, []);
 
     const filteredDocs = docSearch.trim()
         ? docs.filter((d) => d.title.toLowerCase().includes(docSearch.toLowerCase()))
         : docs;
+
+    const filteredEmails = emailSearch.trim()
+        ? emails.filter((e) => e.subject.toLowerCase().includes(emailSearch.toLowerCase()) || e.from_.toLowerCase().includes(emailSearch.toLowerCase()))
+        : emails;
 
     const openCreate = (date: string) => {
         setFormTitle("");
@@ -86,6 +98,9 @@ export default function Calendar() {
         setFormTime("09:00");
         setFormDocId("");
         setDocSearch("");
+        setFormEmailId("");
+        setFormEmailSubject("");
+        setEmailSearch("");
         setModal({ mode: "create", date });
     };
 
@@ -97,6 +112,9 @@ export default function Calendar() {
         setFormTime(`${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`);
         setFormDocId(ev.document_id ?? "");
         setDocSearch(ev.document?.title ?? "");
+        setFormEmailId(ev.email_id ?? "");
+        setFormEmailSubject(ev.email_subject ?? "");
+        setEmailSearch(ev.email_subject ?? "");
         setModal({ mode: "edit", event: ev });
     };
 
@@ -108,8 +126,10 @@ export default function Calendar() {
         try {
             const isoDate = `${formDate}T${formTime}:00`;
             const docId = formDocId || null;
+            const emailId = formEmailId || null;
+            const emailSubject = formEmailId ? formEmailSubject : null;
             if (modal?.mode === "create") {
-                await createEvent(formTitle.trim(), isoDate, formDesc.trim() || undefined, docId);
+                await createEvent(formTitle.trim(), isoDate, formDesc.trim() || undefined, docId, emailId, emailSubject);
                 showToast("일정이 추가되었습니다.");
             } else if (modal?.mode === "edit") {
                 await updateEvent(modal.event.id, {
@@ -117,6 +137,8 @@ export default function Calendar() {
                     description: formDesc.trim() || undefined,
                     event_date: isoDate,
                     document_id: docId,
+                    email_id: emailId,
+                    email_subject: emailSubject,
                 });
                 showToast("일정이 수정되었습니다.");
             }
@@ -214,9 +236,9 @@ export default function Calendar() {
                                 {dayEvents.map((ev) => (
                                     <button
                                         key={ev.id}
-                                        className={ev.document_id ? styles.eventChipLinked : styles.eventChip}
+                                        className={(ev.document_id || ev.email_id) ? styles.eventChipLinked : styles.eventChip}
                                         onClick={(e) => { e.stopPropagation(); openEdit(ev); }}
-                                        title={ev.document ? ev.document.title : undefined}
+                                        title={ev.document?.title ?? ev.email_subject ?? undefined}
                                     >
                                         {new Date(ev.event_date).toLocaleTimeString("ko-KR", {
                                             hour: "2-digit",
@@ -224,7 +246,7 @@ export default function Calendar() {
                                             hour12: false,
                                         })}{" "}
                                         {ev.title}
-                                        {ev.document_id && <span className={styles.docDot} />}
+                                        {(ev.document_id || ev.email_id) && <span className={styles.docDot} />}
                                     </button>
                                 ))}
                             </div>
@@ -312,7 +334,6 @@ export default function Calendar() {
                             )}
                         </div>
 
-                        {/* 수정 모드에서 연결된 문서 바로가기 */}
                         {editEvent?.document && (
                             <Link
                                 to={`/documents/${editEvent.document.id}`}
@@ -321,6 +342,59 @@ export default function Calendar() {
                             >
                                 문서 열기: {editEvent.document.title}
                             </Link>
+                        )}
+
+                        {emails.length > 0 && (
+                            <>
+                                <label className={styles.label}>메일 연결 (선택)</label>
+                                <div className={styles.docPicker}>
+                                    <input
+                                        className={styles.input}
+                                        value={emailSearch}
+                                        onChange={(e) => {
+                                            setEmailSearch(e.target.value);
+                                            if (!e.target.value) { setFormEmailId(""); setFormEmailSubject(""); }
+                                        }}
+                                        placeholder="메일 제목 또는 발신자 검색..."
+                                    />
+                                    {formEmailId && (
+                                        <button
+                                            className={styles.docClearBtn}
+                                            onClick={() => { setFormEmailId(""); setFormEmailSubject(""); setEmailSearch(""); }}
+                                            title="연결 해제"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                    {emailSearch && !formEmailId && filteredEmails.length > 0 && (
+                                        <ul className={styles.docDropdown}>
+                                            {filteredEmails.slice(0, 8).map((e) => (
+                                                <li
+                                                    key={e.id}
+                                                    className={styles.docDropdownItem}
+                                                    onClick={() => {
+                                                        setFormEmailId(e.id);
+                                                        setFormEmailSubject(e.subject);
+                                                        setEmailSearch(e.subject);
+                                                    }}
+                                                >
+                                                    <span>{e.subject}</span>
+                                                    <span className={styles.emailFrom}>{e.from_}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                                {editEvent?.email_id && (
+                                    <Link
+                                        to={`/emails/${editEvent.email_id}`}
+                                        className={styles.docLink}
+                                        onClick={closeModal}
+                                    >
+                                        메일 열기: {editEvent.email_subject}
+                                    </Link>
+                                )}
+                            </>
                         )}
 
                         <div className={styles.modalActions}>
