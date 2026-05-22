@@ -2,12 +2,26 @@ import { useEffect, useRef } from "react";
 import { getTodayEvents } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 
-const STORAGE_KEY = "notified_calendar_events";
+const NOTIFIED_KEY = "notified_calendar_events";
+const NOTIFIED_DATE_KEY = "notified_calendar_date";
 const POLL_INTERVAL = 60 * 1000;
 
+function getTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function getNotified(): Set<string> {
+    // 날짜가 바뀌면 초기화
+    const savedDate = localStorage.getItem(NOTIFIED_DATE_KEY);
+    const today = getTodayStr();
+    if (savedDate !== today) {
+        localStorage.removeItem(NOTIFIED_KEY);
+        localStorage.setItem(NOTIFIED_DATE_KEY, today);
+        return new Set();
+    }
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(NOTIFIED_KEY);
         return new Set(raw ? JSON.parse(raw) : []);
     } catch {
         return new Set();
@@ -17,37 +31,24 @@ function getNotified(): Set<string> {
 function markNotified(id: string) {
     const set = getNotified();
     set.add(id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
-}
-
-function clearOldNotified() {
-    const lastDate = localStorage.getItem("notified_date");
-    const today = new Date().toISOString().slice(0, 10);
-    if (lastDate !== today) {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.setItem("notified_date", today);
-    }
+    localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...set]));
 }
 
 export function useCalendarNotifications() {
-    const { showToast } = useToast();
-    const showToastRef = useRef(showToast);
-    showToastRef.current = showToast;
+    const { showCalendarAlert } = useToast();
+    const alertRef = useRef(showCalendarAlert);
+    alertRef.current = showCalendarAlert;
 
     useEffect(() => {
-        clearOldNotified();
-
-        const notify = (title: string, body: string) => {
-            // 브라우저 알림이 가능하면 사용, 아니면 토스트로 대체
+        const notify = (body: string) => {
             if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(title, { body, icon: "/favicon.ico" });
-            } else {
-                showToastRef.current(`${body}`);
+                new Notification("Neatly 일정 알림", { body, icon: "/favicon.ico" });
             }
+            // 브라우저 알림 허용 여부와 관계없이 항상 인앱 알림도 표시
+            alertRef.current("일정 알림", body);
         };
 
         const check = async () => {
-            clearOldNotified();
             try {
                 const events = await getTodayEvents();
                 const notified = getNotified();
@@ -59,13 +60,14 @@ export function useCalendarNotifications() {
                     const now = new Date();
                     const diffMin = (eventTime.getTime() - now.getTime()) / 60000;
 
+                    // 이미 지났거나 10분 이내인 일정
                     if (diffMin <= 10) {
                         const timeStr = eventTime.toLocaleTimeString("ko-KR", {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: false,
                         });
-                        notify("Neatly 일정 알림", `${timeStr} ${ev.title}`);
+                        notify(`${timeStr} ${ev.title}`);
                         markNotified(ev.id);
                     }
                 }
@@ -74,7 +76,6 @@ export function useCalendarNotifications() {
             }
         };
 
-        // 브라우저 알림 권한 확인 후 즉시 체크
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission().then(() => check());
         } else {
