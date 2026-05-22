@@ -9,15 +9,21 @@ type ToastItem = {
     type: ToastType;
 };
 
+type AlertLink = {
+    label: string;
+    path: string;
+};
+
 type AlertItem = {
     id: number;
     title: string;
     body: string;
+    links?: AlertLink[];
 };
 
 type ToastContextValue = {
     showToast: (message: string, type?: ToastType) => void;
-    showCalendarAlert: (title: string, body: string) => void;
+    showCalendarAlert: (title: string, body: string, links?: AlertLink[]) => void;
 };
 
 const ToastContext = createContext<ToastContextValue>({
@@ -41,13 +47,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }, 3000);
     }, []);
 
-    const showCalendarAlert = useCallback((title: string, body: string) => {
+    const showCalendarAlert = useCallback((title: string, body: string, links?: AlertLink[]) => {
         const id = Date.now();
-        setAlerts((prev) => [...prev, { id, title, body }]);
+        setAlerts((prev) => [...prev, { id, title, body, links }]);
         setTimeout(() => {
             setAlerts((prev) => prev.filter((a) => a.id !== id));
-        }, 6000);
+        }, 8000);
     }, []);
+
+    const dismissAlert = (id: number) => {
+        setAlerts((prev) => prev.filter((a) => a.id !== id));
+    };
 
     return (
         <ToastContext.Provider value={{ showToast, showCalendarAlert }}>
@@ -83,7 +93,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 ))}
             </div>
 
-            {/* 캘린더 알림 — 상단 중앙, 더 크고 눈에 띄게 */}
+            {/* 캘린더 알림 — 상단 중앙 */}
             <div style={{
                 position: "fixed",
                 top: 24,
@@ -93,28 +103,61 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 flexDirection: "column",
                 gap: 10,
                 zIndex: 10000,
-                pointerEvents: "none",
+                pointerEvents: "auto",
             }}>
                 {alerts.map((a) => (
                     <div
                         key={a.id}
                         style={{
-                            padding: "14px 22px",
+                            padding: "14px 18px",
                             background: "#fff",
                             border: "1.5px solid var(--color-accent, #4f46e5)",
                             borderRadius: 12,
                             boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
                             animation: "toast-in 0.2s ease",
-                            minWidth: 240,
+                            minWidth: 260,
                             maxWidth: "80vw",
                         }}
                     >
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-accent, #4f46e5)", marginBottom: 4, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                            {a.title}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-accent, #4f46e5)", marginBottom: 4, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                                    {a.title}
+                                </div>
+                                <div style={{ fontSize: 15, fontWeight: 600, color: "#1a1a1a" }}>
+                                    {a.body}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => dismissAlert(a.id)}
+                                style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 16, lineHeight: 1, padding: "0 2px", flexShrink: 0 }}
+                            >
+                                ✕
+                            </button>
                         </div>
-                        <div style={{ fontSize: 15, fontWeight: 600, color: "#1a1a1a" }}>
-                            {a.body}
-                        </div>
+
+                        {a.links && a.links.length > 0 && (
+                            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                                {a.links.map((link) => (
+                                    <button
+                                        key={link.path}
+                                        onClick={() => { dismissAlert(a.id); window.location.href = link.path; }}
+                                        style={{
+                                            padding: "5px 12px",
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            border: "1px solid var(--color-accent, #4f46e5)",
+                                            borderRadius: 6,
+                                            background: "none",
+                                            color: "var(--color-accent, #4f46e5)",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        {link.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
