@@ -3,9 +3,11 @@ import { useLocation, Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import ChatModal from "./ChatModal";
 import { getMe } from "../api/auth";
+import { useCalendarNotifications } from "../hooks/useCalendarNotifications";
 import styles from "./Layout.module.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+    useCalendarNotifications();
     const isMobile = () => window.innerWidth <= 767;
     const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile());
     const location = useLocation();

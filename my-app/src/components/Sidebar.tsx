@@ -218,6 +218,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
             <nav className={styles.nav}>
                 <Link to="/" className={navClass("/")}>Dashboard</Link>
+                <Link to="/calendar" className={navClass("/calendar")}>Calendar</Link>
                 <Link to="/search" className={navClass("/search")}>Search</Link>
                 <Link to="/documents" className={navClass("/documents")}>Documents</Link>
 

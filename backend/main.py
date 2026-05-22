@@ -20,6 +20,7 @@ from routers.briefing import router as briefing_router
 from routers.email_sync import router as email_sync_router
 from routers.chat import router as chat_router
 from routers.friends import router as friends_router
+from routers.calendar import router as calendar_router
 from scheduler import start_scheduler
 
 
@@ -60,3 +61,4 @@ app.include_router(briefing_router)
 app.include_router(email_sync_router)
 app.include_router(chat_router)
 app.include_router(friends_router)
+app.include_router(calendar_router)
