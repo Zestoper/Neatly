@@ -10,6 +10,7 @@ import {
 import { getDocuments } from "../api/documents";
 import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Calendar.module.css";
 
 type Email = { id: string; subject: string; from_: string };
@@ -60,6 +61,7 @@ export default function Calendar() {
     const [formEmailSubject, setFormEmailSubject] = useState<string>("");
     const [emailSearch, setEmailSearch] = useState("");
     const [saving, setSaving] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     const load = () => {
         getEvents(year, month).then(setEvents).catch(() => {});
@@ -151,16 +153,21 @@ export default function Calendar() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("일정을 삭제할까요?")) return;
-        try {
-            await deleteEvent(id);
-            showToast("일정이 삭제되었습니다.");
-            closeModal();
-            load();
-        } catch {
-            showToast("삭제에 실패했습니다.", "error");
-        }
+    const handleDelete = (id: string) => {
+        setConfirmModal({
+            message: "일정을 삭제할까요?",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                try {
+                    await deleteEvent(id);
+                    showToast("일정이 삭제되었습니다.");
+                    closeModal();
+                    load();
+                } catch {
+                    showToast("삭제에 실패했습니다.", "error");
+                }
+            },
+        });
     };
 
     const prevMonth = () => {
@@ -311,6 +318,16 @@ export default function Calendar() {
                         </div>
                     )}
                 </div>
+            )}
+
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel="삭제"
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
             )}
 
             {modal && (

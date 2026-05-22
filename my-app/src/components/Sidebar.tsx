@@ -8,6 +8,7 @@ import { getSyncStatus } from "../api/emailSync";
 import { api } from "../api/client";
 import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
+import ConfirmModal from "./ConfirmModal";
 import styles from "./Sidebar.module.css";
 
 type Folder = {
@@ -48,6 +49,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const isPremium = localStorage.getItem("plan") === "PREMIUM";
     const { refreshKey, bump } = useRefresh();
     const { showToast } = useToast();
+
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     const [newEmailCount, setNewEmailCount] = useState(0);
     // newEmailCount : 마지막으로 Emails 페이지를 열었던 이후 자동 동기화로 추가된 새 문서 수
@@ -134,14 +137,19 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         }
     };
 
-    const handleDeleteFolder = async (id: string) => {
-        if (!window.confirm("폴더를 삭제할까요?")) return;
-        try {
-            await deleteFolder(id);
-            bump();
-        } catch {
-            showToast("폴더 삭제에 실패했습니다.");
-        }
+    const handleDeleteFolder = (id: string) => {
+        setConfirmModal({
+            message: "폴더를 삭제할까요?",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                try {
+                    await deleteFolder(id);
+                    bump();
+                } catch {
+                    showToast("폴더 삭제에 실패했습니다.");
+                }
+            },
+        });
     };
 
     const handleAddFilter = async () => {
@@ -580,6 +588,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             </div>
             </>
             )}
+        {confirmModal && (
+            <ConfirmModal
+                message={confirmModal.message}
+                confirmLabel="삭제"
+                danger
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(null)}
+            />
+        )}
         </div>
     );
 }

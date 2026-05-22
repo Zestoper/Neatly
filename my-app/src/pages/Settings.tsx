@@ -3,6 +3,7 @@ import { getMe } from "../api/auth";
 import { updateMe, changePassword } from "../api/users";
 import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Settings.module.css";
 
 export default function Settings() {
@@ -22,6 +23,7 @@ export default function Settings() {
     const [disconnecting, setDisconnecting] = useState(false);
 
     const [notifPerm, setNotifPerm] = useState<NotificationPermission | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     useEffect(() => {
         if ("Notification" in window) setNotifPerm(Notification.permission);
@@ -69,18 +71,23 @@ export default function Settings() {
         }
     };
 
-    const handleDisconnectGmail = async () => {
-        if (!window.confirm("Gmail 연결을 해제할까요? 이메일 기능을 사용하려면 다시 연결해야 합니다.")) return;
-        setDisconnecting(true);
-        try {
-            await api.delete("/auth/gmail");
-            setGmailConnected(false);
-            showToast("Gmail 연결이 해제되었습니다.");
-        } catch {
-            showToast("Gmail 연결 해제에 실패했습니다. 다시 시도해주세요.");
-        } finally {
-            setDisconnecting(false);
-        }
+    const handleDisconnectGmail = () => {
+        setConfirmModal({
+            message: "Gmail 연결을 해제할까요? 이메일 기능을 사용하려면 다시 연결해야 합니다.",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                setDisconnecting(true);
+                try {
+                    await api.delete("/auth/gmail");
+                    setGmailConnected(false);
+                    showToast("Gmail 연결이 해제되었습니다.");
+                } catch {
+                    showToast("Gmail 연결 해제에 실패했습니다. 다시 시도해주세요.");
+                } finally {
+                    setDisconnecting(false);
+                }
+            },
+        });
     };
 
     const handleConnectGmail = async () => {
@@ -238,6 +245,16 @@ export default function Settings() {
                     )}
                 </div>
             </section>
+
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel="해제"
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
+            )}
         </div>
     );
 }

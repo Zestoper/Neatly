@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getTrashDocuments, restoreDocument, permanentlyDeleteDocument, restoreGmailEmail } from "../api/documents";
 import { useToast } from "../context/ToastContext";
 import { useRefresh } from "../context/RefreshContext";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Trash.module.css";
 
 type TrashDoc = {
@@ -17,6 +18,7 @@ export default function Trash() {
     const { refreshKey, bump } = useRefresh();
     const [docs, setDocs] = useState<TrashDoc[]>([]);
     const [loading, setLoading] = useState(true);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -41,16 +43,21 @@ export default function Trash() {
         }
     };
 
-    const handlePermanentDelete = async (id: string, e: React.MouseEvent) => {
+    const handlePermanentDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!window.confirm("영구 삭제하면 복원할 수 없습니다. 계속할까요?")) return;
-        try {
-            await permanentlyDeleteDocument(id);
-            showToast("영구 삭제되었습니다.");
-            bump();
-        } catch {
-            showToast("삭제에 실패했습니다. 다시 시도해주세요.");
-        }
+        setConfirmModal({
+            message: "영구 삭제하면 복원할 수 없습니다. 계속할까요?",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                try {
+                    await permanentlyDeleteDocument(id);
+                    showToast("영구 삭제되었습니다.");
+                    bump();
+                } catch {
+                    showToast("삭제에 실패했습니다. 다시 시도해주세요.");
+                }
+            },
+        });
     };
 
     const formatDate = (iso: string) =>
@@ -95,6 +102,15 @@ export default function Trash() {
                     ))}
                 </div>
             )}
+        {confirmModal && (
+            <ConfirmModal
+                message={confirmModal.message}
+                confirmLabel="영구 삭제"
+                danger
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(null)}
+            />
+        )}
         </div>
     );
 }

@@ -6,6 +6,7 @@ import { addTagToDocument, removeTagFromDocument } from "../api/tags";
 import { useToast } from "../context/ToastContext";
 import { useRefresh } from "../context/RefreshContext";
 import AiChatFab from "../components/AiChatFab";
+import ConfirmModal from "../components/ConfirmModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -106,6 +107,7 @@ export default function DocumentDetail() {
     const [preview, setPreview] = useState(false);
     const [slashMenu, setSlashMenu] = useState<SlashMenu | null>(null);
     const [saving, setSaving] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const applyCommand = (cmd: typeof MD_COMMANDS[number]) => {
@@ -199,19 +201,33 @@ export default function DocumentDetail() {
         ? `/documents?folder=${fromFolder}`
         : (doc?.folder_id ? `/documents?folder=${doc.folder_id}` : "/documents");
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (!id || !doc) return;
         if (fromFolder) {
-            if (!window.confirm("이 문서를 폴더에서 제거할까요?")) return;
-            await moveDocumentToFolder(id, null);
-            showToast("폴더에서 제거되었습니다.");
+            setConfirmModal({
+                message: "이 문서를 폴더에서 제거할까요?",
+                confirmLabel: "제거",
+                onConfirm: async () => {
+                    setConfirmModal(null);
+                    await moveDocumentToFolder(id, null);
+                    showToast("폴더에서 제거되었습니다.");
+                    bump();
+                    navigate(backPath);
+                },
+            });
         } else {
-            if (!window.confirm("이 문서를 휴지통으로 이동할까요?")) return;
-            await deleteDocument(id);
-            showToast("문서가 휴지통으로 이동되었습니다.");
+            setConfirmModal({
+                message: "이 문서를 휴지통으로 이동할까요?",
+                confirmLabel: "휴지통으로 이동",
+                onConfirm: async () => {
+                    setConfirmModal(null);
+                    await deleteDocument(id);
+                    showToast("문서가 휴지통으로 이동되었습니다.");
+                    bump();
+                    navigate(backPath);
+                },
+            });
         }
-        bump();
-        navigate(backPath);
     };
 
     const handleAddTag = async () => {
@@ -475,6 +491,16 @@ export default function DocumentDetail() {
 
             {/* AI 질문 FAB — 읽기 모드일 때만 */}
             {!editing && <AiChatFab documentId={id} />}
+
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel={confirmModal.confirmLabel ?? "확인"}
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
+            )}
         </div>
     );
 }

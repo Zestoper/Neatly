@@ -5,6 +5,7 @@ import type { EmailDetail as EmailDetailType } from "../api/emails";
 import { api } from "../api/client";
 import { useRefresh } from "../context/RefreshContext";
 import AiChatFab from "../components/AiChatFab";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./EmailDetail.module.css";
 
 export default function EmailDetail() {
@@ -23,6 +24,7 @@ export default function EmailDetail() {
 
     const [unmarkingSpam, setUnmarkingSpam] = useState(false);
     const [unmarkedSpam, setUnmarkedSpam] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -49,12 +51,17 @@ export default function EmailDetail() {
         }
     };
 
-    const handleTrash = async () => {
+    const handleTrash = () => {
         if (!id) return;
-        if (!window.confirm("이 이메일을 Gmail 휴지통으로 이동할까요?")) return;
-        await trashEmail(id);
-        bump();
-        navigate("/emails");
+        setConfirmModal({
+            message: "이 이메일을 Gmail 휴지통으로 이동할까요?",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await trashEmail(id);
+                bump();
+                navigate("/emails");
+            },
+        });
     };
 
     const handleMarkSpam = async () => {
@@ -170,6 +177,16 @@ export default function EmailDetail() {
             )}
 
             <AiChatFab contextText={email.body ?? email.subject} />
+
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel="휴지통으로 이동"
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
+            )}
         </div>
     );
 }
