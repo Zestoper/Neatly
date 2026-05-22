@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
+import Calendar from "./pages/Calendar";
 import Documents from "./pages/Documents";
 import Search from "./pages/Search";
 import Trash from "./pages/Trash";
@@ -36,6 +37,16 @@ export default function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <Dashboard />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/calendar"
+                    element={
+                        <ProtectedRoute>
+                            <Layout>
+                                <Calendar />
                             </Layout>
                         </ProtectedRoute>
                     }

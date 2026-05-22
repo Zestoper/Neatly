@@ -113,6 +113,17 @@ class Friend(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class CalendarEvent(Base):
+    __tablename__ = "CalendarEvent"
+
+    id          = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id     = Column(String(36), ForeignKey("User.id"), nullable=False, index=True)
+    title       = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    event_date  = Column(DateTime, nullable=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+
 class Document(Base):
     __tablename__ = "Document"
     __table_args__ = (

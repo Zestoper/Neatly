@@ -1,0 +1,272 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+  margin: 0;
+  min-width: 140px;
+  text-align: center;
+}
+
+.navBtn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.navBtn:hover {
+  background: var(--color-surface-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dayLabel {
+  background: var(--color-surface);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 8px 0;
+}
+
+.cell {
+  background: var(--color-bg);
+  min-height: 100px;
+  padding: 6px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cell:hover {
+  background: var(--color-surface-hover);
+}
+
+.cellToday {
+  background: var(--color-accent-soft);
+  min-height: 100px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.cellToday:hover {
+  filter: brightness(0.97);
+}
+
+.cellEmpty {
+  background: var(--color-surface);
+  min-height: 100px;
+}
+
+.dayNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cellToday .dayNum {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eventChip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--color-accent-soft);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 11px;
+  color: var(--color-accent);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+}
+
+.eventChip:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modalBox {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 28px 28px 24px;
+  width: 360px;
+  max-width: 92vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: -4px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  font-size: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+}
+
+.textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  font-size: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-sizing: border-box;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.textarea:focus {
+  border-color: var(--color-accent);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: none;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: var(--color-surface-hover);
+}
+
+.saveBtn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 7px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.saveBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.deleteBtn {
+  padding: 8px 16px;
+  border: 1px solid #e53e3e;
+  border-radius: 7px;
+  background: none;
+  font-size: 13px;
+  color: #e53e3e;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.deleteBtn:hover {
+  background: #fff5f5;
+}
+
+@media (max-width: 640px) {
+  .cell,
+  .cellToday,
+  .cellEmpty {
+    min-height: 60px;
+    padding: 4px;
+  }
+
+  .dayNum {
+    font-size: 11px;
+  }
+
+  .eventChip {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+}
