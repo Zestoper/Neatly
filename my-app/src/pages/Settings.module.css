@@ -126,6 +126,12 @@
   opacity: 1;
 }
 
+.notifGranted {
+  font-size: 13px;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 @media (max-width: 767px) {
   .pageTitle {
     font-size: 18px;
