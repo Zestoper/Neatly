@@ -263,6 +263,56 @@ export default function Calendar() {
                 })}
             </div>
 
+            {/* 오늘 일정 리스트 — 이번 달 보고 있을 때만 표시 */}
+            {year === today.getFullYear() && month === today.getMonth() + 1 && (
+                <div className={styles.todaySection}>
+                    <p className={styles.todaySectionLabel}>오늘 일정</p>
+                    {(eventsByDate[todayStr] ?? []).length === 0 ? (
+                        <p className={styles.todayEmpty}>오늘 일정이 없습니다.</p>
+                    ) : (
+                        <div className={styles.todayList}>
+                            {(eventsByDate[todayStr] ?? []).map((ev) => (
+                                <div
+                                    key={ev.id}
+                                    className={styles.todayItem}
+                                    onClick={() => openEdit(ev)}
+                                >
+                                    <span className={styles.todayTime}>
+                                        {new Date(ev.event_date).toLocaleTimeString("ko-KR", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false,
+                                        })}
+                                    </span>
+                                    <span className={styles.todayTitle}>{ev.title}</span>
+                                    {ev.document && (
+                                        <Link
+                                            to={`/documents/${ev.document.id}`}
+                                            className={styles.todayLink}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            문서
+                                        </Link>
+                                    )}
+                                    {ev.email_id && (
+                                        <Link
+                                            to={`/emails/${ev.email_id}`}
+                                            className={styles.todayLink}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            메일
+                                        </Link>
+                                    )}
+                                    {ev.description && (
+                                        <span className={styles.todayDesc}>{ev.description}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {modal && (
                 <div className={styles.overlay} onClick={closeModal}>
                     <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
