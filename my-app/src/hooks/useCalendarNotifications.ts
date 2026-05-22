@@ -2,8 +2,6 @@ import { useEffect, useRef } from "react";
 import { getTodayEvents } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 
-const NOTIFIED_KEY = "notified_calendar_events";
-const NOTIFIED_DATE_KEY = "notified_calendar_date";
 const POLL_INTERVAL = 60 * 1000;
 
 function getTodayStr() {
@@ -11,27 +9,25 @@ function getTodayStr() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function getNotified(): Set<string> {
-    // 날짜가 바뀌면 초기화
-    const savedDate = localStorage.getItem(NOTIFIED_DATE_KEY);
-    const today = getTodayStr();
-    if (savedDate !== today) {
-        localStorage.removeItem(NOTIFIED_KEY);
-        localStorage.setItem(NOTIFIED_DATE_KEY, today);
-        return new Set();
-    }
+type NotifState = Record<string, { reminded?: boolean; started?: boolean }>;
+
+function loadState(): NotifState {
     try {
-        const raw = localStorage.getItem(NOTIFIED_KEY);
-        return new Set(raw ? JSON.parse(raw) : []);
+        const savedDate = localStorage.getItem("notif_date");
+        if (savedDate !== getTodayStr()) {
+            localStorage.removeItem("notif_state");
+            localStorage.setItem("notif_date", getTodayStr());
+            return {};
+        }
+        return JSON.parse(localStorage.getItem("notif_state") ?? "{}");
     } catch {
-        return new Set();
+        return {};
     }
 }
 
-function markNotified(id: string) {
-    const set = getNotified();
-    set.add(id);
-    localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...set]));
+function saveState(state: NotifState) {
+    localStorage.setItem("notif_state", JSON.stringify(state));
+    localStorage.setItem("notif_date", getTodayStr());
 }
 
 export function useCalendarNotifications() {
@@ -44,33 +40,45 @@ export function useCalendarNotifications() {
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification("Neatly 일정 알림", { body, icon: "/favicon.ico" });
             }
-            // 브라우저 알림 허용 여부와 관계없이 항상 인앱 알림도 표시
             alertRef.current("일정 알림", body);
         };
 
         const check = async () => {
             try {
                 const events = await getTodayEvents();
-                const notified = getNotified();
+                const state = loadState();
+                let changed = false;
 
                 for (const ev of events) {
-                    if (notified.has(ev.id)) continue;
-
                     const eventTime = new Date(ev.event_date);
                     const now = new Date();
                     const diffMin = (eventTime.getTime() - now.getTime()) / 60000;
+                    const s = state[ev.id] ?? {};
 
-                    // 이미 지났거나 10분 이내인 일정
-                    if (diffMin <= 10) {
-                        const timeStr = eventTime.toLocaleTimeString("ko-KR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                        });
-                        notify(`${timeStr} ${ev.title}`);
-                        markNotified(ev.id);
+                    const timeStr = eventTime.toLocaleTimeString("ko-KR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                    });
+
+                    // 정시 알림: 일정 시작 1분 이내 (diffMin이 -1 ~ 0 사이)
+                    if (diffMin > -1 && diffMin <= 0 && !s.started) {
+                        notify(`${timeStr} ${ev.title} 시작`);
+                        s.started = true;
+                        changed = true;
                     }
+
+                    // 사전 알림: 10분 전 ~ 1분 전 (아직 안 됐고 사전 알림 안 한 것만)
+                    if (diffMin > 0 && diffMin <= 10 && !s.reminded) {
+                        notify(`${timeStr} ${ev.title} — ${Math.round(diffMin)}분 후 시작`);
+                        s.reminded = true;
+                        changed = true;
+                    }
+
+                    state[ev.id] = s;
                 }
+
+                if (changed) saveState(state);
             } catch {
                 // 네트워크 오류 무시
             }
