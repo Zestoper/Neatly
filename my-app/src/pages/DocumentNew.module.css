@@ -143,4 +143,8 @@
   .actions {
     flex-wrap: wrap;
   }
+
+  .slashMenu {
+    max-width: calc(100vw - 32px);
+  }
 }
