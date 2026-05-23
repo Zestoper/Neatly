@@ -6,6 +6,8 @@
 
 .main {
   flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--color-bg);
   display: flex;
@@ -15,6 +17,7 @@
 
 .content {
   width: 100%;
+  min-width: 0;
   max-width: 840px;
   padding: 48px 56px;
 }
