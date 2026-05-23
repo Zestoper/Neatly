@@ -1017,6 +1017,11 @@
 }
 
 @media (max-width: 767px) {
+  .fabWrapper {
+    bottom: 20px;
+    right: 20px;
+  }
+
   .modal {
     right: 12px;
     left: 12px;
@@ -1028,5 +1033,10 @@
 
   .msgContent {
     max-width: 85%;
+  }
+
+  /* 터치에서 hover 없으므로 메뉴 버튼 항상 표시 */
+  .menuDotBtn {
+    opacity: 1;
   }
 }
