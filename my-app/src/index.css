@@ -23,6 +23,10 @@
   padding: 0;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
@@ -30,12 +34,16 @@ body {
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 #root {
   width: 100%;
+  max-width: 100vw;
   height: 100vh;
   display: flex;
+  overflow-x: hidden;
 }
 
 /* 제목 */
