@@ -226,6 +226,11 @@
   font-weight: 500;
   color: var(--color-text);
   letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardDate {
@@ -399,6 +404,9 @@
 @media (max-width: 767px) {
   /* 터치에서 hover 없으므로 삭제 버튼 항상 표시 */
   .cardDeleteBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 1;
   }
 

@@ -67,7 +67,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div style={{
                 position: "fixed",
                 top: 24,
-                right: 24,
+                right: 16,
+                maxWidth: "calc(100vw - 32px)",
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
@@ -84,7 +85,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                             borderRadius: 8,
                             fontSize: 13.5,
                             boxShadow: "0 4px 16px rgba(0,0,0,0.14)",
-                            whiteSpace: "nowrap",
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
                             animation: "toast-in 0.18s ease",
                         }}
                     >

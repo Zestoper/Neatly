@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser, getMe } from "../api/auth";
 import { warmUpServer } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import styles from "./Auth.module.css";
 
 export default function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -32,13 +33,20 @@ export default function Login() {
         try {
             const data = await loginUser(email, password);
             localStorage.setItem("token", data.access_token);
-            const me = await getMe();
-            localStorage.setItem("plan", me.plan);
-            localStorage.setItem("userName", me.name || me.email);
-            window.location.href = "/";
+
+            // 사용자 정보 로드 — 실패해도 대시보드로 이동 (Layout이 재시도)
+            try {
+                const me = await getMe();
+                localStorage.setItem("plan", me.plan);
+                localStorage.setItem("userName", me.name || me.email);
+            } catch {
+                // getMe 실패 시 기본값 유지, Layout 마운트 시 재조회
+            }
+
+            navigate("/");
         } catch (err: unknown) {
             const isNetworkError = !((err as { response?: unknown })?.response);
-            // 네트워크 오류(타임아웃, 연결 실패)면 최대 2회 재시도
+            // 로그인 자체가 네트워크 오류면 최대 2회 재시도
             if (isNetworkError && retryCount < 2) {
                 await attemptLogin(retryCount + 1);
             } else {

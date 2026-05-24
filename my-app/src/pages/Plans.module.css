@@ -191,8 +191,12 @@
 @media (max-width: 767px) {
   .cards {
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     margin-top: 24px;
+  }
+
+  .card {
+    padding: 28px 20px;
   }
 
   .heading {
@@ -201,5 +205,9 @@
 
   .price {
     font-size: 26px;
+  }
+
+  .features {
+    margin-bottom: 24px;
   }
 }

@@ -1,0 +1,156 @@
+.container {
+  padding: 48px 0;
+  max-width: 600px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  margin-bottom: 24px;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.createButton {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.createButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.joinButton {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  background: transparent;
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.joinButton:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.joinButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--color-text-gray);
+  padding: 32px 0;
+}
+
+.roomCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.roomCard:hover {
+  background: var(--color-surface-hover);
+}
+
+.roomMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.roomName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roomDate {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.lastMessage {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  flex-shrink: 1;
+}
+
+.memberCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 20px 0;
+  }
+
+  .lastMessage {
+    display: none;
+  }
+}
