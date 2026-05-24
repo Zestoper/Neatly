@@ -125,8 +125,8 @@ export default function ChatModal() {
         const token = localStorage.getItem("token") ?? "";
         if (!token) return;
 
-        // 브라우저 알림 권한 요청 (최초 1회)
-        if (Notification.permission === "default") {
+        // 브라우저 알림 권한 요청 (최초 1회) — iOS Safari는 Notification 미지원
+        if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
 
@@ -164,7 +164,7 @@ export default function ChatModal() {
                 setRooms((prev) => prev.map((r) =>
                     r.id === msg.room_id ? { ...r, unread_count: r.unread_count + 1, last_message: msg.content, last_message_at: new Date().toISOString() } : r
                 ));
-                if (Notification.permission === "granted" && document.visibilityState === "hidden") {
+                if ("Notification" in window && Notification.permission === "granted" && document.visibilityState === "hidden") {
                     new Notification(msg.room_name, {
                         body: `${msg.sender}: ${msg.content}`,
                     });
