@@ -105,6 +105,11 @@
   font-size: 14px;
   color: var(--color-text);
   font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recentDate {
@@ -134,5 +139,10 @@
   /* 차트가 넘칠 경우 가로 스크롤 */
   .chart {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .barGroup {
+    flex-shrink: 0;
   }
 }

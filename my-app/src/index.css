@@ -25,6 +25,7 @@
 
 html {
   overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -35,6 +36,7 @@ body {
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
   max-width: 100vw;
 }
 
@@ -42,6 +44,7 @@ body {
   width: 100%;
   max-width: 100vw;
   height: 100vh;
+  height: 100dvh; /* iOS Safari: dynamic viewport height */
   display: flex;
   overflow-x: hidden;
 }
@@ -124,4 +127,11 @@ input::placeholder, textarea::placeholder {
 
 ul {
   list-style: none;
+}
+
+/* iOS Safari: font-size < 16px causes auto-zoom on input focus */
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }

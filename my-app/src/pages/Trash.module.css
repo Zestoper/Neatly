@@ -58,6 +58,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.01em;
+  min-width: 0;
 }
 
 .meta {

@@ -108,6 +108,11 @@
   color: var(--color-text);
   font-weight: 500;
   letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recentDate {
@@ -369,8 +374,14 @@
 }
 
 @media (max-width: 767px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
   .greeting {
     font-size: 20px;
+    min-width: 0;
+    word-break: break-word;
   }
 
   .statsRow {
