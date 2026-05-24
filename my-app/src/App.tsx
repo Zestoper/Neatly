@@ -1,8 +1,30 @@
+import { Component, type ReactNode } from "react";
 import {
     BrowserRouter, // BrowserRouter : URL 기반 라우팅을 가능하게 하는 컨테이너
     Routes,        // Routes : 여러 Route 중 현재 URL에 맞는 것 하나만 렌더링
     Route,         // Route : path와 컴포넌트를 매핑하는 단위
 } from "react-router-dom";
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+    constructor(props: { children: ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: 12 }}>
+                    <p style={{ fontSize: 16, color: "#1a1915" }}>오류가 발생했습니다.</p>
+                    <button onClick={() => { this.setState({ hasError: false }); window.location.href = "/"; }}>
+                        홈으로 이동
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
@@ -26,6 +48,7 @@ import { RefreshProvider } from "./context/RefreshContext";
 // 앱 전체 라우팅 설정
 export default function App() {
     return (
+        <ErrorBoundary>
         <RefreshProvider>
         <ToastProvider>
         <BrowserRouter>
@@ -162,5 +185,6 @@ export default function App() {
         </BrowserRouter>
         </ToastProvider>
         </RefreshProvider>
+        </ErrorBoundary>
     );
 }
