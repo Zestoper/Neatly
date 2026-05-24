@@ -423,4 +423,13 @@
   .rowDeleteBtn {
     opacity: 1;
   }
+
+  .folderToolbar {
+    flex-wrap: wrap;
+  }
+
+  .sortButton,
+  .sortButtonActive {
+    flex-shrink: 1;
+  }
 }
