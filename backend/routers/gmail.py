@@ -43,6 +43,17 @@ EMAIL_SUMMARY_PROMPT = (
     "10. 이메일에 명확한 요청이나 행동이 없더라도, 수신자가 이메일을 읽고 나서 무엇을 해야 할지 알 수 있도록 요약하세요. 예: '이메일을 확인하고 필요한 경우 답장하세요' 같은 문장을 추가할 수 있습니다."
 )
 
+EMAIL_COMPOSE_PROMPT = (
+    "사용자의 요청에 따라 이메일 본문을 한국어로 작성하세요.\n\n"
+    "규칙:\n"
+    "1. 정중하고 자연스러운 한국어로 작성하세요.\n"
+    "2. 인사말로 시작하고 마무리 인사로 끝내세요.\n"
+    "3. 요청한 내용을 명확하고 간결하게 전달하세요.\n"
+    "4. 5~8문장 정도의 적절한 길이로 작성하세요.\n"
+    "5. 본문만 출력하세요. 제목은 쓰지 마세요.\n"
+    "6. 실제 요청 내용에 근거해서만 작성하세요.\n"
+)
+
 EMAIL_REPLY_PROMPT = (
     "다음 이메일에 대한 답장을 한국어로 작성하세요.\n\n"
     "규칙:\n"
@@ -62,6 +73,16 @@ SCOPES = [
 
 class ReplyBody(BaseModel):
     reply_text: str
+
+class DraftBody(BaseModel):
+    to: str
+    subject: str
+    intent: str
+
+class SendNewBody(BaseModel):
+    to: str
+    subject: str
+    body: str
 
 GOOGLE_AUTH_URL  = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -840,3 +861,69 @@ def send_reply(
         raise HTTPException(status_code=500, detail="답장 전송에 실패했습니다.")
 
     return {"message": "답장이 전송되었습니다."}
+
+
+# POST /emails/generate-draft — 수신자·제목·의도를 받아 AI가 이메일 본문 초안 생성
+@router.post("/emails/generate-draft")
+def generate_draft(
+    body: DraftBody,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.gmail_access_token:
+        raise HTTPException(status_code=400, detail="Gmail이 연결되지 않았습니다.")
+
+    prompt = f"수신자: {body.to}\n제목: {body.subject}\n요청: {body.intent}"
+
+    try:
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.5,
+            messages=[
+                {"role": "system", "content": EMAIL_COMPOSE_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=600,
+        )
+        draft_text = response.choices[0].message.content
+    except Exception:
+        raise HTTPException(status_code=500, detail="AI 초안 생성에 실패했습니다.")
+
+    return {"body": draft_text}
+
+
+# POST /emails/send-new — 새 이메일 전송 (답장이 아닌 신규 발송)
+@router.post("/emails/send-new")
+def send_new_email(
+    body: SendNewBody,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.gmail_access_token:
+        raise HTTPException(status_code=400, detail="Gmail이 연결되지 않았습니다.")
+
+    creds = make_credentials(current_user)
+    refresh_if_expired(creds, current_user, db)
+
+    service = build("gmail", "v1", credentials=creds)
+
+    mime_msg = MIMEText(body.body, "plain", "utf-8")
+    mime_msg["To"] = body.to
+    mime_msg["Subject"] = body.subject
+
+    raw = base64.urlsafe_b64encode(mime_msg.as_bytes()).decode("utf-8")
+
+    try:
+        service.users().messages().send(
+            userId="me",
+            body={"raw": raw},
+        ).execute()
+    except HttpError as e:
+        if e.resp.status == 403:
+            raise HTTPException(
+                status_code=403,
+                detail="Gmail 전송 권한이 없습니다. Settings에서 Gmail을 다시 연결해주세요.",
+            )
+        raise HTTPException(status_code=500, detail="메일 전송에 실패했습니다.")
+
+    return {"message": "메일이 전송되었습니다."}

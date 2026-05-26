@@ -38,6 +38,7 @@ import Insights from "./pages/Insights";
 import Plans from "./pages/Plans";
 import Emails from "./pages/Emails";
 import EmailDetail from "./pages/EmailDetail";
+import EmailCompose from "./pages/EmailCompose";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute"; // ProtectedRoute : 로그인 여부를 확인하는 래퍼 컴포넌트
@@ -140,6 +141,16 @@ export default function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <Emails />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/emails/compose"
+                    element={
+                        <ProtectedRoute>
+                            <Layout>
+                                <EmailCompose />
                             </Layout>
                         </ProtectedRoute>
                     }
