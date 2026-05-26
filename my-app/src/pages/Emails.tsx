@@ -249,7 +249,6 @@ export default function Emails() {
                         )}
                     </div>
                 )}
-            </div>
             {confirmModal && (
                 <ConfirmModal
                     message={confirmModal.message}
