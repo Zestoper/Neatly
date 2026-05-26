@@ -173,8 +173,13 @@ export default function EmailDetail() {
 
             {/* 발신자 · 날짜 메타 */}
             <div className={styles.meta}>
-                <span className={styles.from}>{email.from_}</span>
-                <span className={styles.date}>{email.date}</span>
+                <div className={styles.metaAvatar}>
+                    {email.from_.replace(/<.*>/, "").trim().charAt(0).toUpperCase() || "?"}
+                </div>
+                <div className={styles.metaInfo}>
+                    <span className={styles.from}>{email.from_}</span>
+                    <span className={styles.date}>{email.date}</span>
+                </div>
             </div>
 
             {/* 스팸 처리 실패 시 안내 메시지 */}
