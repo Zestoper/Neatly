@@ -13,7 +13,7 @@ from googleapiclient.errors import HttpError
 from models import User, Document, EmailFilter
 from routers.auth import get_current_user, get_db
 from groq import Groq
-import os, base64, re
+import os, base64, re, unicodedata
 from datetime import datetime, timezone
 from email.header import decode_header, make_header
 from email.mime.text import MIMEText
@@ -52,7 +52,21 @@ EMAIL_COMPOSE_PROMPT = (
     "4. 5~8문장 정도의 적절한 길이로 작성하세요.\n"
     "5. 본문만 출력하세요. 제목은 쓰지 마세요.\n"
     "6. 실제 요청 내용에 근거해서만 작성하세요.\n"
+    "7. 반드시 한국어, 영어, 숫자, 표준 문장부호(.,!?:;-()\"')만 사용하세요. 베트남어·중국어·박스문자 등 다른 문자는 절대 쓰지 마세요.\n"
 )
+
+
+def _sanitize_ai_output(text: str) -> str:
+    # LLM이 간헐적으로 출력하는 깨진 유니코드·박스문자·제어문자 제거
+    # 허용: 한글(AC00-D7A3, 3131-318E), ASCII 출력가능 문자, 줄바꿈
+    cleaned = re.sub(
+        r"[^가-힣ㄱ-ㆎ -~\n\r\t]",
+        "",
+        text,
+    )
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip()
 
 EMAIL_REPLY_PROMPT = (
     "다음 이메일에 대한 답장을 한국어로 작성하세요.\n\n"
@@ -63,6 +77,7 @@ EMAIL_REPLY_PROMPT = (
     "4. 3~6문장 정도의 길이로 작성하세요.\n"
     "5. 답장 본문만 출력하세요. 제목이나 추가 설명 없이 바로 내용을 작성하세요.\n"
     "6. 실제 이메일 내용에 근거해서만 응답하세요.\n"
+    "7. 반드시 한국어, 영어, 숫자, 표준 문장부호만 사용하세요. 다른 언어 문자나 특수 기호는 쓰지 마세요.\n"
 )
 
 SCOPES = [
@@ -793,7 +808,7 @@ def generate_reply(
             ],
             max_tokens=600,
         )
-        reply_text = response.choices[0].message.content
+        reply_text = _sanitize_ai_output(response.choices[0].message.content)
     except Exception:
         raise HTTPException(status_code=500, detail="AI 답장 생성에 실패했습니다.")
 
@@ -885,7 +900,7 @@ def generate_draft(
             ],
             max_tokens=600,
         )
-        draft_text = response.choices[0].message.content
+        draft_text = _sanitize_ai_output(response.choices[0].message.content)
     except Exception:
         raise HTTPException(status_code=500, detail="AI 초안 생성에 실패했습니다.")
 

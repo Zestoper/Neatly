@@ -226,33 +226,66 @@
 
 @media (max-width: 767px) {
   .container {
-    padding: 20px 0 60px;
+    padding: 20px 0 80px;
   }
 
   .heading {
     font-size: 22px;
-    margin-bottom: 24px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .form {
+    gap: 16px;
+  }
+
+  .input {
+    font-size: 16px; /* iOS에서 자동 zoom 방지 */
+    padding: 11px 14px;
   }
 
   .intentRow {
     flex-direction: column;
+    gap: 8px;
   }
 
   .generateButton {
     padding: 12px;
     width: 100%;
     text-align: center;
+    font-size: 14px;
+  }
+
+  .textarea {
+    font-size: 16px; /* iOS 자동 zoom 방지 */
+    max-height: 40dvh;
   }
 
   .actions {
     flex-direction: column-reverse;
     gap: 8px;
+    position: sticky;
+    bottom: 0;
+    background: var(--color-bg);
+    padding: 12px 0 16px;
+    margin-top: 4px;
+    border-top: 1px solid var(--color-border);
   }
 
   .cancelButton,
   .sendButton {
     width: 100%;
     text-align: center;
-    padding: 12px;
+    padding: 13px;
+    font-size: 15px;
+  }
+
+  .sentBox {
+    margin-top: 60px;
+  }
+
+  .backToEmailsButton {
+    width: 100%;
+    padding: 13px;
   }
 }
