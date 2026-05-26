@@ -28,3 +28,14 @@ export const markEmailAsRead = async (id: string): Promise<void> => {
 export const trashEmail = async (id: string): Promise<void> => {
     await api.delete(`/emails/${id}`);
 };
+
+// POST /emails/{id}/generate-reply — 원본 이메일 기반 AI 답장 초안 생성
+export const generateReply = async (id: string): Promise<{ reply_text: string }> => {
+    const res = await api.post(`/emails/${id}/generate-reply`);
+    return res.data;
+};
+
+// POST /emails/{id}/send-reply — 작성된 답장을 Gmail로 전송
+export const sendReply = async (id: string, reply_text: string): Promise<void> => {
+    await api.post(`/emails/${id}/send-reply`, { reply_text });
+};

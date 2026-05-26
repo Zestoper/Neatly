@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDocuments, uploadDocument, deleteDocument, moveDocumentToFolder } from "../api/documents";
 import { useRefresh } from "../context/RefreshContext";
@@ -45,6 +45,7 @@ export default function Documents() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     // uploadError : 업로드 실패 메시지 — null이면 에러 없음
     const [fileDragOver, setFileDragOver] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     // fileDragOver : 파일을 드롭존 위에 드래그 중일 때 true — 강조 스타일 적용
 
@@ -180,8 +181,7 @@ export default function Documents() {
         const file = e.target.files?.[0];
         if (!file) return;
         await processFile(file);
-        // 같은 파일을 다시 선택할 수 있도록 input 값 초기화
-        e.target.value = "";
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     // 드롭존에 파일을 드래그해서 올렸을 때
@@ -228,6 +228,7 @@ export default function Documents() {
 
             {/* 숨긴 파일 input — label 클릭 또는 드래그 앤 드롭 시 트리거 */}
             <input
+                ref={fileInputRef}
                 id="file-upload"
                 type="file"
                 accept=".pdf,.docx,.txt,.md"

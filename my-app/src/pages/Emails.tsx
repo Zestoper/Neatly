@@ -7,6 +7,7 @@ import { syncEmails, getSyncStatus, markEmailsViewed } from "../api/emailSync";
 import { trashEmail } from "../api/emails";
 import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Emails.module.css";
 
 type Email = {
@@ -51,6 +52,7 @@ export default function Emails() {
     const canConvert = plan === "STANDARD" || plan === "PREMIUM";
     const isPremium = plan === "PREMIUM";
 
+    const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [syncing, setSyncing] = useState(false);
     // syncing : 동기화 요청 진행 중 여부 — true이면 버튼 비활성화
@@ -103,18 +105,24 @@ export default function Emails() {
         markEmailsViewed().catch(() => {});
     }, [isPremium]);
 
-    const handleTrashEmail = async (e: React.MouseEvent, id: string) => {
+    const handleTrashEmail = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (!confirm("이 이메일을 Gmail 휴지통으로 이동할까요?")) return;
-        setDeletingId(id);
-        try {
-            await trashEmail(id);
-            bump();
-        } catch {
-            showToast("이메일 삭제에 실패했습니다. 다시 시도해주세요.");
-        } finally {
-            setDeletingId(null);
-        }
+        setConfirmModal({
+            message: "이 이메일을 Gmail 휴지통으로 이동할까요?",
+            confirmLabel: "이동",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                setDeletingId(id);
+                try {
+                    await trashEmail(id);
+                    bump();
+                } catch {
+                    showToast("이메일 삭제에 실패했습니다. 다시 시도해주세요.");
+                } finally {
+                    setDeletingId(null);
+                }
+            },
+        });
     };
 
     const handleSync = async () => {
@@ -151,11 +159,17 @@ export default function Emails() {
         window.location.href = res.data.url;
     };
 
-    const handleDeleteDoc = async (e: React.MouseEvent, id: string) => {
+    const handleDeleteDoc = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (!confirm("이 문서를 폴더에서 제거할까요?")) return;
-        await moveDocumentToFolder(id, null);
-        bump();
+        setConfirmModal({
+            message: "이 문서를 폴더에서 제거할까요?",
+            confirmLabel: "제거",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await moveDocumentToFolder(id, null);
+                bump();
+            },
+        });
     };
 
     // ── 폴더 모드 ───────────────────────────────────────────────────
@@ -236,6 +250,16 @@ export default function Emails() {
                     </div>
                 )}
             </div>
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel={confirmModal.confirmLabel ?? "확인"}
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
+            )}
+        </div>
         );
     }
 
@@ -381,6 +405,15 @@ export default function Emails() {
                     ))
                 )}
             </div>
+            {confirmModal && (
+                <ConfirmModal
+                    message={confirmModal.message}
+                    confirmLabel={confirmModal.confirmLabel ?? "확인"}
+                    danger
+                    onConfirm={confirmModal.onConfirm}
+                    onCancel={() => setConfirmModal(null)}
+                />
+            )}
         </div>
     );
 }

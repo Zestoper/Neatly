@@ -66,10 +66,17 @@ def list_events(
 
 @router.get("/events/today")
 def today_events(
+    client_date: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    today = date.today()
+    if client_date:
+        try:
+            today = date.fromisoformat(client_date)
+        except ValueError:
+            today = date.today()
+    else:
+        today = date.today()
     start = datetime(today.year, today.month, today.day, 0, 0, 0)
     end = datetime(today.year, today.month, today.day, 23, 59, 59)
     events = (

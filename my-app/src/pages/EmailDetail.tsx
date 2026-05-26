@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getEmailDetail, markEmailAsRead, trashEmail } from "../api/emails";
+import { getEmailDetail, markEmailAsRead, trashEmail, generateReply, sendReply } from "../api/emails";
 import type { EmailDetail as EmailDetailType } from "../api/emails";
 import { api } from "../api/client";
 import { useRefresh } from "../context/RefreshContext";
@@ -25,6 +25,13 @@ export default function EmailDetail() {
     const [unmarkingSpam, setUnmarkingSpam] = useState(false);
     const [unmarkedSpam, setUnmarkedSpam] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
+
+    const [replyOpen, setReplyOpen] = useState(false);
+    const [replyDraft, setReplyDraft] = useState("");
+    const [generatingReply, setGeneratingReply] = useState(false);
+    const [sendingReply, setSendingReply] = useState(false);
+    const [replySent, setReplySent] = useState(false);
+    const [replyError, setReplyError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -83,6 +90,41 @@ export default function EmailDetail() {
         }
     };
 
+    const handleOpenReply = async () => {
+        if (!id) return;
+        setReplyOpen(true);
+        setReplySent(false);
+        setReplyError(null);
+        setReplyDraft("");
+        setGeneratingReply(true);
+        try {
+            const { reply_text } = await generateReply(id);
+            setReplyDraft(reply_text);
+        } catch {
+            setReplyError("AI 답장 생성에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+            setGeneratingReply(false);
+        }
+    };
+
+    const handleSendReply = async () => {
+        if (!id || !replyDraft.trim()) return;
+        setSendingReply(true);
+        setReplyError(null);
+        try {
+            await sendReply(id, replyDraft);
+            setReplySent(true);
+        } catch (err: any) {
+            if (err.response?.status === 403) {
+                setReplyError("Gmail 답장 권한이 없습니다. Settings에서 Gmail을 다시 연결해주세요.");
+            } else {
+                setReplyError("답장 전송에 실패했습니다. 다시 시도해주세요.");
+            }
+        } finally {
+            setSendingReply(false);
+        }
+    };
+
     if (loading) return <p>불러오는 중...</p>;
     if (fetchError) return <p>이메일을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.</p>;
     if (!email) return <p>이메일을 찾을 수 없습니다.</p>;
@@ -120,6 +162,9 @@ export default function EmailDetail() {
                             {markingSpam ? "처리 중..." : markedSpam ? "스팸 처리됨" : "스팸으로 표시"}
                         </button>
                     )}
+                    <button className={styles.replyButton} onClick={handleOpenReply}>
+                        AI 답장
+                    </button>
                     <button className={styles.deleteButton} onClick={handleTrash}>
                         삭제
                     </button>
@@ -186,6 +231,55 @@ export default function EmailDetail() {
                     onConfirm={confirmModal.onConfirm}
                     onCancel={() => setConfirmModal(null)}
                 />
+            )}
+
+            {replyOpen && (
+                <div className={styles.replyOverlay} onClick={() => !sendingReply && setReplyOpen(false)}>
+                    <div className={styles.replyCard} onClick={(e) => e.stopPropagation()}>
+                        <p className={styles.replyTitle}>AI 답장</p>
+
+                        {generatingReply ? (
+                            <p className={styles.replyGenerating}>AI가 답장을 작성 중입니다...</p>
+                        ) : replySent ? (
+                            <p className={styles.replySentMsg}>답장이 전송되었습니다.</p>
+                        ) : (
+                            <>
+                                <textarea
+                                    className={styles.replyTextarea}
+                                    value={replyDraft}
+                                    onChange={(e) => setReplyDraft(e.target.value)}
+                                    rows={10}
+                                    placeholder="답장 내용을 입력하세요..."
+                                />
+                                {replyError && <p className={styles.replyError}>{replyError}</p>}
+                                <div className={styles.replyActions}>
+                                    <button
+                                        className={styles.replyCancelButton}
+                                        onClick={() => setReplyOpen(false)}
+                                        disabled={sendingReply}
+                                    >
+                                        취소
+                                    </button>
+                                    <button
+                                        className={styles.replySendButton}
+                                        onClick={handleSendReply}
+                                        disabled={sendingReply || !replyDraft.trim()}
+                                    >
+                                        {sendingReply ? "전송 중..." : "보내기"}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {replySent && (
+                            <div className={styles.replyActions}>
+                                <button className={styles.replyCancelButton} onClick={() => setReplyOpen(false)}>
+                                    닫기
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

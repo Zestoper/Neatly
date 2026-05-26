@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from requests_oauthlib import OAuth2Session
 # requests_oauthlib : Python용 OAuth2 라이브러리 — google-auth-oauthlib의 내부 의존성이라 별도 설치 불필요
@@ -15,6 +16,7 @@ from groq import Groq
 import os, base64, re
 from datetime import datetime, timezone
 from email.header import decode_header, make_header
+from email.mime.text import MIMEText
 from html.parser import HTMLParser
 from dotenv import load_dotenv
 
@@ -41,9 +43,25 @@ EMAIL_SUMMARY_PROMPT = (
     "10. 이메일에 명확한 요청이나 행동이 없더라도, 수신자가 이메일을 읽고 나서 무엇을 해야 할지 알 수 있도록 요약하세요. 예: '이메일을 확인하고 필요한 경우 답장하세요' 같은 문장을 추가할 수 있습니다."
 )
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
-# SCOPES : Gmail 읽기 + 라벨 수정 권한 — 스팸 처리 등 레이블 변경에 필요
-# (메일 발송·영구삭제는 불가, 이 스코프로도 막혀 있음)
+EMAIL_REPLY_PROMPT = (
+    "다음 이메일에 대한 답장을 한국어로 작성하세요.\n\n"
+    "규칙:\n"
+    "1. 정중하고 자연스러운 한국어로 작성하세요.\n"
+    "2. 이메일의 핵심 내용에 맞게 적절히 응답하세요.\n"
+    "3. 인사말로 시작하고 마무리 인사로 끝내세요.\n"
+    "4. 3~6문장 정도의 길이로 작성하세요.\n"
+    "5. 답장 본문만 출력하세요. 제목이나 추가 설명 없이 바로 내용을 작성하세요.\n"
+    "6. 실제 이메일 내용에 근거해서만 응답하세요.\n"
+)
+
+SCOPES = [
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.send",
+]
+
+
+class ReplyBody(BaseModel):
+    reply_text: str
 
 GOOGLE_AUTH_URL  = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -713,3 +731,112 @@ def email_to_document(
     db.refresh(new_doc)
 
     return new_doc
+
+
+# POST /emails/{message_id}/generate-reply — 원본 이메일 기반 AI 답장 초안 생성
+@router.post("/emails/{message_id}/generate-reply")
+def generate_reply(
+    message_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.gmail_access_token:
+        raise HTTPException(status_code=400, detail="Gmail이 연결되지 않았습니다.")
+
+    creds = make_credentials(current_user)
+    refresh_if_expired(creds, current_user, db)
+
+    service = build("gmail", "v1", credentials=creds)
+    try:
+        msg = service.users().messages().get(
+            userId="me",
+            id=message_id,
+            format="full",
+        ).execute()
+    except HttpError as e:
+        if e.resp.status == 404:
+            raise HTTPException(status_code=404, detail="이메일을 찾을 수 없습니다.")
+        raise HTTPException(status_code=502, detail="Gmail에서 이메일을 불러오지 못했습니다.")
+
+    body = _extract_body(msg["payload"])
+    if not body.strip():
+        return {"reply_text": ""}
+
+    try:
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.5,
+            messages=[
+                {"role": "system", "content": EMAIL_REPLY_PROMPT},
+                {"role": "user", "content": f"원본 이메일:\n\n{body[:4000]}"},
+            ],
+            max_tokens=600,
+        )
+        reply_text = response.choices[0].message.content
+    except Exception:
+        raise HTTPException(status_code=500, detail="AI 답장 생성에 실패했습니다.")
+
+    return {"reply_text": reply_text}
+
+
+# POST /emails/{message_id}/send-reply — AI가 생성한 답장을 Gmail로 전송
+@router.post("/emails/{message_id}/send-reply")
+def send_reply(
+    message_id: str,
+    body: ReplyBody,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.gmail_access_token:
+        raise HTTPException(status_code=400, detail="Gmail이 연결되지 않았습니다.")
+
+    creds = make_credentials(current_user)
+    refresh_if_expired(creds, current_user, db)
+
+    service = build("gmail", "v1", credentials=creds)
+    try:
+        msg = service.users().messages().get(
+            userId="me",
+            id=message_id,
+            format="metadata",
+            metadataHeaders=["Subject", "From", "Message-ID"],
+        ).execute()
+    except HttpError as e:
+        if e.resp.status == 404:
+            raise HTTPException(status_code=404, detail="이메일을 찾을 수 없습니다.")
+        raise HTTPException(status_code=502, detail="Gmail에서 이메일 정보를 가져오지 못했습니다.")
+
+    headers = {h["name"]: h["value"] for h in msg["payload"]["headers"]}
+    original_subject = _decode_header_value(headers.get("Subject", ""))
+    original_from = _decode_header_value(headers.get("From", ""))
+    original_message_id = headers.get("Message-ID", "")
+    thread_id = msg.get("threadId", message_id)
+
+    email_match = re.search(r"<(.+?)>", original_from)
+    to_email = email_match.group(1) if email_match else original_from.strip()
+
+    subject = original_subject if original_subject.lower().startswith("re:") else f"Re: {original_subject}"
+
+    mime_msg = MIMEText(body.reply_text, "plain", "utf-8")
+    mime_msg["To"] = to_email
+    mime_msg["Subject"] = subject
+    if original_message_id:
+        mime_msg["In-Reply-To"] = original_message_id
+        mime_msg["References"] = original_message_id
+
+    raw = base64.urlsafe_b64encode(mime_msg.as_bytes()).decode("utf-8")
+
+    try:
+        service.users().messages().send(
+            userId="me",
+            body={"raw": raw, "threadId": thread_id},
+        ).execute()
+    except HttpError as e:
+        if e.resp.status == 403:
+            raise HTTPException(
+                status_code=403,
+                detail="Gmail 답장 권한이 없습니다. Settings에서 Gmail을 다시 연결해주세요.",
+            )
+        raise HTTPException(status_code=500, detail="답장 전송에 실패했습니다.")
+
+    return {"message": "답장이 전송되었습니다."}

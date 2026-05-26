@@ -18,7 +18,9 @@ export const getEvents = async (year: number, month: number): Promise<CalendarEv
 };
 
 export const getTodayEvents = async (): Promise<CalendarEvent[]> => {
-    const res = await api.get("/calendar/events/today");
+    const d = new Date();
+    const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const res = await api.get("/calendar/events/today", { params: { client_date: localDate } });
     return res.data;
 };
 

@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 from database import SessionLocal
 from models import User
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 
 load_dotenv()
@@ -45,7 +45,7 @@ def verify_password(plain_password, hashed_password):
 
 def create_access_token(data: dict):
     to_encode = data.copy() # copy : 원본 dict를 변경하지 않기 위해 복사
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     # timedelta : 현재 시각에서 60분 뒤를 만료 시간으로 설정
 
     to_encode.update({"exp": expire}) # "exp" : JWT 표준 만료 시간 클레임
