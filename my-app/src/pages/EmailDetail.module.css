@@ -1,31 +1,35 @@
 .container {
-  padding: 48px 0;
+  padding: 48px 0 80px;
   max-width: 720px;
 }
 
+/* ── 뒤로 가기 ── */
 .backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
   color: var(--color-text-gray);
   border: none;
   padding: 0;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
+  transition: color 0.15s;
 }
 
 .backButton:hover {
   color: var(--color-text);
 }
 
-/* 제목 + 버튼 묶음을 양 끝에 배치 */
+/* ── 제목 + 버튼 묶음 ── */
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
-/* 우측 버튼 묶음 */
 .actions {
   display: flex;
   gap: 8px;
@@ -33,115 +37,143 @@
 }
 
 .subject {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.3;
   flex: 1;
   min-width: 0;
+  letter-spacing: -0.02em;
 }
 
-/* 스팸으로 표시 버튼 */
-.spamButton {
+/* ── 버튼 공통 기반 ── */
+.spamButton,
+.spammedButton,
+.convertButton,
+.convertedButton,
+.lockedButton,
+.deleteButton,
+.replyButton {
   font-size: 13px;
-  padding: 8px 18px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s;
+  font-weight: 500;
+}
+
+.spamButton {
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
 .spamButton:hover {
   border-color: var(--color-text-gray);
   color: var(--color-text);
+  background: var(--color-hover);
 }
 
 .deleteButton {
-  font-size: 13px;
-  padding: 8px 18px;
   background: transparent;
-  color: #e03e3e;
-  border: 1px solid #e03e3e;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
+  color: #d93025;
+  border: 1px solid #f5c6c3;
 }
 
 .deleteButton:hover {
-  background: #e03e3e;
-  color: #fff;
+  background: #fde8e8;
+  border-color: #d93025;
 }
 
-/* 스팸 처리 완료 후 비활성 */
 .spammedButton {
-  font-size: 13px;
-  padding: 8px 18px;
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
   cursor: default;
-  white-space: nowrap;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
-/* 변환 전 활성 버튼 */
 .convertButton {
-  flex-shrink: 0;
-  font-size: 13px;
-  padding: 8px 18px;
   background: var(--color-text);
   color: var(--color-bg);
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
-/* 변환 완료 후 비활성 버튼 */
+.convertButton:hover {
+  opacity: 0.85;
+}
+
 .convertedButton {
-  flex-shrink: 0;
-  font-size: 13px;
-  padding: 8px 18px;
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
   cursor: default;
-  white-space: nowrap;
 }
 
-/* Standard 미만 — Plans 페이지 유도 버튼 */
 .lockedButton {
-  flex-shrink: 0;
-  font-size: 13px;
-  padding: 8px 18px;
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
 .lockedButton:hover {
   border-color: var(--color-text-gray);
   color: var(--color-text);
+  background: var(--color-hover);
 }
 
-/* 발신자 · 날짜 메타 */
+/* AI 답장 버튼 */
+.replyButton {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border: 1px solid transparent;
+}
+
+.replyButton:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ── 발신자 · 날짜 메타 ── */
 .meta {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--color-sidebar);
+  border-radius: 10px;
+}
+
+.metaAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.metaInfo {
+  display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 16px;
+  gap: 2px;
+  min-width: 0;
 }
 
 .from {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .date {
@@ -151,40 +183,44 @@
 
 .errorMsg {
   font-size: 13px;
-  color: #e03e3e;
+  color: #d93025;
   margin-top: 12px;
+  padding: 10px 14px;
+  background: #fde8e8;
+  border-radius: 8px;
 }
 
-/* AI 요약 박스 */
+/* ── AI 요약 박스 ── */
 .summaryBox {
-  background: var(--color-sidebar);
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(94, 94, 246, 0.15);
   border-left: 3px solid var(--color-accent);
-  border-radius: 6px;
-  padding: 14px 18px;
+  border-radius: 10px;
+  padding: 16px 20px;
   margin-top: 20px;
   position: relative;
   overflow: hidden;
 }
 
 .summaryLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-gray);
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin: 0 0 8px 0;
 }
 
 .summaryText {
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--color-text);
   margin: 0;
 }
 
 .summaryTextBlurred {
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--color-text);
   margin: 0;
   filter: blur(4px);
@@ -199,9 +235,9 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(1px);
-  border-radius: 6px;
+  background: rgba(238, 238, 255, 0.6);
+  backdrop-filter: blur(2px);
+  border-radius: 10px;
 }
 
 .summaryOverlayText {
@@ -212,74 +248,69 @@
 
 .upgradeButton {
   font-size: 12px;
-  padding: 6px 14px;
-  background: var(--color-text);
+  padding: 6px 16px;
+  background: var(--color-accent);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.15s;
 }
 
+.upgradeButton:hover {
+  opacity: 0.85;
+}
+
+/* ── 구분선 ── */
 .divider {
   border: none;
   border-top: 1px solid var(--color-border);
-  margin: 20px 0;
+  margin: 28px 0;
 }
 
-/* 플레인 텍스트 본문 */
+/* ── 플레인 텍스트 본문 ── */
 .body {
   font-size: 15px;
-  line-height: 1.8;
+  line-height: 1.85;
   color: var(--color-text);
   white-space: pre-wrap;
+  padding: 4px 0;
 }
 
-/* HTML 이메일을 격리해서 렌더링하는 iframe */
+/* ── HTML 이메일 iframe ── */
 .emailFrame {
   width: 100%;
   min-height: 600px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* AI 답장 버튼 */
-.replyButton {
-  font-size: 13px;
-  padding: 8px 18px;
-  background: var(--color-text);
-  color: var(--color-bg);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.replyButton:hover {
-  opacity: 0.85;
-}
-
-/* AI 답장 모달 */
+/* ── AI 답장 모달 ── */
 .replyOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
   padding: 16px;
+  backdrop-filter: blur(2px);
 }
 
 .replyCard {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 28px 28px 24px;
+  border-radius: 16px;
+  padding: 28px;
   width: 100%;
   max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .replyTitle {
@@ -287,45 +318,53 @@
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .replyGenerating {
   font-size: 14px;
   color: var(--color-text-gray);
   margin: 0;
-  padding: 12px 0;
+  padding: 16px 0;
+  text-align: center;
 }
 
 .replySentMsg {
   font-size: 14px;
   color: var(--color-text);
   margin: 0;
-  padding: 12px 0;
+  padding: 16px 0;
+  text-align: center;
 }
 
 .replyTextarea {
   width: 100%;
   resize: vertical;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--color-text);
   background: var(--color-sidebar);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: 10px;
+  padding: 14px 16px;
   font-family: inherit;
   box-sizing: border-box;
+  transition: border-color 0.15s;
 }
 
 .replyTextarea:focus {
   outline: none;
-  border-color: var(--color-text-gray);
+  border-color: var(--color-accent);
+  background: var(--color-bg);
 }
 
 .replyError {
   font-size: 13px;
-  color: #e03e3e;
+  color: #d93025;
   margin: 0;
+  padding: 10px 14px;
+  background: #fde8e8;
+  border-radius: 8px;
 }
 
 .replyActions {
@@ -340,28 +379,33 @@
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .replyCancelButton:hover {
   color: var(--color-text);
   border-color: var(--color-text-gray);
+  background: var(--color-hover);
 }
 
 .replyCancelButton:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
 }
 
 .replySendButton {
   font-size: 13px;
-  padding: 8px 18px;
-  background: var(--color-text);
-  color: var(--color-bg);
+  padding: 8px 20px;
+  background: var(--color-accent);
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.15s;
 }
 
 .replySendButton:hover:not(:disabled) {
@@ -369,17 +413,17 @@
 }
 
 .replySendButton:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: default;
 }
 
 @media (max-width: 767px) {
   .container {
-    padding: 20px 0;
+    padding: 20px 0 60px;
   }
 
   .subject {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .header {
@@ -393,7 +437,17 @@
     width: 100%;
   }
 
+  .meta {
+    padding: 12px 14px;
+  }
+
   .emailFrame {
     min-height: 300px;
+    border-radius: 8px;
+  }
+
+  .replyCard {
+    border-radius: 12px;
+    padding: 20px;
   }
 }
