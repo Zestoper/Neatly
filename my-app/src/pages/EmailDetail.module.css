@@ -423,6 +423,7 @@
 
   .subject {
     font-size: 20px;
+    letter-spacing: -0.01em;
   }
 
   .header {
@@ -431,8 +432,28 @@
   }
 
   .actions {
-    flex-wrap: wrap;
-    flex-shrink: unset;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* 삭제 버튼 — 2열 그리드에서 전체 너비 차지 */
+  .deleteButton {
+    grid-column: 1 / -1;
+  }
+
+  /* 모든 액션 버튼을 탭하기 좋게 높이 확보 */
+  .spamButton,
+  .spammedButton,
+  .replyButton,
+  .deleteButton,
+  .convertButton,
+  .convertedButton,
+  .lockedButton {
+    padding: 10px 12px;
+    justify-content: center;
+    text-align: center;
     width: 100%;
   }
 
@@ -440,12 +461,48 @@
     padding: 12px 14px;
   }
 
+  .metaAvatar {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .from {
+    font-size: 12px;
+  }
+
   .emailFrame {
     min-height: 80px;
   }
 
+  .body {
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  /* 모바일에서 답장 모달 — 바텀시트 스타일 */
+  .replyOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .replyCard {
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 32px;
+    max-width: 100%;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+
+  .replyTextarea {
+    font-size: 15px;
+    max-height: 35dvh;
+  }
+
+  .replySendButton,
+  .replyCancelButton {
+    flex: 1;
+    text-align: center;
   }
 }
