@@ -221,6 +221,11 @@ export default function EmailDetail() {
                     srcDoc={email.raw_html}
                     sandbox="allow-same-origin"
                     title="이메일 본문"
+                    onLoad={(e) => {
+                        const el = e.currentTarget;
+                        const h = el.contentDocument?.body?.scrollHeight;
+                        if (h) el.style.height = h + 32 + "px";
+                    }}
                 />
             ) : (
                 <p className={styles.body}>{email.body || "(본문 없음)"}</p>
