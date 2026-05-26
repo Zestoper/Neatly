@@ -281,10 +281,9 @@
 /* ── HTML 이메일 iframe ── */
 .emailFrame {
   width: 100%;
-  min-height: 600px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  min-height: 120px;
+  border: none;
+  display: block;
 }
 
 /* ── AI 답장 모달 ── */
@@ -442,8 +441,7 @@
   }
 
   .emailFrame {
-    min-height: 300px;
-    border-radius: 8px;
+    min-height: 80px;
   }
 
   .replyCard {
