@@ -319,27 +319,26 @@ export default function Emails() {
                     </p>
                 </div>
                 {!isSpam && (
-                    <button
-                        className={styles.composeButton}
-                        onClick={() => navigate("/emails/compose")}
-                    >
-                        메일 작성
-                    </button>
-                )}
-                {/* Premium 플랜이고 INBOX일 때만 동기화 버튼 표시 */}
-                {isPremium && !isSpam && (
-                    <div className={styles.syncArea}>
-                        {lastSync && (
+                    <div className={styles.headerActions}>
+                        {isPremium && lastSync && (
                             <span className={styles.lastSyncText}>
                                 마지막 동기화 {new Date(lastSync).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
                             </span>
                         )}
+                        {isPremium && (
+                            <button
+                                className={styles.syncButton}
+                                onClick={handleSync}
+                                disabled={syncing}
+                            >
+                                {syncing ? "동기화 중..." : "지금 동기화"}
+                            </button>
+                        )}
                         <button
-                            className={styles.syncButton}
-                            onClick={handleSync}
-                            disabled={syncing}
+                            className={styles.composeButton}
+                            onClick={() => navigate("/emails/compose")}
                         >
-                            {syncing ? "동기화 중..." : "지금 동기화"}
+                            메일 작성
                         </button>
                     </div>
                 )}

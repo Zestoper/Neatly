@@ -26,6 +26,13 @@
   margin-bottom: 4px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .composeButton {
   font-size: 13px;
   font-weight: 600;
