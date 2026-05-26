@@ -57,9 +57,11 @@ export default function Calendar() {
     const [formTime, setFormTime] = useState("09:00");
     const [formDocId, setFormDocId] = useState<string>("");
     const [docSearch, setDocSearch] = useState("");
+    const [docDropdownOpen, setDocDropdownOpen] = useState(false);
     const [formEmailId, setFormEmailId] = useState<string>("");
     const [formEmailSubject, setFormEmailSubject] = useState<string>("");
     const [emailSearch, setEmailSearch] = useState("");
+    const [emailDropdownOpen, setEmailDropdownOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
@@ -100,9 +102,11 @@ export default function Calendar() {
         setFormTime("09:00");
         setFormDocId("");
         setDocSearch("");
+        setDocDropdownOpen(false);
         setFormEmailId("");
         setFormEmailSubject("");
         setEmailSearch("");
+        setEmailDropdownOpen(false);
         setModal({ mode: "create", date });
     };
 
@@ -113,10 +117,12 @@ export default function Calendar() {
         setFormDate(toLocalDateString(dt));
         setFormTime(`${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`);
         setFormDocId(ev.document_id ?? "");
-        setDocSearch(ev.document?.title ?? "");
+        setDocSearch("");
+        setDocDropdownOpen(false);
         setFormEmailId(ev.email_id ?? "");
         setFormEmailSubject(ev.email_subject ?? "");
-        setEmailSearch(ev.email_subject ?? "");
+        setEmailSearch("");
+        setEmailDropdownOpen(false);
         setModal({ mode: "edit", event: ev });
     };
 
@@ -372,49 +378,52 @@ export default function Calendar() {
                         />
 
                         <label className={styles.label}>문서 연결 (선택)</label>
-                        <div className={styles.docPicker}>
-                            <input
-                                className={styles.input}
-                                value={docSearch}
-                                onChange={(e) => {
-                                    setDocSearch(e.target.value);
-                                    if (!e.target.value) setFormDocId("");
-                                }}
-                                placeholder="문서 검색..."
-                            />
-                            {formDocId && (
-                                <button
-                                    className={styles.docClearBtn}
-                                    onClick={() => { setFormDocId(""); setDocSearch(""); }}
-                                    title="연결 해제"
-                                >
-                                    ✕
-                                </button>
+                        <div className={styles.pickerWrapper}>
+                            {docDropdownOpen && (
+                                <div className={styles.pickerBackdrop} onClick={() => setDocDropdownOpen(false)} />
                             )}
-                            {docSearch && !formDocId && filteredDocs.length > 0 && (
-                                <ul className={styles.docDropdown}>
-                                    {filteredDocs.slice(0, 8).map((d) => (
-                                        <li
-                                            key={d.id}
-                                            className={styles.docDropdownItem}
-                                            onClick={() => {
-                                                setFormDocId(d.id);
-                                                setDocSearch(d.title);
-                                            }}
-                                        >
-                                            {d.title}
-                                        </li>
-                                    ))}
-                                </ul>
+                            <button
+                                type="button"
+                                className={styles.pickerBtn}
+                                onClick={() => { setDocDropdownOpen(o => !o); setEmailDropdownOpen(false); }}
+                            >
+                                <span className={formDocId ? styles.pickerSelected : styles.pickerPlaceholder}>
+                                    {formDocId ? docs.find(d => d.id === formDocId)?.title ?? "문서 선택" : "문서 선택"}
+                                </span>
+                                {formDocId ? (
+                                    <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormDocId(""); }}>✕</span>
+                                ) : (
+                                    <span className={styles.pickerArrow}>{docDropdownOpen ? "▲" : "▼"}</span>
+                                )}
+                            </button>
+                            {docDropdownOpen && (
+                                <div className={styles.pickerDropdown}>
+                                    <input
+                                        className={styles.pickerSearch}
+                                        value={docSearch}
+                                        onChange={(e) => setDocSearch(e.target.value)}
+                                        placeholder="검색..."
+                                        autoFocus
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <ul className={styles.pickerList}>
+                                        {filteredDocs.length === 0 ? (
+                                            <li className={styles.pickerEmpty}>문서가 없습니다.</li>
+                                        ) : filteredDocs.slice(0, 30).map((d) => (
+                                            <li
+                                                key={d.id}
+                                                className={formDocId === d.id ? styles.pickerItemActive : styles.pickerItem}
+                                                onClick={() => { setFormDocId(d.id); setDocDropdownOpen(false); setDocSearch(""); }}
+                                            >
+                                                {d.title}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
                         </div>
-
                         {editEvent?.document && (
-                            <Link
-                                to={`/documents/${editEvent.document.id}`}
-                                className={styles.docLink}
-                                onClick={closeModal}
-                            >
+                            <Link to={`/documents/${editEvent.document.id}`} className={styles.docLink} onClick={closeModal}>
                                 문서 열기: {editEvent.document.title}
                             </Link>
                         )}
@@ -422,50 +431,53 @@ export default function Calendar() {
                         {emails.length > 0 && (
                             <>
                                 <label className={styles.label}>메일 연결 (선택)</label>
-                                <div className={styles.docPicker}>
-                                    <input
-                                        className={styles.input}
-                                        value={emailSearch}
-                                        onChange={(e) => {
-                                            setEmailSearch(e.target.value);
-                                            if (!e.target.value) { setFormEmailId(""); setFormEmailSubject(""); }
-                                        }}
-                                        placeholder="메일 제목 또는 발신자 검색..."
-                                    />
-                                    {formEmailId && (
-                                        <button
-                                            className={styles.docClearBtn}
-                                            onClick={() => { setFormEmailId(""); setFormEmailSubject(""); setEmailSearch(""); }}
-                                            title="연결 해제"
-                                        >
-                                            ✕
-                                        </button>
+                                <div className={styles.pickerWrapper}>
+                                    {emailDropdownOpen && (
+                                        <div className={styles.pickerBackdrop} onClick={() => setEmailDropdownOpen(false)} />
                                     )}
-                                    {emailSearch && !formEmailId && filteredEmails.length > 0 && (
-                                        <ul className={styles.docDropdown}>
-                                            {filteredEmails.slice(0, 8).map((e) => (
-                                                <li
-                                                    key={e.id}
-                                                    className={styles.docDropdownItem}
-                                                    onClick={() => {
-                                                        setFormEmailId(e.id);
-                                                        setFormEmailSubject(e.subject);
-                                                        setEmailSearch(e.subject);
-                                                    }}
-                                                >
-                                                    <span>{e.subject}</span>
-                                                    <span className={styles.emailFrom}>{e.from_}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                    <button
+                                        type="button"
+                                        className={styles.pickerBtn}
+                                        onClick={() => { setEmailDropdownOpen(o => !o); setDocDropdownOpen(false); }}
+                                    >
+                                        <span className={formEmailId ? styles.pickerSelected : styles.pickerPlaceholder}>
+                                            {formEmailId ? formEmailSubject || "메일 선택" : "메일 선택"}
+                                        </span>
+                                        {formEmailId ? (
+                                            <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormEmailId(""); setFormEmailSubject(""); }}>✕</span>
+                                        ) : (
+                                            <span className={styles.pickerArrow}>{emailDropdownOpen ? "▲" : "▼"}</span>
+                                        )}
+                                    </button>
+                                    {emailDropdownOpen && (
+                                        <div className={styles.pickerDropdown}>
+                                            <input
+                                                className={styles.pickerSearch}
+                                                value={emailSearch}
+                                                onChange={(e) => setEmailSearch(e.target.value)}
+                                                placeholder="제목 또는 발신자 검색..."
+                                                autoFocus
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <ul className={styles.pickerList}>
+                                                {filteredEmails.length === 0 ? (
+                                                    <li className={styles.pickerEmpty}>메일이 없습니다.</li>
+                                                ) : filteredEmails.slice(0, 30).map((e) => (
+                                                    <li
+                                                        key={e.id}
+                                                        className={formEmailId === e.id ? styles.pickerItemActive : styles.pickerItem}
+                                                        onClick={() => { setFormEmailId(e.id); setFormEmailSubject(e.subject); setEmailDropdownOpen(false); setEmailSearch(""); }}
+                                                    >
+                                                        <span className={styles.pickerItemTitle}>{e.subject}</span>
+                                                        <span className={styles.pickerItemSub}>{e.from_}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     )}
                                 </div>
                                 {editEvent?.email_id && (
-                                    <Link
-                                        to={`/emails/${editEvent.email_id}`}
-                                        className={styles.docLink}
-                                        onClick={closeModal}
-                                    >
+                                    <Link to={`/emails/${editEvent.email_id}`} className={styles.docLink} onClick={closeModal}>
                                         메일 열기: {editEvent.email_subject}
                                     </Link>
                                 )}
