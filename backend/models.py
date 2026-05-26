@@ -1,7 +1,10 @@
 from sqlalchemy import Column, String, Enum, DateTime, Boolean, ForeignKey, Text, Index
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
+
+def _now():
+    return datetime.now(timezone.utc)
 
 Base = declarative_base()
 
@@ -16,8 +19,8 @@ class User(Base):
     phone         = Column(String(20), nullable=True)
     birth_date    = Column(String(10), nullable=True)
     plan          = Column(Enum('FREE', 'STANDARD', 'PREMIUM', name='user_plan'), default='FREE')
-    created_at    = Column(DateTime, default=datetime.utcnow)
-    updated_at    = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at    = Column(DateTime, default=_now)
+    updated_at    = Column(DateTime, default=_now, onupdate=_now)
     gmail_access_token  = Column(Text, nullable=True)
     gmail_refresh_token = Column(Text, nullable=True)
     gmail_token_expiry  = Column(DateTime, nullable=True)
@@ -32,7 +35,7 @@ class Folder(Base):
     user_id     = Column(String(36), ForeignKey("User.id"), nullable=False, index=True)
     name        = Column(String(100), nullable=False)
     folder_type = Column(String(20), nullable=False, default="document", server_default="document")
-    created_at  = Column(DateTime, default=datetime.utcnow)
+    created_at  = Column(DateTime, default=_now)
 
 
 class Tag(Base):
@@ -41,7 +44,7 @@ class Tag(Base):
     id         = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id    = Column(String(36), ForeignKey("User.id"), nullable=False, index=True)
     name       = Column(String(50), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
 
 class DocumentTag(Base):
@@ -58,7 +61,7 @@ class EmailFilter(Base):
     user_id    = Column(String(36), ForeignKey("User.id"), nullable=False, index=True)
     sender     = Column(String(255), nullable=False)
     name       = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
 
 class ChatRoom(Base):
@@ -68,7 +71,7 @@ class ChatRoom(Base):
     name        = Column(String(100), nullable=False)
     document_id = Column(String(36), ForeignKey("Document.id"), nullable=True)
     created_by  = Column(String(36), ForeignKey("User.id"), nullable=False)
-    created_at  = Column(DateTime, default=datetime.utcnow)
+    created_at  = Column(DateTime, default=_now)
 
 
 class ChatRoomMember(Base):
@@ -76,7 +79,7 @@ class ChatRoomMember(Base):
 
     room_id   = Column(String(36), ForeignKey("ChatRoom.id"), primary_key=True)
     user_id   = Column(String(36), ForeignKey("User.id"), primary_key=True)
-    joined_at = Column(DateTime, default=datetime.utcnow)
+    joined_at = Column(DateTime, default=_now)
 
 
 class ChatMessage(Base):
@@ -90,7 +93,7 @@ class ChatMessage(Base):
     user_id    = Column(String(36), ForeignKey("User.id"), nullable=False)
     user_name  = Column(String(100), nullable=False)
     content    = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
 
 class ChatRoomRead(Base):
@@ -110,7 +113,7 @@ class Friend(Base):
     user_id    = Column(String(36), ForeignKey("User.id"), primary_key=True)
     friend_id  = Column(String(36), ForeignKey("User.id"), primary_key=True)
     status     = Column(Enum("active", "hidden", "blocked", name='friend_status'), nullable=False, default="active", server_default="active")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
 
 class CalendarEvent(Base):
@@ -124,7 +127,7 @@ class CalendarEvent(Base):
     document_id   = Column(String(36), ForeignKey("Document.id"), nullable=True)
     email_id      = Column(String(255), nullable=True)
     email_subject = Column(String(500), nullable=True)
-    created_at    = Column(DateTime, default=datetime.utcnow)
+    created_at    = Column(DateTime, default=_now)
 
 
 class Document(Base):
@@ -151,4 +154,4 @@ class Document(Base):
     sender           = Column(String(500), nullable=True)
     gmail_message_id = Column(String(255), nullable=True, index=True)
     deleted_at       = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)

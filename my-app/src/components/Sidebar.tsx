@@ -59,13 +59,18 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     useEffect(() => {
         if (!isPremium) return;
         const fetchCount = () => {
+            if (document.visibilityState === "hidden") return;
             getSyncStatus()
                 .then((data) => setNewEmailCount(data.new_count ?? 0))
                 .catch(() => {});
         };
         fetchCount();
-        const timer = setInterval(fetchCount, 5 * 60 * 1000); // 5분마다 갱신
-        return () => clearInterval(timer);
+        const timer = setInterval(fetchCount, 5 * 60 * 1000);
+        document.addEventListener("visibilitychange", fetchCount);
+        return () => {
+            clearInterval(timer);
+            document.removeEventListener("visibilitychange", fetchCount);
+        };
     }, [isPremium]);
 
     const [filterDragOver, setFilterDragOver] = useState(false);
@@ -208,10 +213,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className={isOpen ? styles.sidebar : styles.sidebarCollapsed}>
             {/* 상단 헤더 — 로고와 햄버거 버튼 */}
             <div className={styles.sidebarHeader}>
-                {isOpen && <Link to="/" className={styles.logo}>Neatly</Link>}
                 <button className={styles.toggleButton} onClick={onToggle}>
                     ☰
                 </button>
+                {isOpen && <Link to="/" className={styles.logo}>Neatly</Link>}
             </div>
 
             {/* isOpen일 때만 나머지 내용 렌더링 */}

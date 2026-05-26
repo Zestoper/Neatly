@@ -10,7 +10,13 @@ import ConfirmModal from "../components/ConfirmModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import styles from "./DocumentDetail.module.css";
+
+const sanitizeSchema = {
+    ...defaultSchema,
+    tagNames: [...(defaultSchema.tagNames ?? []), "details", "summary"],
+};
 
 type Tag = {
     id: string;
@@ -52,13 +58,21 @@ const MD_COMMANDS = [
     { id: "toggle", label: "토글",    hint: "접기/펼치기", insert: "^ 토글제목\n^ 내용\n",                                    lineStart: true, cursorOffset: -6  },
 ] as const;
 
+function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
 function preprocessToggles(text: string): string {
     const lines = text.split('\n');
     const out: string[] = [];
     let i = 0;
     while (i < lines.length) {
         if (lines[i].startsWith('^ ')) {
-            const title = lines[i].slice(2);
+            const title = escapeHtml(lines[i].slice(2));
             const contentLines: string[] = [];
             i++;
             while (i < lines.length && lines[i].startsWith('^ ')) {
@@ -109,6 +123,7 @@ export default function DocumentDetail() {
     const [saving, setSaving] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const handleSaveRef = useRef<() => Promise<void>>(async () => {});
 
     const applyCommand = (cmd: typeof MD_COMMANDS[number]) => {
         if (!textareaRef.current || !slashMenu) return;
@@ -172,14 +187,14 @@ export default function DocumentDetail() {
         const handler = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSave();
+                handleSaveRef.current();
             } else if (e.key === 'Escape') {
                 setEditing(false);
             }
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [editing, title, content, folderId]);
+    }, [editing]);
 
     useEffect(() => {
         if (!id) return;
@@ -263,6 +278,7 @@ export default function DocumentDetail() {
             setSaving(false);
         }
     };
+    handleSaveRef.current = handleSave;
 
 
     if (loading) return <p>불러오는 중...</p>;
@@ -308,7 +324,7 @@ export default function DocumentDetail() {
                         </div>
                         {preview ? (
                             <div className={styles.markdownBody}>
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{preprocessToggles(content)}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{preprocessToggles(content)}</ReactMarkdown>
                             </div>
                         ) : (
                             <textarea
@@ -459,7 +475,7 @@ export default function DocumentDetail() {
                     {/* 본문 — 이메일이 아닌 문서는 마크다운으로 렌더링 */}
                     {!doc.raw_html && (
                         <div className={styles.markdownBody}>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{preprocessToggles(doc.raw_text)}</ReactMarkdown>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}>{preprocessToggles(doc.raw_text)}</ReactMarkdown>
                         </div>
                     )}
                     {/* 이메일 문서는 plain text로 표시 (이메일 HTML이 이미 iframe으로 렌더링됨) */}

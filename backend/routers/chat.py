@@ -24,7 +24,8 @@ from routers.auth import get_current_user, get_db, SECRET_KEY, ALGORITHM
 from pydantic import BaseModel
 # BaseModel : 요청 바디(body)의 데이터 형식을 정의하는 기반 클래스
 
-from datetime import datetime
+from datetime import datetime, timezone
+from sqlalchemy import func, and_, or_
 # datetime : 메시지 생성 시각 등 날짜·시간 처리에 사용
 
 from jose import jwt, JWTError
@@ -240,7 +241,7 @@ async def get_or_create_dm(
     db.add(ChatRoomMember(room_id=room.id, user_id=my_id))
     db.add(ChatRoomMember(room_id=room.id, user_id=friend_id))
     # 방 생성자는 지금 읽음 처리 (자기가 만든 방이므로 unread=0)
-    upsert_read(db, str(room.id), my_id, datetime.utcnow())
+    upsert_read(db, str(room.id), my_id, datetime.now(timezone.utc))
     db.commit()
     db.refresh(room)
 
@@ -267,7 +268,7 @@ def create_room(
     db.add(room)
     db.flush()
     db.add(ChatRoomMember(room_id=room.id, user_id=current_user.id))
-    upsert_read(db, str(room.id), str(current_user.id), datetime.utcnow())
+    upsert_read(db, str(room.id), str(current_user.id), datetime.now(timezone.utc))
     db.commit()
     db.refresh(room)
     return room_to_dict(room, db, str(current_user.id))
@@ -284,13 +285,102 @@ def get_rooms(
     my_id = str(current_user.id)
     memberships = db.query(ChatRoomMember).filter(ChatRoomMember.user_id == my_id).all()
     room_ids = [m.room_id for m in memberships]
+
+    if not room_ids:
+        return []
+
     rooms = (
         db.query(ChatRoom)
         .filter(ChatRoom.id.in_(room_ids))
         .order_by(ChatRoom.created_at.desc())
         .all()
     )
-    return [room_to_dict(r, db, my_id) for r in rooms]
+
+    # Batch: member counts per room
+    member_count_rows = (
+        db.query(ChatRoomMember.room_id, func.count(ChatRoomMember.user_id).label("cnt"))
+        .filter(ChatRoomMember.room_id.in_(room_ids))
+        .group_by(ChatRoomMember.room_id)
+        .all()
+    )
+    member_counts = {r.room_id: r.cnt for r in member_count_rows}
+
+    # Batch: last message per room via subquery
+    last_ts_subq = (
+        db.query(
+            ChatMessage.room_id,
+            func.max(ChatMessage.created_at).label("max_ts"),
+        )
+        .filter(ChatMessage.room_id.in_(room_ids))
+        .group_by(ChatMessage.room_id)
+        .subquery()
+    )
+    last_msgs = (
+        db.query(ChatMessage)
+        .join(
+            last_ts_subq,
+            and_(
+                ChatMessage.room_id == last_ts_subq.c.room_id,
+                ChatMessage.created_at == last_ts_subq.c.max_ts,
+            ),
+        )
+        .all()
+    )
+    last_msg_map = {m.room_id: m for m in last_msgs}
+
+    # Batch: my read records for all rooms
+    read_rows = (
+        db.query(ChatRoomRead)
+        .filter(ChatRoomRead.room_id.in_(room_ids), ChatRoomRead.user_id == my_id)
+        .all()
+    )
+    read_map = {r.room_id: r for r in read_rows}
+
+    # Batch: unread counts per room via a single JOIN query
+    unread_rows = (
+        db.query(ChatMessage.room_id, func.count(ChatMessage.id).label("cnt"))
+        .outerjoin(
+            ChatRoomRead,
+            and_(
+                ChatRoomRead.room_id == ChatMessage.room_id,
+                ChatRoomRead.user_id == my_id,
+            ),
+        )
+        .filter(
+            ChatMessage.room_id.in_(room_ids),
+            ChatMessage.user_id != my_id,
+            or_(
+                ChatRoomRead.last_read_at == None,
+                ChatMessage.created_at > ChatRoomRead.last_read_at,
+            ),
+        )
+        .group_by(ChatMessage.room_id)
+        .all()
+    )
+    unread_counts = {r.room_id: r.cnt for r in unread_rows}
+
+    result = []
+    for room in rooms:
+        rid = room.id
+        last_msg = last_msg_map.get(rid)
+        result.append({
+            "id": str(rid),
+            "name": room.name,
+            "document_id": str(room.document_id) if room.document_id else None,
+            "created_by": str(room.created_by),
+            "member_count": member_counts.get(rid, 0),
+            "unread_count": unread_counts.get(rid, 0),
+            "last_message": (
+                "[이미지]" if last_msg and last_msg.content.startswith(_IMAGE_PREFIX)
+                else (last_msg.content[:50] if last_msg else None)
+            ),
+            "last_message_at": (
+                (last_msg.created_at.isoformat() + "Z") if last_msg
+                else (room.created_at.isoformat() + "Z")
+            ),
+            "created_at": room.created_at.isoformat() + "Z",
+        })
+    return result
 
 
 # ─────────────────────────────────────────────
@@ -312,7 +402,7 @@ def join_room(
     ).first()
     if not existing:
         db.add(ChatRoomMember(room_id=room_id, user_id=current_user.id))
-        upsert_read(db, room_id, str(current_user.id), datetime.utcnow())
+        upsert_read(db, room_id, str(current_user.id), datetime.now(timezone.utc))
         db.commit()
     return room_to_dict(room, db, str(current_user.id))
 
@@ -412,7 +502,7 @@ async def mark_read(
     current_user: User = Depends(get_current_user),
 ):
     my_id = str(current_user.id)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     upsert_read(db, room_id, my_id, now)
     db.commit()
 
@@ -635,7 +725,7 @@ async def websocket_chat(
                 continue
 
             # 메시지를 DB에 저장
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             msg = ChatMessage(room_id=room_id, user_id=user_id, user_name=user_name, content=content, created_at=now)
             db.add(msg)
             # 보낸 사람의 읽음 시각도 함께 갱신 — 자기가 보낸 메시지는 항상 읽은 것

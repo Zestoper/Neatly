@@ -2,6 +2,8 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
+let redirecting = false;
+
 export const api = axios.create({
     baseURL: BASE_URL,
     timeout: 90000, // 90초 — Render 콜드 스타트(최대 ~60초)를 커버
@@ -33,10 +35,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response, // 정상 응답은 그대로 통과
     (error) => {
-        if (error.response?.status === 401) {
-            // 401 : 인증 실패 — 토큰 만료 또는 없음
-            localStorage.removeItem("token"); // 만료된 토큰 제거
-            window.location.href = "/login";  // 로그인 페이지로 강제 이동
+        if (error.response?.status === 401 && !redirecting) {
+            redirecting = true;
+            localStorage.removeItem("token");
+            window.location.href = "/login";
         }
         return Promise.reject(error); // 다른 에러는 그대로 던져서 각 페이지에서 처리
     }
