@@ -342,62 +342,150 @@
 }
 
 /* 문서 선택 */
-.docPicker {
+.pickerWrapper {
   position: relative;
 }
 
-.docClearBtn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--color-text-muted);
-  padding: 2px 4px;
+.pickerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
 }
 
-.docDropdown {
+.pickerBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.pickerBtn:hover {
+  border-color: var(--color-text-gray);
+}
+
+.pickerSelected {
+  color: var(--color-text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerPlaceholder {
+  color: var(--color-text-gray);
+  flex: 1;
+}
+
+.pickerArrow {
+  font-size: 9px;
+  color: var(--color-text-gray);
+  flex-shrink: 0;
+}
+
+.pickerClear {
+  font-size: 11px;
+  color: var(--color-text-gray);
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+
+.pickerClear:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+.pickerDropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 7px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.pickerSearch {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.pickerSearch::placeholder {
+  color: var(--color-text-gray);
+}
+
+.pickerList {
   list-style: none;
   margin: 0;
   padding: 4px 0;
-  z-index: 10;
-  max-height: 180px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
-.docDropdownItem {
-  padding: 8px 12px;
+.pickerItem {
+  padding: 9px 12px;
   font-size: 13px;
   color: var(--color-text);
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transition: background 0.1s;
 }
 
-.docDropdownItem:hover {
+.pickerItem:hover {
   background: var(--color-surface-hover);
 }
 
-.docDropdownItem span {
-  display: block;
+.pickerItemActive {
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.emailFrom {
+.pickerItemTitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerItemSub {
+  display: block;
   font-size: 11px;
   color: var(--color-text-muted);
-  margin-top: 1px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerEmpty {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--color-text-gray);
+  text-align: center;
 }
 
 .docLink {
