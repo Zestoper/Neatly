@@ -318,6 +318,14 @@ export default function Emails() {
                         {isSpam ? "스팸으로 표시된 이메일" : `최근 이메일 ${emails.length}개`}
                     </p>
                 </div>
+                {!isSpam && (
+                    <button
+                        className={styles.composeButton}
+                        onClick={() => navigate("/emails/compose")}
+                    >
+                        메일 작성
+                    </button>
+                )}
                 {/* Premium 플랜이고 INBOX일 때만 동기화 버튼 표시 */}
                 {isPremium && !isSpam && (
                     <div className={styles.syncArea}>

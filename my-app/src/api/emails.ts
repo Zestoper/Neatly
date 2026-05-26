@@ -39,3 +39,14 @@ export const generateReply = async (id: string): Promise<{ reply_text: string }>
 export const sendReply = async (id: string, reply_text: string): Promise<void> => {
     await api.post(`/emails/${id}/send-reply`, { reply_text });
 };
+
+// POST /emails/generate-draft — 의도 기반 AI 이메일 초안 생성
+export const generateDraft = async (to: string, subject: string, intent: string): Promise<{ body: string }> => {
+    const res = await api.post("/emails/generate-draft", { to, subject, intent });
+    return res.data;
+};
+
+// POST /emails/send-new — 새 이메일 전송
+export const sendNewEmail = async (to: string, subject: string, body: string): Promise<void> => {
+    await api.post("/emails/send-new", { to, subject, body });
+};
