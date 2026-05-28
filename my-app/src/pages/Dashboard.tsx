@@ -133,6 +133,13 @@ export default function Dashboard() {
         try {
             const res = await syncEmails();
             setSyncStatus((prev) => ({ new_count: prev?.new_count ?? 0, last_sync: res.last_sync ?? null }));
+            if (res.synced > 0) {
+                const docsData = await getDocuments();
+                setDocuments(docsData);
+                showToast(`새 이메일 ${res.synced}개 동기화됐습니다.`);
+            } else {
+                showToast("새 이메일이 없습니다.");
+            }
         } catch {
             showToast("Gmail 동기화에 실패했습니다.");
         } finally {
