@@ -21,7 +21,7 @@ def make_credentials(user) -> Credentials:
 
 
 def refresh_if_expired(creds: Credentials, user, db: Session):
-    if creds.expired and creds.refresh_token:
+    if (creds.expiry is None or creds.expired) and creds.refresh_token:
         creds.refresh(GoogleRequest())
         user.gmail_access_token = creds.token
         if creds.expiry:

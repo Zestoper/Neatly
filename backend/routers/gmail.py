@@ -350,6 +350,10 @@ def gmail_callback(code: str, state: str, db: Session = Depends(get_db)):
 
     user.gmail_access_token  = token["access_token"]
     user.gmail_refresh_token = token.get("refresh_token")
+    expires_at = token.get("expires_at")
+    if expires_at:
+        from datetime import datetime
+        user.gmail_token_expiry = datetime.utcfromtimestamp(float(expires_at))
     db.commit()
 
     return RedirectResponse(url=f"{FRONTEND_URL}/emails?connected=true")
