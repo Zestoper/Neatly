@@ -166,3 +166,18 @@ npm run dev
 ## API 문서
 
 서버 실행 후 `http://localhost:8000/docs` 에서 Swagger UI로 확인할 수 있습니다.
+
+---
+
+## 트러블슈팅
+
+| 문제 | 원인 | 해결 |
+|------|------|------|
+| Google OAuth "Missing code verifier" 오류 | 최신 `google-auth-oauthlib`이 PKCE를 자동 추가하는데, 서버사이드 리다이렉트 흐름에서 `code_verifier`를 요청 사이에 유지할 수 없음 | `google-auth-oauthlib` 대신 `requests_oauthlib.OAuth2Session`을 직접 사용해 PKCE 없이 인가 코드 흐름 처리 |
+| Gmail 연결 후 1시간이 지나면 동기화가 silently 실패 | OAuth 콜백에서 `expires_at`을 DB에 저장하지 않아 `creds.expiry = None` → `creds.expired` 가 항상 `False` → 토큰 갱신 건너뜀 → Gmail API 401 → `except` 절이 0 반환 | 콜백에서 `token["expires_at"]`을 `gmail_token_expiry`에 저장, `refresh_if_expired()`에 `expiry is None` 조건 추가 |
+| LLaMA 출력에 베트남어 자모·박스 문자 혼입 | Groq API가 간헐적으로 비정상 유니코드 출력 | `_sanitize_ai_output()` 후처리 함수 추가 — `unicodedata.category()`로 제어문자 필터링, 허용 문자셋 정규식 적용 |
+| iOS Safari에서 앱 전체 흰 화면 | `window.Notification` 미지원 환경에서 Notification API 접근 시 런타임 오류 | `typeof Notification !== 'undefined'` 가드 추가, 최상단 `ErrorBoundary`로 치명적 오류 catch |
+| WebSocket 재연결 시 메시지 중복 수신 | 네트워크 끊김 후 재연결 시 같은 사용자의 연결이 두 개 이상 유지됨 | `ConnectionManager.connect()`에서 동일 `user_id`의 기존 연결을 `close()` 후 교체 |
+| 문서 목록 API에서 N+1 쿼리 발생 | 문서마다 태그 SELECT가 개별 실행 (문서 100개 = 쿼리 101회) | `docs_with_tags_batch()`로 전체 문서 ID를 IN 쿼리 1회로 태그 일괄 조회 후 메모리 매핑 (쿼리 수 N+1 → 2) |
+| MySQL → PostgreSQL 마이그레이션 충돌 | `CHAR(36)` 타입 비교 불일치, `Enum` 타입명 미지정으로 PostgreSQL 충돌 | `String(36)`으로 교체, `Enum` 선언에 `name=` 파라미터 명시 |
+| Vercel 배포 후 직접 URL 접근 시 404 | SPA 라우팅 미설정 | `vercel.json`에 모든 경로를 `index.html`로 rewrite 설정 추가 |
