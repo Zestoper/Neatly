@@ -139,35 +139,8 @@
   flex-wrap: wrap;
 }
 
-/* 브리핑 날짜 선택 */
-.dateInput {
-  margin-left: auto;
-  font-size: 12.5px;
-  font-family: inherit;
-  color: var(--color-text-gray);
-  background: var(--color-sidebar);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 4px 10px;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.dateInput:hover {
-  border-color: var(--color-text-gray);
-}
-
-.dateInput:focus {
-  border-color: var(--color-accent);
-}
-
-.dateInput:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* 브리핑 폴더 선택 드롭다운 */
+/* 브리핑 날짜 선택 / 폴더 선택 드롭다운 — 공통 스타일 */
+.dateInput,
 .folderSelect {
   margin-left: auto;
   font-size: 12.5px;
@@ -182,14 +155,17 @@
   transition: border-color 0.15s;
 }
 
+.dateInput:hover,
 .folderSelect:hover {
   border-color: var(--color-text-gray);
 }
 
+.dateInput:focus,
 .folderSelect:focus {
   border-color: var(--color-accent);
 }
 
+.dateInput:disabled,
 .folderSelect:disabled {
   opacity: 0.5;
   cursor: default;
@@ -271,7 +247,8 @@
   gap: 8px;
 }
 
-.featureItem {
+.featureItem,
+.featureItemLocked {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -280,10 +257,6 @@
 }
 
 .featureItemLocked {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13.5px;
   color: var(--color-text-gray);
 }
 

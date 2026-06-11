@@ -111,10 +111,15 @@
   padding: 8px 0;
 }
 
-.cell {
-  background: var(--color-bg);
+.cell,
+.cellToday,
+.cellEmpty {
   min-height: 100px;
   padding: 6px;
+}
+
+.cell {
+  background: var(--color-bg);
   cursor: pointer;
   transition: background 0.1s;
 }
@@ -125,8 +130,6 @@
 
 .cellToday {
   background: var(--color-accent-soft);
-  min-height: 100px;
-  padding: 6px;
   cursor: pointer;
 }
 
@@ -136,7 +139,6 @@
 
 .cellEmpty {
   background: var(--color-surface);
-  min-height: 100px;
 }
 
 .dayNum {
@@ -158,35 +160,13 @@
   gap: 2px;
 }
 
-.eventChip {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: var(--color-accent-soft);
-  border: none;
-  border-radius: 4px;
-  padding: 2px 5px;
-  font-size: 11px;
-  color: var(--color-accent);
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: background 0.1s;
-}
-
-.eventChip:hover {
-  background: var(--color-accent);
-  color: #fff;
-}
-
+.eventChip,
 .eventChipLinked {
   display: block;
   width: 100%;
   text-align: left;
   background: var(--color-accent-soft);
   border: none;
-  border-left: 3px solid var(--color-accent);
   border-radius: 4px;
   padding: 2px 5px;
   font-size: 11px;
@@ -196,12 +176,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: background 0.1s;
-  position: relative;
 }
 
+.eventChip:hover,
 .eventChipLinked:hover {
   background: var(--color-accent);
   color: #fff;
+}
+
+.eventChipLinked {
+  border-left: 3px solid var(--color-accent);
+  position: relative;
 }
 
 .docDot {

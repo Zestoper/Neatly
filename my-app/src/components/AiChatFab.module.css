@@ -97,31 +97,29 @@
   padding: 20px 0;
 }
 
-.bubbleUser {
-  align-self: flex-end;
+.bubbleUser,
+.bubbleAi {
   max-width: 80%;
-  background: var(--color-text);
-  color: #fff;
   font-size: 13.5px;
   line-height: 1.65;
   padding: 9px 14px;
-  border-radius: 16px 16px 4px 16px;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
+.bubbleUser {
+  align-self: flex-end;
+  background: var(--color-text);
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+}
+
 .bubbleAi {
   align-self: flex-start;
-  max-width: 80%;
   background: var(--color-sidebar);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 13.5px;
-  line-height: 1.65;
-  padding: 9px 14px;
   border-radius: 16px 16px 16px 4px;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 .typing {

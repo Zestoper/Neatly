@@ -105,12 +105,11 @@
   background: var(--color-bg);
 }
 
-.tabBtn {
+.tabBtn,
+.tabActive {
   flex: 1;
   padding: 8px 0 10px;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-gray);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -122,26 +121,20 @@
   letter-spacing: -0.01em;
 }
 
+.tabBtn {
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
 .tabBtn:hover {
   color: var(--color-text);
   opacity: 1;
 }
 
 .tabActive {
-  flex: 1;
-  padding: 8px 0 10px;
-  font-size: 13px;
   font-weight: 700;
   color: var(--color-accent);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid var(--color-accent);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s;
-  letter-spacing: -0.01em;
+  border-bottom-color: var(--color-accent);
 }
 
 /* ── 탭 콘텐츠 ── */
@@ -268,27 +261,11 @@
   background: var(--color-hover);
 }
 
-/* 채팅방 아바타 */
-.roomAvatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #e8e7ff 0%, #d4d4ff 100%);
-  color: var(--color-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 17px;
-  font-weight: 800;
-  flex-shrink: 0;
-  letter-spacing: -0.02em;
-}
-
-/* 친구 아바타 */
+/* 채팅방 / 친구 아바타 공통 */
+.roomAvatar,
 .friendAvatar {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
   background: linear-gradient(135deg, #e8e7ff 0%, #d4d4ff 100%);
   color: var(--color-accent);
   display: flex;
@@ -297,22 +274,18 @@
   font-size: 17px;
   font-weight: 800;
   flex-shrink: 0;
-  position: relative;
   letter-spacing: -0.02em;
 }
 
-/* 온라인/오프라인 점 */
-.onlineDot {
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 10px;
-  height: 10px;
+.roomAvatar { border-radius: 14px; }
+
+.friendAvatar {
   border-radius: 50%;
-  background: #22c55e;
-  border: 2px solid var(--color-bg);
+  position: relative;
 }
 
+/* 온라인/오프라인 점 */
+.onlineDot,
 .offlineDot {
   position: absolute;
   bottom: 1px;
@@ -320,9 +293,11 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #d1d5db;
   border: 2px solid var(--color-bg);
 }
+
+.onlineDot { background: #22c55e; }
+.offlineDot { background: #d1d5db; }
 
 /* 항목 텍스트 */
 .itemInfo {

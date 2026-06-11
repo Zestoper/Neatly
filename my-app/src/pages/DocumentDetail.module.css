@@ -88,7 +88,8 @@
   margin-bottom: 8px;
 }
 
-.summaryText {
+.summaryText,
+.summaryTextBlurred {
   font-size: 14px;
   color: var(--color-text);
   line-height: 1.7;
@@ -96,11 +97,8 @@
 
 /* FREE 플랜일 때 텍스트 흐림 처리 */
 .summaryTextBlurred {
-  font-size: 14px;
-  color: var(--color-text);
-  line-height: 1.7;
-  filter: blur(4px);       /* 텍스트 자체를 흐리게 */
-  user-select: none;        /* 드래그해서 텍스트 복사 방지 */
+  filter: blur(4px);
+  user-select: none;
 }
 
 /* 흐린 텍스트 위에 덮는 반투명 오버레이 */
@@ -294,15 +292,19 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.previewTab {
+.previewTab,
+.previewTabActive {
   background: transparent;
   border: none;
   padding: 6px 14px;
   font-size: 13px;
-  color: var(--color-text-gray);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+}
+
+.previewTab {
+  color: var(--color-text-gray);
 }
 
 .previewTab:hover {
@@ -310,14 +312,8 @@
 }
 
 .previewTabActive {
-  background: transparent;
-  border: none;
-  padding: 6px 14px;
-  font-size: 13px;
   color: var(--color-accent);
-  cursor: pointer;
-  border-bottom: 2px solid var(--color-accent);
-  margin-bottom: -1px;
+  border-bottom-color: var(--color-accent);
   font-weight: 600;
 }
 
