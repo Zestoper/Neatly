@@ -49,26 +49,32 @@
   text-transform: uppercase;
 }
 
-.input {
+/* 입력창 / 텍스트에어리어 공통 베이스 */
+.input,
+.textarea {
   width: 100%;
   font-size: 15px;
   color: var(--color-text);
   background: var(--color-sidebar);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  padding: 12px 16px;
   font-family: inherit;
   box-sizing: border-box;
   transition: border-color 0.15s, background 0.15s;
 }
 
-.input:focus {
+.input { padding: 12px 16px; }
+.textarea { padding: 14px 16px; resize: vertical; line-height: 1.75; }
+
+.input:focus,
+.textarea:focus {
   outline: none;
   border-color: var(--color-accent);
   background: var(--color-bg);
 }
 
-.input::placeholder {
+.input::placeholder,
+.textarea::placeholder {
   color: var(--color-text-gray);
   opacity: 0.7;
 }
@@ -105,32 +111,6 @@
 .generateButton:disabled {
   opacity: 0.4;
   cursor: default;
-}
-
-.textarea {
-  width: 100%;
-  resize: vertical;
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--color-text);
-  background: var(--color-sidebar);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-family: inherit;
-  box-sizing: border-box;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.textarea:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  background: var(--color-bg);
-}
-
-.textarea::placeholder {
-  color: var(--color-text-gray);
-  opacity: 0.7;
 }
 
 .error {

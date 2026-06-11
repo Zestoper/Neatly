@@ -82,16 +82,21 @@
   font-weight: 600;
 }
 
-/* 파일 드래그 앤 드롭 업로드 영역 */
-.uploadZone {
+/* 파일 드래그 앤 드롭 업로드 영역 — 공통 베이스 */
+.uploadZone,
+.uploadZoneDragOver,
+.uploadZoneLoading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 20px;
   margin: 4px 0 16px;
-  border: 1.5px dashed var(--color-border);
   border-radius: 10px;
+}
+
+.uploadZone {
+  border: 1.5px dashed var(--color-border);
   cursor: pointer;
   transition: background 0.1s, border-color 0.1s;
 }
@@ -102,27 +107,13 @@
 }
 
 .uploadZoneDragOver {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 20px;
-  margin: 4px 0 16px;
   border: 1.5px dashed var(--color-accent);
-  border-radius: 10px;
   cursor: pointer;
   background: var(--color-accent-soft);
 }
 
 .uploadZoneLoading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 20px;
-  margin: 4px 0 16px;
   border: 1.5px dashed var(--color-border);
-  border-radius: 10px;
   cursor: default;
   pointer-events: none;
 }
@@ -399,9 +390,7 @@
   .cardTitle {
     font-size: 13px;
   }
-}
 
-@media (max-width: 767px) {
   /* 터치에서 hover 없으므로 삭제 버튼 항상 표시 */
   .cardDeleteBtn {
     display: flex;

@@ -73,15 +73,19 @@
   flex-shrink: 0;
 }
 
-.restoreButton {
+.restoreButton,
+.deleteButton {
   font-size: 12.5px;
   font-family: inherit;
   padding: 5px 14px;
-  background: var(--color-hover);
   border: 1px solid var(--color-border);
   border-radius: 7px;
-  color: var(--color-text);
   cursor: pointer;
+}
+
+.restoreButton {
+  background: var(--color-hover);
+  color: var(--color-text);
   transition: background 0.12s, border-color 0.12s;
 }
 
@@ -91,14 +95,8 @@
 }
 
 .deleteButton {
-  font-size: 12.5px;
-  font-family: inherit;
-  padding: 5px 14px;
   background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 7px;
   color: var(--color-text-gray);
-  cursor: pointer;
   transition: color 0.12s, border-color 0.12s;
 }
 

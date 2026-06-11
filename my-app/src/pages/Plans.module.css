@@ -154,19 +154,24 @@
   flex-shrink: 0;
 }
 
-/* 변경 버튼 */
-.changeButton {
+/* 플랜 버튼 공통 베이스 */
+.changeButton,
+.currentButton {
   width: 100%;
   padding: 11px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  justify-content: center;
+}
+
+/* 변경 버튼 */
+.changeButton {
   background: var(--color-text);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  font-family: inherit;
-  justify-content: center;
   transition: opacity 0.12s;
 }
 
@@ -176,15 +181,9 @@
 
 /* 현재 플랜 버튼 */
 .currentButton {
-  width: 100%;
-  padding: 11px 0;
   background: transparent;
   color: var(--color-text-gray);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  justify-content: center;
   cursor: default;
 }
 

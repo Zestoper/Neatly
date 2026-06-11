@@ -3,39 +3,33 @@
   max-width: 720px;
 }
 
-.titleInput {
-  display: block;
-  width: 100%;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text);
-  border: none;
-  outline: none;
-  background: transparent;
-  margin-bottom: 16px;
-  font-family: inherit;
-}
-
-.titleInput::placeholder {
-  color: var(--color-text-gray);
-}
-
+.titleInput,
 .contentInput {
   display: block;
   width: 100%;
-  min-height: 320px;
-  font-size: 15px;
   color: var(--color-text);
   border: none;
   outline: none;
   background: transparent;
-  line-height: 1.8;
-  resize: vertical; /* 세로만 크기 조절 가능 */
   font-family: inherit;
 }
 
+.titleInput::placeholder,
 .contentInput::placeholder {
   color: var(--color-text-gray);
+}
+
+.titleInput {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.contentInput {
+  font-size: 15px;
+  min-height: 320px;
+  line-height: 1.8;
+  resize: vertical;
 }
 
 .limitError {

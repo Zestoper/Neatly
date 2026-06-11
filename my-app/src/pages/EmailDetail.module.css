@@ -211,7 +211,8 @@
   margin: 0 0 8px 0;
 }
 
-.summaryText {
+.summaryText,
+.summaryTextBlurred {
   font-size: 14px;
   line-height: 1.75;
   color: var(--color-text);
@@ -219,10 +220,6 @@
 }
 
 .summaryTextBlurred {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--color-text);
-  margin: 0;
   filter: blur(4px);
   user-select: none;
 }
@@ -320,21 +317,16 @@
   letter-spacing: -0.01em;
 }
 
-.replyGenerating {
+.replyGenerating,
+.replySentMsg {
   font-size: 14px;
-  color: var(--color-text-gray);
   margin: 0;
   padding: 16px 0;
   text-align: center;
 }
 
-.replySentMsg {
-  font-size: 14px;
-  color: var(--color-text);
-  margin: 0;
-  padding: 16px 0;
-  text-align: center;
-}
+.replyGenerating { color: var(--color-text-gray); }
+.replySentMsg { color: var(--color-text); }
 
 .replyTextarea {
   width: 100%;

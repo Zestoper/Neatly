@@ -50,26 +50,24 @@
   opacity: 1;
 }
 
-.confirmBtn {
+.confirmBtn,
+.dangerBtn {
   padding: 8px 18px;
   border: none;
   border-radius: 7px;
-  background: var(--color-text);
-  color: var(--color-bg);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
+.confirmBtn {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
 .dangerBtn {
-  padding: 8px 18px;
-  border: none;
-  border-radius: 7px;
   background: #e53e3e;
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .dangerBtn:hover {
