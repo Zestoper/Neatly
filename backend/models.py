@@ -8,7 +8,6 @@ def _now():
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = "User"
 
@@ -27,7 +26,6 @@ class User(Base):
     gmail_last_sync     = Column(DateTime, nullable=True)
     gmail_last_view     = Column(DateTime, nullable=True)
 
-
 class Folder(Base):
     __tablename__ = "Folder"
 
@@ -37,7 +35,6 @@ class Folder(Base):
     folder_type = Column(String(20), nullable=False, default="document", server_default="document")
     created_at  = Column(DateTime, default=_now)
 
-
 class Tag(Base):
     __tablename__ = "Tag"
 
@@ -46,13 +43,11 @@ class Tag(Base):
     name       = Column(String(50), nullable=False)
     created_at = Column(DateTime, default=_now)
 
-
 class DocumentTag(Base):
     __tablename__ = "DocumentTag"
 
     document_id = Column(String(36), ForeignKey("Document.id"), primary_key=True)
     tag_id      = Column(String(36), ForeignKey("Tag.id"), primary_key=True)
-
 
 class EmailFilter(Base):
     __tablename__ = "EmailFilter"
@@ -63,7 +58,6 @@ class EmailFilter(Base):
     name       = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=_now)
 
-
 class ChatRoom(Base):
     __tablename__ = "ChatRoom"
 
@@ -73,14 +67,12 @@ class ChatRoom(Base):
     created_by  = Column(String(36), ForeignKey("User.id"), nullable=False)
     created_at  = Column(DateTime, default=_now)
 
-
 class ChatRoomMember(Base):
     __tablename__ = "ChatRoomMember"
 
     room_id   = Column(String(36), ForeignKey("ChatRoom.id"), primary_key=True)
     user_id   = Column(String(36), ForeignKey("User.id"), primary_key=True)
     joined_at = Column(DateTime, default=_now)
-
 
 class ChatMessage(Base):
     __tablename__ = "ChatMessage"
@@ -95,14 +87,12 @@ class ChatMessage(Base):
     content    = Column(Text, nullable=False)
     created_at = Column(DateTime, default=_now)
 
-
 class ChatRoomRead(Base):
     __tablename__ = "ChatRoomRead"
 
     room_id      = Column(String(36), ForeignKey("ChatRoom.id"), primary_key=True)
     user_id      = Column(String(36), ForeignKey("User.id"), primary_key=True)
     last_read_at = Column(DateTime, nullable=False)
-
 
 class Friend(Base):
     __tablename__ = "Friend"
@@ -114,7 +104,6 @@ class Friend(Base):
     friend_id  = Column(String(36), ForeignKey("User.id"), primary_key=True)
     status     = Column(Enum("active", "hidden", "blocked", name='friend_status'), nullable=False, default="active", server_default="active")
     created_at = Column(DateTime, default=_now)
-
 
 class CalendarEvent(Base):
     __tablename__ = "CalendarEvent"
@@ -128,7 +117,6 @@ class CalendarEvent(Base):
     email_id      = Column(String(255), nullable=True)
     email_subject = Column(String(500), nullable=True)
     created_at    = Column(DateTime, default=_now)
-
 
 class Document(Base):
     __tablename__ = "Document"

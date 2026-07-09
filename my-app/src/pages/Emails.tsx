@@ -25,7 +25,7 @@ type EmailDoc = {
     raw_html: string | null;
     created_at: string;
     folder_id: string | null;
-    sender: string | null;  // 이메일 변환 시 저장된 발신자 주소
+    sender: string | null;
 };
 
 export default function Emails() {
@@ -36,7 +36,7 @@ export default function Emails() {
 
     const senderFilter = searchParams.get("sender");
     const folderParam  = searchParams.get("folder");
-    // label 파라미터 — 사이드바의 "스팸" 링크가 ?label=SPAM 으로 넘어옴, 없으면 INBOX
+
     const label = (searchParams.get("label") ?? "INBOX").toUpperCase();
 
     const [emails, setEmails] = useState<Email[]>([]);
@@ -47,7 +47,7 @@ export default function Emails() {
     const [folderLoading, setFolderLoading] = useState(false);
     const [query, setQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-    // sortOrder : 폴더 모드 정렬 — "newest"(최신순) | "oldest"(오래된순)
+
     const plan = localStorage.getItem("plan") ?? "FREE";
     const canConvert = plan === "STANDARD" || plan === "PREMIUM";
     const isPremium = plan === "PREMIUM";
@@ -55,14 +55,11 @@ export default function Emails() {
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [syncing, setSyncing] = useState(false);
-    // syncing : 동기화 요청 진행 중 여부 — true이면 버튼 비활성화
+
     const [lastSync, setLastSync] = useState<string | null>(null);
-    // lastSync : 마지막 동기화 시각 ISO 문자열 — null이면 한 번도 동기화 안 됨
 
     const [blockedSenders, setBlockedSenders] = useState<string[]>([]);
-    // blockedSenders : 스팸으로 처리된 발신자 목록 — INBOX에서 해당 발신자 이메일을 숨김
 
-    // 폴더 선택 시 해당 폴더의 이메일 출처 문서 로드
     useEffect(() => {
         if (!folderParam) return;
         setFolderLoading(true);
@@ -70,13 +67,12 @@ export default function Emails() {
             .then((all: EmailDoc[]) => {
                 const docs = all
                     .filter((d) => d.raw_html !== null && d.folder_id === folderParam)
-                    .sort((a, b) => (a.created_at > b.created_at ? -1 : 1)); // 최신순
+                    .sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
                 setFolderDocs(docs);
             })
             .finally(() => setFolderLoading(false));
     }, [folderParam, refreshKey]);
 
-    // label(메일함) 또는 senderFilter가 바뀔 때마다 재요청 — 폴더 모드에서는 스킵
     useEffect(() => {
         if (folderParam) return;
         fetchEmails(label);
@@ -88,20 +84,18 @@ export default function Emails() {
         }
     }, [searchParams]);
 
-    // 차단된 발신자 목록 로드 — INBOX에서 스팸 처리된 발신자 이메일을 숨기는 데 사용
     useEffect(() => {
         getEmailFilters()
             .then((filters) => setBlockedSenders(filters.map((f) => f.sender)))
             .catch(() => {});
     }, []);
 
-    // Premium 플랜이면 마지막 동기화 시각 로드 + 뱃지 초기화
     useEffect(() => {
         if (!isPremium) return;
         getSyncStatus()
             .then((data) => setLastSync(data.last_sync ?? null))
             .catch(() => {});
-        // 페이지 진입 시 "읽었음" 기록 → 사이드바 뱃지 카운트 초기화
+
         markEmailsViewed().catch(() => {});
     }, [isPremium]);
 
@@ -172,7 +166,6 @@ export default function Emails() {
         });
     };
 
-    // ── 폴더 모드 ───────────────────────────────────────────────────
     if (folderParam) {
         const filtered = folderDocs
             .filter((d) => !query || d.title.includes(query) || d.raw_text?.includes(query))
@@ -185,7 +178,6 @@ export default function Emails() {
             <div className={styles.container}>
                 <h1 className={styles.heading}>폴더</h1>
 
-                {/* 검색 + 정렬 툴바 */}
                 <div className={styles.folderToolbar}>
                     <input
                         className={styles.searchInput}
@@ -206,7 +198,6 @@ export default function Emails() {
                         오래된순
                     </button>
                 </div>
-
 
                 {folderLoading ? (
                     <p>불러오는 중...</p>
@@ -262,7 +253,6 @@ export default function Emails() {
         );
     }
 
-    // ── Gmail 모드 ───────────────────────────────────────────────────
     if (loading) return <p>불러오는 중...</p>;
 
     if (!connected) {
@@ -281,12 +271,9 @@ export default function Emails() {
         );
     }
 
-    // "John Doe <john@example.com>" → "john@example.com", 꺽쇠 없으면 그대로
     const extractEmail = (s: string) =>
         s.match(/<(.+?)>/)?.[1]?.toLowerCase() ?? s.toLowerCase().trim();
 
-    // INBOX일 때 : 스팸 처리된 발신자 제외 → senderFilter(사이드바 클릭) 적용
-    // SPAM일 때 : 차단 필터 적용 안 함 — 스팸함이므로 그대로 표시
     const displayedEmails = (() => {
         let result = emails;
         if (label === "INBOX" && blockedSenders.length > 0) {
@@ -377,17 +364,16 @@ export default function Emails() {
                             onClick={() => navigate(`/emails/${email.id}`)}
                             draggable
                             onDragStart={(e) => {
-                                // "email:" 접두사로 사이드바에서 문서 드래그와 구분
+
                                 e.dataTransfer.setData("text/plain", `email:${email.id}`);
                                 e.dataTransfer.effectAllowed = "move";
 
-                                // 이메일 제목만 담은 작은 ghost — 기본 ghost(행 전체)보다 가볍게 표시
                                 const ghost = document.createElement("div");
                                 ghost.textContent = email.subject;
                                 ghost.className = styles.dragGhost;
                                 document.body.appendChild(ghost);
                                 e.dataTransfer.setDragImage(ghost, 0, 0);
-                                // 브라우저가 ghost를 캡처한 직후 DOM에서 제거
+
                                 setTimeout(() => document.body.removeChild(ghost), 0);
                             }}
                         >

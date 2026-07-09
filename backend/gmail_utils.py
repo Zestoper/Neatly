@@ -8,7 +8,6 @@ load_dotenv()
 
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
-
 def make_credentials(user) -> Credentials:
     return Credentials(
         token=user.gmail_access_token,
@@ -18,7 +17,6 @@ def make_credentials(user) -> Credentials:
         client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
         expiry=user.gmail_token_expiry,
     )
-
 
 def refresh_if_expired(creds: Credentials, user, db: Session):
     if (creds.expiry is None or creds.expired) and creds.refresh_token:

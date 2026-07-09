@@ -6,17 +6,14 @@ from routers.auth import get_current_user, get_db
 
 router = APIRouter()
 
-FriendStatus = str  # 'active' | 'hidden' | 'blocked'
+FriendStatus = str
 VALID_STATUSES = {"active", "hidden", "blocked"}
-
 
 class FriendBody(BaseModel):
     friend_id: str
 
-
 class StatusBody(BaseModel):
-    status: str  # 'active' | 'hidden' | 'blocked'
-
+    status: str
 
 def _user_to_dict(user: User, status: FriendStatus) -> dict:
     return {
@@ -26,8 +23,6 @@ def _user_to_dict(user: User, status: FriendStatus) -> dict:
         "status": status,
     }
 
-
-# GET /friends — 내 친구 목록 (active + hidden + blocked 모두 반환, 프론트에서 필터)
 @router.get("/friends")
 def get_friends(
     db: Session = Depends(get_db),
@@ -41,8 +36,6 @@ def get_friends(
     )
     return [_user_to_dict(user, friend.status or "active") for friend, user in rows]
 
-
-# POST /friends — 친구 추가 (양방향 저장)
 @router.post("/friends")
 def add_friend(
     data: FriendBody,
@@ -60,14 +53,14 @@ def add_friend(
 
     already = db.query(Friend).filter_by(user_id=my_id, friend_id=data.friend_id).first()
     if already:
-        # 차단/숨김 상태였다면 active로 복구
+
         if already.status != "active":
             already.status = "active"
             db.commit()
         raise HTTPException(status_code=400, detail="이미 친구입니다.")
 
     db.add(Friend(user_id=my_id, friend_id=data.friend_id, status="active"))
-    # 상대방 목록에 없으면 추가 (이미 있으면 냅둠)
+
     reverse = db.query(Friend).filter_by(user_id=data.friend_id, friend_id=my_id).first()
     if not reverse:
         db.add(Friend(user_id=data.friend_id, friend_id=my_id, status="active"))
@@ -79,8 +72,6 @@ def add_friend(
 
     return _user_to_dict(target, "active")
 
-
-# PATCH /friends/{friend_id} — 친구 상태 변경 (숨김/차단/복구)
 @router.patch("/friends/{friend_id}")
 def update_friend_status(
     friend_id: str,
@@ -101,8 +92,6 @@ def update_friend_status(
     db.commit()
     return {"ok": True, "status": data.status}
 
-
-# DELETE /friends/{friend_id} — 친구 삭제 (양방향 제거)
 @router.delete("/friends/{friend_id}")
 def remove_friend(
     friend_id: str,

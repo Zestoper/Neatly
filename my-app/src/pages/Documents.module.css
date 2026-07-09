@@ -82,7 +82,6 @@
   font-weight: 600;
 }
 
-/* 파일 드래그 앤 드롭 업로드 영역 — 공통 베이스 */
 .uploadZone,
 .uploadZoneDragOver,
 .uploadZoneLoading {
@@ -147,7 +146,6 @@
   margin-bottom: 12px;
 }
 
-/* Notion-style 행 목록 */
 .list {
   display: flex;
   flex-direction: column;
@@ -176,7 +174,6 @@
   border-top: 2px solid var(--color-accent);
 }
 
-/* 카드 내부 — 핸들과 본문을 가로로 배치 */
 .cardRow {
   display: flex;
   align-items: flex-start;
@@ -283,7 +280,6 @@
   text-overflow: ellipsis;
 }
 
-/* 태그 필터 */
 .tagFilterRow {
   display: flex;
   flex-wrap: wrap;
@@ -335,7 +331,6 @@
   font-weight: 600;
 }
 
-/* 카드 하단 태그 배지 */
 .cardTagList {
   display: flex;
   flex-wrap: wrap;
@@ -391,7 +386,6 @@
     font-size: 13px;
   }
 
-  /* 터치에서 hover 없으므로 삭제 버튼 항상 표시 */
   .cardDeleteBtn {
     display: flex;
     align-items: center;
@@ -399,7 +393,6 @@
     opacity: 1;
   }
 
-  /* 드래그 핸들은 터치에서 쓸 수 없으므로 숨김 */
   .cardDragHandle {
     display: none;
   }

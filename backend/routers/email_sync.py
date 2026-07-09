@@ -19,7 +19,6 @@ import re as _re
 
 router = APIRouter()
 
-
 def _classify_email_doc(
     subject: str,
     body: str,
@@ -80,7 +79,6 @@ def _classify_email_doc(
     except Exception:
         return None, []
 
-
 def sync_user_emails(user: User, db: Session) -> int:
     """
     user의 Gmail에서 마지막 동기화 이후 새 이메일을 가져와
@@ -89,24 +87,22 @@ def sync_user_emails(user: User, db: Session) -> int:
     반환값 : 새로 저장된 문서 수
     """
     if not user.gmail_access_token:
-        return 0  # Gmail 미연결 — 건너뜀
+        return 0
 
     creds = make_credentials(user)
     try:
         refresh_if_expired(creds, user, db)
     except Exception:
-        return 0  # 토큰 갱신 실패 — 조용히 건너뜀
+        return 0
 
     service = build("gmail", "v1", credentials=creds)
 
-    # 마지막 동기화 시각 이후의 메일만 조회
-    # gmail_last_sync가 없으면 24시간 이내 메일만 가져옴 (첫 실행 과부하 방지)
     if user.gmail_last_sync:
-        # Gmail query 형식: after:{Unix timestamp}
+
         after_ts = int(user.gmail_last_sync.replace(tzinfo=timezone.utc).timestamp())
         query = f"in:inbox after:{after_ts}"
     else:
-        # 첫 동기화: 오늘 0시 이후 메일만
+
         today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         after_ts = int(today_start.timestamp())
         query = f"in:inbox after:{after_ts}"
@@ -120,12 +116,11 @@ def sync_user_emails(user: User, db: Session) -> int:
 
     messages = results.get("messages", [])
     if not messages:
-        # 새 메일 없어도 동기화 시각은 업데이트
+
         user.gmail_last_sync = datetime.now(timezone.utc)
         db.commit()
         return 0
 
-    # 이미 저장된 gmail_message_id 캐시 — 같은 메일을 중복 저장하지 않음
     existing_message_ids = set(
         row[0]
         for row in db.query(Document.gmail_message_id)
@@ -136,7 +131,6 @@ def sync_user_emails(user: User, db: Session) -> int:
         .all()
     )
 
-    # AI 분류에 사용할 사용자 폴더·태그 목록 (루프 전 한 번만 조회)
     email_folders = db.query(Folder).filter(
         Folder.user_id == user.id,
         Folder.folder_type == "email",
@@ -164,7 +158,6 @@ def sync_user_emails(user: User, db: Session) -> int:
         body    = _extract_body(detail["payload"])
         raw_html = _extract_html(detail["payload"])
 
-        # AI 요약 생성
         summary = None
         if body.strip():
             try:
@@ -181,7 +174,6 @@ def sync_user_emails(user: User, db: Session) -> int:
             except Exception:
                 pass
 
-        # AI 자동 분류: 폴더 + 태그
         folder_id_auto, tag_ids_auto = _classify_email_doc(
             subject, body, folder_dicts, tag_dicts
         )
@@ -208,14 +200,11 @@ def sync_user_emails(user: User, db: Session) -> int:
 
     db.commit()
 
-    # 동기화 완료 시각 기록
     user.gmail_last_sync = datetime.now(timezone.utc)
     db.commit()
 
     return saved
 
-
-# POST /emails/sync — 현재 사용자의 Gmail을 수동으로 즉시 동기화 (Premium 전용)
 @router.post("/emails/sync")
 def manual_sync(
     db: Session = Depends(get_db),
@@ -226,12 +215,10 @@ def manual_sync(
 
     count = sync_user_emails(current_user, db)
     return {
-        "synced": count,                              # 새로 저장된 문서 수
-        "last_sync": current_user.gmail_last_sync,   # 동기화 완료 시각
+        "synced": count,
+        "last_sync": current_user.gmail_last_sync,
     }
 
-
-# GET /emails/sync/status — 마지막 동기화 시각 + 안 읽은 새 문서 수 반환 (Premium 전용)
 @router.get("/emails/sync/status")
 def sync_status(
     db: Session = Depends(get_db),
@@ -240,8 +227,6 @@ def sync_status(
     if current_user.plan != "PREMIUM":
         return {"last_sync": None, "new_count": 0}
 
-    # gmail_last_view 이후에 생성된 이메일 출처 문서 수 계산
-    # last_view가 없으면 gmail_last_sync 기준, 그것도 없으면 0
     since = current_user.gmail_last_view or current_user.gmail_last_sync
     new_count = 0
     if since:
@@ -250,7 +235,7 @@ def sync_status(
             .filter(
                 Document.user_id == current_user.id,
                 Document.deleted_at == None,
-                Document.raw_html != None,   # 이메일 출처 문서만
+                Document.raw_html != None,
                 Document.created_at > since,
             )
             .count()
@@ -258,8 +243,6 @@ def sync_status(
 
     return {"last_sync": current_user.gmail_last_sync, "new_count": new_count}
 
-
-# POST /emails/mark-viewed — 사용자가 Emails 페이지를 열었음을 기록 → 뱃지 카운트 초기화
 @router.post("/emails/mark-viewed")
 def mark_emails_viewed(
     db: Session = Depends(get_db),

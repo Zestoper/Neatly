@@ -276,7 +276,6 @@ export default function Calendar() {
                 })}
             </div>
 
-            {/* 오늘 일정 리스트 — 이번 달 보고 있을 때만 표시 */}
             {year === today.getFullYear() && month === today.getMonth() + 1 && (
                 <div className={styles.todaySection}>
                     <p className={styles.todaySectionLabel}>오늘 일정</p>

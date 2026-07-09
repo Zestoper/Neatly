@@ -17,7 +17,6 @@
   opacity: 1;
 }
 
-/* 읽기 모드 */
 .title {
   font-size: 28px;
   font-weight: 700;
@@ -33,14 +32,13 @@
   white-space: pre-wrap;
 }
 
-/* emailFrame : 이메일 원본 HTML을 렌더링하는 iframe */
 .emailFrame {
   margin-top: 16px;
   width: 100%;
   min-height: 600px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  /* height를 고정하지 않고 내용에 따라 늘어나도록 JS 없이 min-height로 처리 */
+
 }
 
 .folderBadge {
@@ -68,7 +66,6 @@
   cursor: pointer;
 }
 
-/* AI 요약 박스 */
 .summaryBox {
   margin-top: 20px;
   padding: 16px 20px;
@@ -95,23 +92,21 @@
   line-height: 1.7;
 }
 
-/* FREE 플랜일 때 텍스트 흐림 처리 */
 .summaryTextBlurred {
   filter: blur(4px);
   user-select: none;
 }
 
-/* 흐린 텍스트 위에 덮는 반투명 오버레이 */
 .summaryOverlay {
-  position: absolute;  /* summaryBox 기준으로 위치 고정 */
-  inset: 0;            /* top/right/bottom/left 모두 0 = 박스 전체를 덮음 */
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.15); /* 살짝 밝은 반투명막 */
-  backdrop-filter: blur(1px);            /* 오버레이 자체도 약간 흐리게 */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(1px);
   border-radius: 8px;
 }
 
@@ -121,7 +116,6 @@
   font-weight: 500;
 }
 
-/* 업그레이드 버튼 */
 .upgradeButton {
   font-size: 12px;
   padding: 6px 14px;
@@ -132,7 +126,6 @@
   cursor: pointer;
 }
 
-/* 마크다운 렌더링 영역 */
 .markdownBody {
   margin-top: 20px;
   font-size: 15px;
@@ -244,7 +237,6 @@
   margin-right: 6px;
 }
 
-/* 토글 블록 */
 .markdownBody details {
   margin: 10px 0;
   border: 1px solid var(--color-border);
@@ -280,7 +272,6 @@
   padding: 10px 14px;
 }
 
-/* 편집 모드 미리보기 토글 */
 .editBodyWrap {
   margin-bottom: 8px;
 }
@@ -317,7 +308,6 @@
   font-weight: 600;
 }
 
-/* 편집창 아래 마크다운 힌트 한 줄 */
 .markdownHint {
   margin-top: 6px;
   font-size: 11.5px;
@@ -326,7 +316,6 @@
   letter-spacing: 0.01em;
 }
 
-/* 슬래시 커맨드 드롭다운 */
 .slashMenu {
   position: fixed;
   background: var(--color-bg);
@@ -367,7 +356,6 @@
   color: var(--color-text-gray);
 }
 
-/* 수정 모드 */
 .editTitle {
   display: block;
   width: 100%;
@@ -431,21 +419,18 @@
   font-size: 14px;
 }
 
-/* 읽기 모드 태그 목록 — 폴더 배지 바로 아래에 가로로 나열 */
 .tagReadList {
   display: flex;
-  flex-wrap: wrap;   /* 태그가 많으면 다음 줄로 넘김 */
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
   margin-bottom: 4px;
 }
 
-/* 수정 모드 태그 에디터 — 배지 목록 + 입력창을 묶는 컨테이너 */
 .tagEditor {
   margin-top: 16px;
 }
 
-/* 태그 배지들을 가로로 나열하는 행 */
 .tagList {
   display: flex;
   flex-wrap: wrap;
@@ -453,7 +438,6 @@
   margin-bottom: 8px;
 }
 
-/* 개별 태그 배지 — 회색 pill 형태 */
 .tagBadge {
   display: inline-flex;
   align-items: center;
@@ -462,11 +446,10 @@
   color: var(--color-text-gray);
   background: var(--color-sidebar);
   border: 1px solid var(--color-border);
-  border-radius: 999px;   /* 완전한 pill 모양 */
+  border-radius: 999px;
   padding: 2px 10px;
 }
 
-/* 태그 제거 버튼 (×) — 배지 안 오른쪽에 붙음 */
 .tagRemoveBtn {
   background: transparent;
   border: none;
@@ -481,7 +464,6 @@
   color: var(--color-text);
 }
 
-/* 태그 이름 입력창 — 수정 모드에서 Enter로 태그 추가 */
 .tagInput {
   font-size: 13px;
   color: var(--color-text);
@@ -497,7 +479,6 @@
 .tagInput::placeholder {
   color: var(--color-text-gray);
 }
-
 
 @media (max-width: 767px) {
   .container {

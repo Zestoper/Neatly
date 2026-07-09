@@ -30,7 +30,7 @@ type Document = {
     raw_html: string | null;
     summary: string | null;
     folder_id: string | null;
-    tags: Tag[];  // tags : 이 문서에 달린 태그 목록
+    tags: Tag[];
 };
 
 type Folder = {
@@ -279,7 +279,6 @@ export default function DocumentDetail() {
         }
     };
     handleSaveRef.current = handleSave;
-
 
     if (loading) return <p>불러오는 중...</p>;
     if (!doc) return <p>문서를 찾을 수 없습니다.</p>;

@@ -18,23 +18,21 @@ type Folder = {
 };
 
 type SidebarProps = {
-    isOpen: boolean;      // isOpen : true면 펼침, false면 접힘
-    onToggle: () => void; // onToggle : 햄버거 버튼 클릭 시 호출
+    isOpen: boolean;
+    onToggle: () => void;
 };
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
-    // 현재 경로가 target과 일치하면 활성 스타일 클래스 반환
     const navClass = (target: string) =>
         pathname === target ? styles.navItemActive : styles.navItem;
-    // folders : Documents 섹션 전용 폴더 목록 (folder_type = "document")
+
     const [folders, setFolders] = useState<Folder[]>([]);
     const [adding, setAdding] = useState(false);
     const [newName, setNewName] = useState("");
 
-    // emailFolders : Emails 섹션 전용 폴더 목록 (folder_type = "email")
     const [emailFolders, setEmailFolders] = useState<Folder[]>([]);
     const [addingEmailFolder, setAddingEmailFolder] = useState(false);
     const [newEmailFolderName, setNewEmailFolderName] = useState("");
@@ -53,9 +51,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
     const [newEmailCount, setNewEmailCount] = useState(0);
-    // newEmailCount : 마지막으로 Emails 페이지를 열었던 이후 자동 동기화로 추가된 새 문서 수
 
-    // Premium이면 5분마다 새 이메일 뱃지 카운트 갱신
     useEffect(() => {
         if (!isPremium) return;
         const fetchCount = () => {
@@ -81,7 +77,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const [reorderDragOverId, setReorderDragOverId] = useState<string | null>(null);
 
     const applyOrder = (data: Folder[], key: string) => {
-        // localStorage에 저장된 순서가 있으면 그 순서대로 정렬
+
         const saved: string[] = JSON.parse(localStorage.getItem(key) ?? "[]");
         if (!saved.length) return data;
         return [...data].sort((a, b) => {
@@ -179,7 +175,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         }
     };
 
-    // Documents 폴더 순서 변경
     const handleReorder = (draggedId: string, targetId: string) => {
         if (draggedId === targetId) return;
         const next = [...folders];
@@ -191,7 +186,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         localStorage.setItem("folderOrder", JSON.stringify(next.map((f) => f.id)));
     };
 
-    // Emails 폴더 순서 변경 — 별도 localStorage 키 사용
     const handleEmailReorder = (draggedId: string, targetId: string) => {
         if (draggedId === targetId) return;
         const next = [...emailFolders];
@@ -204,14 +198,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem("token"); // token 삭제 → 로그아웃 처리
-        localStorage.removeItem("plan");  // plan 삭제
+        localStorage.removeItem("token");
+        localStorage.removeItem("plan");
         navigate("/login");
     };
 
     return (
         <div className={isOpen ? styles.sidebar : styles.sidebarCollapsed}>
-            {/* 상단 헤더 — 로고와 햄버거 버튼 */}
+
             <div className={styles.sidebarHeader}>
                 <button className={styles.toggleButton} onClick={onToggle}>
                     ☰
@@ -219,7 +213,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 {isOpen && <Link to="/" className={styles.logo}>Neatly</Link>}
             </div>
 
-            {/* isOpen일 때만 나머지 내용 렌더링 */}
             {isOpen && (
             <>
             <button
@@ -235,10 +228,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <Link to="/search" className={navClass("/search")}>Search</Link>
                 <Link to="/documents" className={navClass("/documents")}>Documents</Link>
 
-                {/* 폴더 목록 */}
                 {folders.map((folder) =>
                     editingId === folder.id ? (
-                        // 수정 모드 — 인라인 입력창
+
                         <div key={folder.id} className={styles.folderInput}>
                             <input
                                 autoFocus
@@ -251,7 +243,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             />
                         </div>
                     ) : (
-                        // 읽기 모드 — 이름 + 수정·삭제 버튼
+
                         <div
                             key={folder.id}
                             className={
@@ -264,10 +256,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             onDragOver={(e) => {
                                 e.preventDefault();
                                 if (reorderDragId) {
-                                    // 폴더 순서 변경 드래그 — 드롭 위치 강조
+
                                     setReorderDragOverId(folder.id);
                                 } else {
-                                    // 문서/이메일 드래그 — 폴더 강조
+
                                     setDragOverFolderId(folder.id);
                                 }
                             }}
@@ -283,11 +275,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 if (!data) return;
 
                                 if (data.startsWith("folder-reorder:")) {
-                                    // 폴더 순서 변경 드래그 — 드롭 위치로 이동
+
                                     const draggedId = data.slice("folder-reorder:".length);
                                     handleReorder(draggedId, folder.id);
                                 } else if (data.startsWith("email:")) {
-                                    // 이메일 드래그 — AI 요약 후 해당 폴더에 문서로 저장
+
                                     const emailId = data.slice("email:".length);
                                     await api.post(
                                         `/emails/${emailId}/to-document`,
@@ -295,12 +287,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                         { params: { folder_id: folder.id } },
                                     );
                                 } else {
-                                    // 문서 드래그 — 폴더만 이동
+
                                     await moveDocumentToFolder(data, folder.id);
                                 }
                             }}
                         >
-                            {/* 드래그 핸들 — 호버 시 표시, 클릭해서 드래그하면 순서 변경 */}
+
                             <div
                                 className={styles.dragHandle}
                                 draggable
@@ -344,7 +336,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     )
                 )}
 
-                {/* adding이 true면 입력창, false면 추가 버튼 */}
                 {adding ? (
                     <div className={styles.folderInput}>
                         <input
@@ -352,8 +343,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") handleAddFolder();   // Enter : 저장
-                                if (e.key === "Escape") setAdding(false);  // Escape : 취소
+                                if (e.key === "Enter") handleAddFolder();
+                                if (e.key === "Escape") setAdding(false);
                             }}
                             onBlur={() => { setAdding(false); setNewName(""); }}
                             placeholder="폴더 이름"
@@ -375,11 +366,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     )}
                 </Link>
 
-                {/* Emails 아래 폴더 목록 — folder_type이 "email"인 폴더만 표시 */}
                 <p className={styles.sectionLabel}>폴더</p>
                 {emailFolders.map((folder) =>
                     editingId === folder.id ? (
-                        // 수정 모드 — 인라인 입력창
+
                         <div key={`ef-${folder.id}`} className={styles.folderInput}>
                             <input
                                 autoFocus
@@ -431,7 +421,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 }
                             }}
                         >
-                            {/* 드래그 핸들 — 이메일 폴더 순서 변경 */}
+
                             <div
                                 className={styles.dragHandle}
                                 draggable
@@ -500,7 +490,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     </button>
                 )}
 
-                {/* Premium 플랜일 때만 이메일 필터 목록 표시 */}
                 {isPremium && (
                     <p className={styles.sectionLabel}>필터</p>
                 )}
@@ -508,7 +497,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     <div
                         className={filterDragOver ? styles.filterDropZoneActive : styles.filterDropZone}
                         onDragOver={(e) => {
-                            e.preventDefault(); // 드롭 허용 — 이게 없으면 onDrop이 발동 안 됨
+                            e.preventDefault();
                             setFilterDragOver(true);
                         }}
                         onDragLeave={() => setFilterDragOver(false)}
@@ -517,7 +506,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             setFilterDragOver(false);
                             const text = e.dataTransfer.getData("text/plain").trim();
                             if (!text) return;
-                            // 드롭된 텍스트로 필터 생성 — 이미 있으면 서버가 기존 것을 반환
+
                             const newFilter = await createEmailFilter(text);
                             setFilters((prev) =>
                                 prev.find((f) => f.id === newFilter.id) ? prev : [...prev, newFilter]
@@ -530,7 +519,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     to={`/emails?sender=${encodeURIComponent(f.sender)}`}
                                     className={styles.folderItem}
                                 >
-                                    {/* 이름이 있으면 이름 표시, 없으면 이메일 주소 표시 */}
+
                                     <span>{f.name ?? f.sender}</span>
                                     {f.name && (
                                         <span className={styles.filterEmail}>{f.sender}</span>
@@ -575,7 +564,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         )}
                     </div>
                 )}
-                {/* 스팸 링크 — 모든 플랜에서 접근 가능 */}
+
                 <Link to="/emails?label=SPAM" className={styles.navSubItem}>
                     스팸
                 </Link>

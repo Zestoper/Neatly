@@ -4,7 +4,6 @@
   gap: 28px;
 }
 
-/* 상단 인사 + 플랜 배지 */
 .header {
   display: flex;
   align-items: baseline;
@@ -29,7 +28,6 @@
   text-transform: uppercase;
 }
 
-/* 통계 행 */
 .statsRow {
   display: flex;
   gap: 10px;
@@ -60,7 +58,6 @@
   line-height: 1;
 }
 
-/* 최근 문서 섹션 */
 .section {
   display: flex;
   flex-direction: column;
@@ -121,7 +118,6 @@
   flex-shrink: 0;
 }
 
-/* Premium 유도 카드 */
 .premiumCard {
   padding: 22px 24px;
   border: 1px solid var(--color-border);
@@ -139,7 +135,6 @@
   flex-wrap: wrap;
 }
 
-/* 브리핑 날짜 선택 / 폴더 선택 드롭다운 — 공통 스타일 */
 .dateInput,
 .folderSelect {
   margin-left: auto;
@@ -195,7 +190,6 @@
   line-height: 1.65;
 }
 
-/* 블러 미리보기 영역 */
 .premiumPreview {
   position: relative;
   padding: 16px;
@@ -240,7 +234,6 @@
   cursor: pointer;
 }
 
-/* 기능 목록 */
 .featureList {
   display: flex;
   flex-direction: column;
@@ -286,7 +279,6 @@
   opacity: 1;
 }
 
-/* 실제 브리핑 텍스트 영역 */
 .briefingContent {
   display: flex;
   flex-direction: column;
@@ -324,7 +316,6 @@
   padding: 8px 0;
 }
 
-/* Gmail 동기화 행 */
 .gmailSyncRow {
   display: flex;
   align-items: center;

@@ -7,7 +7,6 @@ export const summarizeDocument = async (content: string) => {
 
 export type ChatHistory = { role: "user" | "ai"; text: string }[];
 
-// POST /ai/ask — document_id 또는 contextText 중 하나로 AI에게 질문 (Standard 이상)
 export const askAi = async (opts: {
     documentId?: string;
     contextText?: string;

@@ -8,7 +8,6 @@ from models import User
 
 router = APIRouter()
 
-
 @router.get("/search")
 def search_documents(
     q: str = Query("", min_length=0),
@@ -20,7 +19,6 @@ def search_documents(
 
     term = f"%{q.strip()}%"
 
-    # 제목·본문·요약에서 직접 매칭
     text_matches = db.query(Document).filter(
         Document.user_id == current_user.id,
         Document.deleted_at == None,
@@ -32,7 +30,6 @@ def search_documents(
         ),
     ).all()
 
-    # 태그 이름 매칭 — 해당 태그가 달린 문서 조회
     tag_matched_ids = (
         db.query(DocumentTag.document_id)
         .join(Tag, Tag.id == DocumentTag.tag_id)
@@ -52,7 +49,6 @@ def search_documents(
             Document.id.in_(tag_doc_ids),
         ).all()
 
-    # 합치고 중복 제거 — 최신순 정렬
     seen: set[str] = set()
     results = []
     for doc in text_matches + tag_matches:

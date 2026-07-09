@@ -48,7 +48,7 @@ export default function Settings() {
             setPhone(data.phone ?? "");
             setBirthDate(data.birth_date ?? "");
             setGmailConnected(!!data.gmail_access_token);
-            // !! : truthy/falsy 값을 명시적으로 boolean으로 변환
+
         });
     }, []);
 
@@ -116,7 +116,7 @@ export default function Settings() {
                 <div className={styles.field}>
                     <label className={styles.label}>이메일</label>
                     <input className={styles.input} value={email} disabled />
-                    {/* disabled : 이메일은 수정 불가 */}
+
                 </div>
             </section>
 

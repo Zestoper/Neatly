@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { getTodayEvents } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 
-const POLL_INTERVAL = 60 * 1000; // 1분마다 — 백그라운드에서 배터리 절약
+const POLL_INTERVAL = 60 * 1000;
 
 function getTodayStr() {
     const d = new Date();
@@ -59,7 +59,6 @@ export function useCalendarNotifications() {
                     if (ev.document) links.push({ label: "문서로 이동", path: `/documents/${ev.document.id}` });
                     if (ev.email_id) links.push({ label: "이메일로 이동", path: `/emails/${ev.email_id}` });
 
-                    // 5분 전 사전 알림 (앱을 늦게 켰을 때도 잡히도록 7분까지 허용)
                     if (!s.warned && diffMin > 0 && diffMin <= 7) {
                         const body = `${timeStr} ${ev.title} 5분 후 시작됩니다`;
                         if ("Notification" in window && Notification.permission === "granted") {
@@ -70,7 +69,6 @@ export function useCalendarNotifications() {
                         changed = true;
                     }
 
-                    // 정시 알림: 앱을 늦게 켜도 잡히도록 15분까지 허용
                     if (!s.started && diffMin <= 0 && diffMin > -15) {
                         const body = `${timeStr} ${ev.title} 시간입니다`;
                         if ("Notification" in window && Notification.permission === "granted") {
@@ -86,7 +84,7 @@ export function useCalendarNotifications() {
 
                 if (changed) saveState(state);
             } catch {
-                // 네트워크 오류 무시
+
             }
         };
 
@@ -96,7 +94,6 @@ export function useCalendarNotifications() {
             check();
         }
 
-        // 모바일에서 탭이 백그라운드에서 돌아올 때 즉시 체크
         const handleVisibility = () => {
             if (document.visibilityState === "visible") check();
         };

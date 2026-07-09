@@ -11,7 +11,7 @@ export default function Register() {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [birthDate, setBirthDate] = useState("");
-    const [agreed, setAgreed] = useState(false); // agreed : 개인정보 동의 여부
+    const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
     const { showToast } = useToast();
 
@@ -43,7 +43,7 @@ export default function Register() {
     return (
         <div className={styles.page}>
             <div className={`${styles.card} ${styles.cardWide}`}>
-                {/* ${styles.card} ${styles.cardWide} : 두 클래스를 동시에 적용 */}
+
                 <p className={styles.title}>Neatly</p>
 
                 <input

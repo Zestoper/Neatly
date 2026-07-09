@@ -1,8 +1,8 @@
 import { Component, type ReactNode } from "react";
 import {
-    BrowserRouter, // BrowserRouter : URL 기반 라우팅을 가능하게 하는 컨테이너
-    Routes,        // Routes : 여러 Route 중 현재 URL에 맞는 것 하나만 렌더링
-    Route,         // Route : path와 컴포넌트를 매핑하는 단위
+    BrowserRouter,
+    Routes,
+    Route,
 } from "react-router-dom";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -41,12 +41,11 @@ import EmailDetail from "./pages/EmailDetail";
 import EmailCompose from "./pages/EmailCompose";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ProtectedRoute from "./components/ProtectedRoute"; // ProtectedRoute : 로그인 여부를 확인하는 래퍼 컴포넌트
-import Layout from "./components/Layout";               // Layout : 사이드바 + 메인 영역 레이아웃
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 import { ToastProvider } from "./context/ToastContext";
 import { RefreshProvider } from "./context/RefreshContext";
 
-// 앱 전체 라우팅 설정
 export default function App() {
     return (
         <ErrorBoundary>
@@ -54,7 +53,7 @@ export default function App() {
         <ToastProvider>
         <BrowserRouter>
             <Routes>
-                {/* path="/" : 루트 경로 — 로그인한 사용자만 접근 가능 */}
+
                 <Route
                     path="/"
                     element={

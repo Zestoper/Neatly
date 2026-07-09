@@ -16,23 +16,19 @@ client = Groq(api_key=os.environ["GROQ_API_KEY"])
 GROQ_MODEL_FAST = "llama-3.1-8b-instant"
 GROQ_MODEL_SMART = "llama-3.3-70b-versatile"
 
-
 class SummaryRequest(BaseModel):
     content: str
 
-
 class HistoryMessage(BaseModel):
-    role: str   # "user" or "ai"
+    role: str
     text: str
 
 class AskRequest(BaseModel):
     document_id: str | None = None
-    text: str | None = None       # 이메일 등 document_id 없이 텍스트를 직접 전달할 때 사용
+    text: str | None = None
     question: str
     history: list[HistoryMessage] = []
 
-
-# POST /ai/summarize — 텍스트를 받아 AI 요약 결과 반환
 @router.post("/ai/summarize")
 def summarize(data: SummaryRequest):
     try:
@@ -54,8 +50,6 @@ def summarize(data: SummaryRequest):
     except Exception:
         raise HTTPException(status_code=502, detail="AI 요약에 실패했습니다. 잠시 후 다시 시도해주세요.")
 
-
-# POST /ai/ask — 문서 본문을 컨텍스트로 질문에 답변 (Standard 이상)
 @router.post("/ai/ask")
 def ask_document(
     data: AskRequest,

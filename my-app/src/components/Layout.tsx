@@ -19,12 +19,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }).catch(() => {});
     }, []);
 
-    // 모바일에서 페이지 이동 시 사이드바 자동 닫기
     useEffect(() => {
         if (isMobile()) setSidebarOpen(false);
     }, [location.pathname]);
 
-    // 창 크기 변경 시 데스크탑이면 사이드바 자동 열기
     useEffect(() => {
         const handler = () => { if (!isMobile()) setSidebarOpen(true); };
         window.addEventListener("resize", handler);
@@ -35,13 +33,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className={styles.container}>
             <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen((prev) => !prev)} />
 
-            {/* 모바일 — 사이드바 열렸을 때 뒤 영역 어둡게 + 클릭 시 닫기 */}
             {sidebarOpen && (
                 <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />
             )}
 
             <main className={styles.main}>
-                {/* 모바일 전용 상단 바 */}
+
                 {!sidebarOpen && (
                     <div className={styles.mobileHeader}>
                         <button

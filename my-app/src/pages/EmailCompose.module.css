@@ -49,7 +49,6 @@
   text-transform: uppercase;
 }
 
-/* 입력창 / 텍스트에어리어 공통 베이스 */
 .input,
 .textarea {
   width: 100%;
@@ -79,7 +78,6 @@
   opacity: 0.7;
 }
 
-/* 의도 입력 + AI 버튼 한 줄 배치 */
 .intentRow {
   display: flex;
   gap: 10px;
@@ -173,7 +171,6 @@
   cursor: default;
 }
 
-/* 전송 완료 화면 */
 .sentBox {
   margin-top: 80px;
   display: flex;
@@ -220,7 +217,7 @@
   }
 
   .input {
-    font-size: 16px; /* iOS에서 자동 zoom 방지 */
+    font-size: 16px;
     padding: 11px 14px;
   }
 
@@ -237,7 +234,7 @@
   }
 
   .textarea {
-    font-size: 16px; /* iOS 자동 zoom 방지 */
+    font-size: 16px;
     max-height: 40dvh;
   }
 

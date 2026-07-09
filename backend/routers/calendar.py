@@ -8,7 +8,6 @@ from datetime import datetime, date
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
-
 class EventCreate(BaseModel):
     title: str
     description: str | None = None
@@ -17,7 +16,6 @@ class EventCreate(BaseModel):
     email_id: str | None = None
     email_subject: str | None = None
 
-
 class EventUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
@@ -25,7 +23,6 @@ class EventUpdate(BaseModel):
     document_id: str | None = None
     email_id: str | None = None
     email_subject: str | None = None
-
 
 def _event_dict(ev: CalendarEvent, db: Session) -> dict:
     doc = None
@@ -45,7 +42,6 @@ def _event_dict(ev: CalendarEvent, db: Session) -> dict:
         "created_at": ev.created_at.isoformat(),
     }
 
-
 @router.get("/events")
 def list_events(
     year: int | None = None,
@@ -62,7 +58,6 @@ def list_events(
         q = q.filter(CalendarEvent.event_date >= start, CalendarEvent.event_date <= end)
     events = q.order_by(CalendarEvent.event_date).all()
     return [_event_dict(e, db) for e in events]
-
 
 @router.get("/events/today")
 def today_events(
@@ -91,7 +86,6 @@ def today_events(
     )
     return [_event_dict(e, db) for e in events]
 
-
 @router.post("/events")
 def create_event(
     body: EventCreate,
@@ -111,7 +105,6 @@ def create_event(
     db.commit()
     db.refresh(ev)
     return _event_dict(ev, db)
-
 
 @router.put("/events/{event_id}")
 def update_event(
@@ -140,7 +133,6 @@ def update_event(
     db.commit()
     db.refresh(ev)
     return _event_dict(ev, db)
-
 
 @router.delete("/events/{event_id}")
 def delete_event(
