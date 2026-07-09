@@ -27,7 +27,6 @@ export default function Search() {
     const [searchParams, setSearchParams] = useSearchParams();
     const { showToast } = useToast();
 
-    // URL의 ?q= 파라미터를 초기값으로 사용 — 링크 공유·뒤로가기 시 검색어 유지
     const initialQuery = searchParams.get("q") ?? "";
     const [query, setQuery] = useState(initialQuery);
     const [results, setResults] = useState<SearchResult[]>([]);
@@ -37,7 +36,6 @@ export default function Search() {
 
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // 페이지 진입 시 검색창에 포커스 + 전체 문서 최신순 로드
     useEffect(() => {
         inputRef.current?.focus();
         getDocuments()
@@ -47,7 +45,6 @@ export default function Search() {
             .catch(() => showToast("문서 목록을 불러오지 못했습니다."));
     }, []);
 
-    // URL에 q가 있으면 자동으로 검색 실행
     useEffect(() => {
         if (initialQuery) {
             runSearch(initialQuery);
@@ -64,7 +61,7 @@ export default function Search() {
         }
         setLoading(true);
         setSearched(true);
-        // URL 쿼리스트링 동기화 — 뒤로가기 시 검색어 복원 가능
+
         setSearchParams({ q: trimmed }, { replace: true });
         try {
             const data = await searchDocuments(trimmed);
@@ -91,7 +88,6 @@ export default function Search() {
             day: "numeric",
         });
 
-    // 검색어를 결과 텍스트에서 강조 표시
     const highlight = (text: string) => {
         if (!query.trim()) return text;
         const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -107,7 +103,6 @@ export default function Search() {
         <div className={styles.container}>
             <h1 className={styles.heading}>검색</h1>
 
-            {/* 검색 입력창 */}
             <div className={styles.searchBar}>
                 <input
                     ref={inputRef}
@@ -126,7 +121,6 @@ export default function Search() {
                 </button>
             </div>
 
-            {/* 상태 메시지 */}
             {searched && !loading && (
                 <p className={styles.resultCount}>
                     {results.length > 0
@@ -135,7 +129,6 @@ export default function Search() {
                 </p>
             )}
 
-            {/* 검색 결과 목록 — 검색어 없으면 전체 최신순 */}
             <div className={styles.list}>
                 {(searched ? results : allDocs).map((doc) => (
                     <div
@@ -148,12 +141,10 @@ export default function Search() {
                             <p className={styles.cardDate}>{formatDate(doc.created_at)}</p>
                         </div>
 
-                        {/* 요약이 있으면 요약, 없으면 본문 앞부분 표시 */}
                         <p className={styles.cardSnippet}>
                             {highlight((doc.summary || doc.raw_text).slice(0, 200))}
                         </p>
 
-                        {/* 태그 목록 */}
                         {doc.tags.length > 0 && (
                             <div className={styles.tagRow}>
                                 {doc.tags.map((tag) => (
@@ -164,7 +155,6 @@ export default function Search() {
                             </div>
                         )}
 
-                        {/* 이메일 발신자 표시 */}
                         {doc.sender && (
                             <p className={styles.senderMeta}>
                                 {highlight(doc.sender.includes("<")
@@ -173,7 +163,6 @@ export default function Search() {
                             </p>
                         )}
 
-                        {/* 이메일 출처 표시 */}
                         {doc.raw_html && (
                             <span className={styles.emailBadge}>이메일</span>
                         )}

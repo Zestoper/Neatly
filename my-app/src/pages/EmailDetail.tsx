@@ -20,7 +20,6 @@ export default function EmailDetail() {
     const [markingSpam, setMarkingSpam] = useState(false);
     const [markedSpam, setMarkedSpam] = useState(false);
     const [spamError, setSpamError] = useState<string | null>(null);
-    // spamError : 스팸 처리/해제 실패 메시지 — null이면 오류 없음
 
     const [unmarkingSpam, setUnmarkingSpam] = useState(false);
     const [unmarkedSpam, setUnmarkedSpam] = useState(false);
@@ -80,7 +79,7 @@ export default function EmailDetail() {
             setMarkedSpam(true);
         } catch (err: any) {
             if (err.response?.status === 403) {
-                // gmail.readonly 토큰으로 시도 — Settings에서 재연결 필요
+
                 setSpamError("Gmail 권한이 부족합니다. Settings에서 Gmail을 다시 연결해주세요.");
             } else {
                 setSpamError("오류가 발생했습니다. 다시 시도해주세요.");
@@ -131,16 +130,15 @@ export default function EmailDetail() {
 
     return (
         <div className={styles.container}>
-            {/* 뒤로 가기 */}
+
             <button className={styles.backButton} onClick={() => navigate("/emails")}>
                 ← Emails
             </button>
 
-            {/* 제목 + 스팸 버튼 */}
             <div className={styles.header}>
                 <h1 className={styles.subject}>{email.subject}</h1>
                 <div className={styles.actions}>
-                    {/* 스팸함 메일이면 해제 버튼, 일반 메일이면 스팸 처리 버튼 */}
+
                     {(email.is_spam && !unmarkedSpam) ? (
                         <button
                             className={styles.spamButton}
@@ -171,7 +169,6 @@ export default function EmailDetail() {
                 </div>
             </div>
 
-            {/* 발신자 · 날짜 메타 */}
             <div className={styles.meta}>
                 <div className={styles.metaAvatar}>
                     {email.from_.replace(/<.*>/, "").trim().charAt(0).toUpperCase() || "?"}
@@ -182,10 +179,8 @@ export default function EmailDetail() {
                 </div>
             </div>
 
-            {/* 스팸 처리 실패 시 안내 메시지 */}
             {spamError && <p className={styles.errorMsg}>{spamError}</p>}
 
-            {/* AI 요약 */}
             {email.summary && (() => {
                 const plan = localStorage.getItem("plan");
                 const isFree = plan !== "STANDARD" && plan !== "PREMIUM";
@@ -214,7 +209,6 @@ export default function EmailDetail() {
 
             <hr className={styles.divider} />
 
-            {/* 이메일 본문 */}
             {email.raw_html ? (
                 <iframe
                     className={styles.emailFrame}

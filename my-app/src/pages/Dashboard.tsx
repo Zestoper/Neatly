@@ -49,7 +49,7 @@ export default function Dashboard() {
                 setUserName(meData.data.name ?? null);
                 setGmailConnected(!!meData.data.gmail_access_token);
             } catch {
-                // 데이터 로드 실패 — 빈 상태 유지
+
             } finally {
                 setLoading(false);
             }
@@ -75,12 +75,11 @@ export default function Dashboard() {
     const [briefingLoading, setBriefingLoading] = useState(false);
     const [selectedFolder, setSelectedFolder] = useState<string>("");
     const [selectedDate, setSelectedDate] = useState<string>(
-        new Date().toLocaleDateString("en-CA") // YYYY-MM-DD (로컬 기준 오늘)
+        new Date().toLocaleDateString("en-CA")
     );
 
     const todayStr = new Date().toLocaleDateString("en-CA");
 
-    // Premium이면 전체 폴더 목록 로드
     useEffect(() => {
         if (!isPremium) return;
         getFolders()
@@ -88,17 +87,16 @@ export default function Dashboard() {
             .catch(() => {});
     }, [isPremium]);
 
-    // 날짜/폴더 기반 브리핑 로드 헬퍼
     const loadBriefing = async (folderId: string, date: string) => {
         setBriefing(null);
         setBriefingLoading(true);
         try {
             if (folderId) {
-                // 폴더 브리핑: 날짜 무관, 폴더 문서 전체 요약
+
                 const data = await generateBriefing(folderId);
                 setBriefing(data);
             } else {
-                // 날짜 브리핑: 해당 날짜 기존 브리핑 조회 → 없으면 생성
+
                 const existing = await getBriefingByDate(date);
                 if (existing.briefing) {
                     setBriefing(existing.briefing);
@@ -108,19 +106,17 @@ export default function Dashboard() {
                 }
             }
         } catch {
-            // 문서 없음 등 — 빈 상태 유지
+
         } finally {
             setBriefingLoading(false);
         }
     };
 
-    // 마운트 시 오늘 브리핑 자동 로드
     useEffect(() => {
         if (!isPremium) return;
         loadBriefing("", todayStr);
     }, [isPremium]);
 
-    // Gmail 동기화 상태 로드
     useEffect(() => {
         if (!isPremium) return;
         getSyncStatus()
@@ -169,19 +165,16 @@ export default function Dashboard() {
         }
     };
 
-    // 이번 주 문서 — 7일 이내 생성된 것만
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const thisWeekCount = documents.filter(
         (doc) => new Date(doc.created_at) >= oneWeekAgo
     ).length;
 
-    // 전체 문서에서 중복 없는 태그 수
     const uniqueTagCount = new Set(
         documents.flatMap((doc) => doc.tags.map((t) => t.id))
     ).size;
 
-    // 최근 3개 문서
     const recentDocs = documents
         .slice()
         .sort((a, b) => (a.created_at > b.created_at ? -1 : 1))
@@ -195,7 +188,6 @@ export default function Dashboard() {
     return (
         <div className={styles.container}>
 
-            {/* 상단 인사 + 플랜 배지 */}
             <div className={styles.header}>
                 <h1 className={styles.greeting}>
                     안녕하세요{userName ? ` ${userName}님` : ""}.
@@ -203,7 +195,6 @@ export default function Dashboard() {
                 <span className={styles.planBadge}>{plan}</span>
             </div>
 
-            {/* 통계 행 */}
             <div className={styles.statsRow}>
                 <div className={styles.statCard}>
                     <p className={styles.statLabel}>전체 문서</p>
@@ -219,7 +210,6 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* 최근 문서 */}
             {recentDocs.length > 0 && (
                 <div className={styles.section}>
                     <p className={styles.sectionLabel}>최근 문서</p>
@@ -238,7 +228,6 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* 오늘 일정 섹션 */}
             {todayEvents.length > 0 && (
                 <div className={styles.section}>
                     <p className={styles.sectionLabel}>오늘 일정</p>
@@ -263,7 +252,6 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* AI 브리핑 섹션 */}
             <div className={styles.premiumCard}>
                 <div className={styles.premiumCardHeader}>
                     <p className={styles.premiumCardTitle}>AI 브리핑</p>
@@ -317,7 +305,7 @@ export default function Dashboard() {
                         </p>
                     )
                 ) : (
-                    /* Non-premium: 블러 미리보기 + 업그레이드 유도 */
+
                     <div className={styles.premiumPreview}>
                         <p className={styles.premiumPreviewText}>
                             오늘 추가된 문서 3건을 분석했습니다. 주요 키워드는 계약, 일정, 피드백입니다.
@@ -333,7 +321,6 @@ export default function Dashboard() {
                 )}
             </div>
 
-            {/* Gmail 자동 분류 섹션 */}
             <div className={styles.premiumCard}>
                 <div className={styles.premiumCardHeader}>
                     <p className={styles.premiumCardTitle}>Gmail 자동 분류</p>

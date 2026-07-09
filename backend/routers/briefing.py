@@ -13,9 +13,7 @@ router = APIRouter()
 
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
-# Groq 클라이언트 — 모듈 로드 시 한 번만 생성
 groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
-
 
 def _generate_briefing_text(docs: list[Document]) -> str:
     """문서 목록을 받아 문서별 요약 + 전체 요약 형태의 브리핑 생성."""
@@ -66,20 +64,14 @@ def _generate_briefing_text(docs: list[Document]) -> str:
     except Exception as e:
         raise HTTPException(status_code=502, detail="AI 브리핑 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
 
-
 def _date_label(date_str: str) -> str:
     """'YYYY-MM-DD' → 'YYYY년 MM월 DD일'"""
     d = datetime.strptime(date_str, "%Y-%m-%d")
     return d.strftime("%Y년 %m월 %d일")
 
-
 def _today_str() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-
-# POST /briefing/generate — AI 일간 브리핑 생성 (Premium 전용)
-# date      : YYYY-MM-DD (없으면 오늘)
-# folder_id : 있으면 해당 폴더 문서만 요약 (날짜 무관, DB 저장 없이 반환)
 @router.post("/briefing/generate")
 def generate_daily_briefing(
     date: str | None = None,
@@ -98,7 +90,7 @@ def generate_daily_briefing(
     day_end = day_start + timedelta(days=1)
 
     if folder_id:
-        # 폴더 브리핑: 날짜 무관, 해당 폴더 전체 문서
+
         docs = db.query(Document).filter(
             Document.user_id == current_user.id,
             Document.deleted_at == None,
@@ -109,7 +101,6 @@ def generate_daily_briefing(
         briefing_text = _generate_briefing_text(docs)
         return {"id": None, "title": "폴더 브리핑", "content": briefing_text}
 
-    # 날짜 브리핑: 해당 날짜에 생성된 문서
     docs = db.query(Document).filter(
         Document.user_id == current_user.id,
         Document.deleted_at == None,
@@ -148,8 +139,6 @@ def generate_daily_briefing(
     db.refresh(new_doc)
     return {"id": str(new_doc.id), "title": new_doc.title, "content": briefing_text}
 
-
-# GET /briefing/date?date=YYYY-MM-DD — 특정 날짜 브리핑 조회 (없으면 null)
 @router.get("/briefing/date")
 def get_briefing_by_date(
     date: str,
@@ -174,8 +163,6 @@ def get_briefing_by_date(
         return {"briefing": None}
     return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text}}
 
-
-# GET /briefing/today — 오늘 브리핑 조회 (하위 호환 유지)
 @router.get("/briefing/today")
 def get_today_briefing(
     db: Session = Depends(get_db),

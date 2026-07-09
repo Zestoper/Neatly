@@ -23,12 +23,10 @@ from routers.friends import router as friends_router
 from routers.calendar import router as calendar_router
 from scheduler import start_scheduler
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
     yield
-
 
 app = FastAPI(lifespan=lifespan)
 

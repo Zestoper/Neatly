@@ -71,7 +71,6 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* Notion-style 검색 결과 행 */
 .resultCard {
   padding: 14px 8px;
   border-bottom: 1px solid var(--color-border);
@@ -123,7 +122,6 @@
   margin-bottom: 8px;
 }
 
-/* 검색어 강조 — accent 색상 */
 .highlight {
   background: transparent;
   color: var(--color-accent);
@@ -155,7 +153,6 @@
   margin-top: 4px;
 }
 
-/* 이메일 출처 배지 */
 .emailBadge {
   display: inline-block;
   font-size: 11px;

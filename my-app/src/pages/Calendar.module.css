@@ -200,7 +200,6 @@
   opacity: 0.7;
 }
 
-/* Modal */
 .overlay {
   position: fixed;
   inset: 0;
@@ -326,7 +325,6 @@
   background: #fff5f5;
 }
 
-/* 문서 선택 */
 .pickerWrapper {
   position: relative;
 }
@@ -486,7 +484,6 @@
   text-decoration: underline;
 }
 
-/* 오늘 일정 리스트 */
 .todaySection {
   display: flex;
   flex-direction: column;

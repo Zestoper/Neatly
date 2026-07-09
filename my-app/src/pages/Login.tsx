@@ -13,7 +13,6 @@ export default function Login() {
     const [warming, setWarming] = useState(false);
     const { showToast } = useToast();
 
-    // 페이지 진입 즉시 서버 미리 깨우기 — 콜드 스타트 대기를 로그인 전에 소모
     useEffect(() => {
         setWarming(true);
         warmUpServer().finally(() => setWarming(false));
@@ -34,19 +33,18 @@ export default function Login() {
             const data = await loginUser(email, password);
             localStorage.setItem("token", data.access_token);
 
-            // 사용자 정보 로드 — 실패해도 대시보드로 이동 (Layout이 재시도)
             try {
                 const me = await getMe();
                 localStorage.setItem("plan", me.plan);
                 localStorage.setItem("userName", me.name || me.email);
             } catch {
-                // getMe 실패 시 기본값 유지, Layout 마운트 시 재조회
+
             }
 
             navigate("/");
         } catch (err: unknown) {
             const isNetworkError = !((err as { response?: unknown })?.response);
-            // 로그인 자체가 네트워크 오류면 최대 2회 재시도
+
             if (isNetworkError && retryCount < 2) {
                 await attemptLogin(retryCount + 1);
             } else {

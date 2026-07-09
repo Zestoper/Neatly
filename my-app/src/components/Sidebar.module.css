@@ -11,7 +11,6 @@
   overflow: hidden;
 }
 
-/* 접힌 상태 — 햄버거 버튼만 남김 */
 .sidebarCollapsed {
   width: 48px;
   height: 100vh;
@@ -26,13 +25,13 @@
 }
 
 @media (max-width: 767px) {
-  /* 모바일 — 열린 사이드바는 화면 위에 고정 드로어 */
+
   .sidebar {
     position: fixed;
     left: 0;
     top: 0;
     height: 100vh;
-    height: 100dvh; /* iOS Safari 주소창 제외한 실제 높이 */
+    height: 100dvh;
     z-index: 100;
     width: 280px;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.14);
@@ -41,7 +40,6 @@
     overflow: hidden;
   }
 
-  /* 모바일 — 접힌 상태는 완전히 숨김 (48px 스트립 제거) */
   .sidebarCollapsed {
     position: fixed;
     left: 0;
@@ -56,7 +54,6 @@
   }
 }
 
-/* 로고 + 햄버거 버튼 */
 .sidebarHeader {
   display: flex;
   align-items: center;
@@ -65,7 +62,6 @@
   padding: 0 2px;
 }
 
-/* 햄버거 토글 버튼 */
 .toggleButton {
   background: transparent;
   border: none;
@@ -93,7 +89,6 @@
   letter-spacing: -0.02em;
 }
 
-/* New Document 버튼 */
 .newDocButton {
   width: 100%;
   text-align: left;
@@ -115,17 +110,16 @@
   opacity: 0.8;
 }
 
-/* nav : 스크롤 가능한 내비게이션 영역 */
 .nav {
   display: flex;
   flex-direction: column;
   gap: 1px;
   flex: 1;
-  min-height: 0; /* flex 자식이 내용 크기로 늘어나는 것 방지 — 이게 없으면 overflow-y: auto가 동작 안 함 */
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch; /* iOS Safari 모멘텀 스크롤 */
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
@@ -133,7 +127,6 @@
   display: none;
 }
 
-/* 기본 nav 항목 */
 .navItem {
   display: block;
   padding: 7px 10px;
@@ -152,7 +145,6 @@
   color: var(--color-text);
 }
 
-/* 현재 경로와 일치하는 활성 nav 항목 — accent 왼쪽 바로 Neatly 차별화 */
 .navItemActive {
   display: block;
   padding: 7px 10px 7px 7px;
@@ -167,7 +159,6 @@
   letter-spacing: -0.01em;
 }
 
-/* 들여쓰기 하위 항목 — 스팸 등 */
 .navSubItem {
   display: block;
   padding: 5px 10px 5px 24px;
@@ -184,7 +175,6 @@
   color: var(--color-text);
 }
 
-/* 섹션 레이블 — Documents 폴더 / Emails 폴더 / 필터 구분 */
 .sectionLabel {
   font-size: 10px;
   font-weight: 700;
@@ -196,7 +186,6 @@
   opacity: 0.45;
 }
 
-/* 폴더 행 — 핸들 + 링크 + 액션 */
 .folderRow {
   display: flex;
   align-items: center;
@@ -208,7 +197,6 @@
   background: var(--color-hover);
 }
 
-/* 드래그 드롭 강조 */
 .folderRowDragOver {
   display: flex;
   align-items: center;
@@ -221,7 +209,6 @@
   opacity: 1;
 }
 
-/* 드래그 핸들 — 호버 시에만 표시 */
 .dragHandle {
   cursor: grab;
   color: var(--color-text-gray);
@@ -238,7 +225,6 @@
   opacity: 0.5;
 }
 
-/* 폴더 순서 드롭 위치 표시 */
 .folderRowReorderOver {
   display: flex;
   align-items: center;
@@ -246,7 +232,6 @@
   border-top: 2px solid var(--color-text);
 }
 
-/* 폴더 이름 링크 */
 .folderItem {
   flex: 1;
   min-width: 0;
@@ -264,7 +249,6 @@
   color: var(--color-text);
 }
 
-/* 수정·삭제 버튼 묶음 */
 .folderActions {
   display: flex;
   gap: 1px;
@@ -291,7 +275,6 @@
   color: var(--color-text);
 }
 
-/* 폴더 추가 버튼 */
 .addFolderButton {
   display: block;
   width: 100%;
@@ -314,7 +297,6 @@
   opacity: 1;
 }
 
-/* 폴더 이름 입력창 래퍼 */
 .folderInput {
   padding: 3px 6px;
 }
@@ -337,7 +319,6 @@
   border-color: var(--color-text);
 }
 
-/* 발신자 필터 사용 여부 체크박스 — 이메일 폴더 추가 입력창 아래 */
 .senderFilterToggle {
   display: flex;
   align-items: center;
@@ -356,7 +337,6 @@
   height: 13px;
 }
 
-/* 필터 드롭존 */
 .filterDropZone {
   border-radius: 6px;
   transition: background 0.15s;
@@ -368,7 +348,6 @@
   outline: 1.5px dashed var(--color-text-gray);
 }
 
-/* 필터 항목 아래 작은 이메일 주소 */
 .filterEmail {
   display: block;
   font-size: 11px;
@@ -377,7 +356,6 @@
   margin-top: 1px;
 }
 
-/* 필터 입력창 묶음 */
 .filterInputGroup {
   padding: 3px 6px;
   display: flex;
@@ -385,7 +363,6 @@
   gap: 4px;
 }
 
-/* 필터 입력창 */
 .filterInputField {
   width: 100%;
   font-size: 13px;
@@ -404,7 +381,6 @@
   border-color: var(--color-text);
 }
 
-/* 하단 고정 영역 */
 .bottom {
   padding-top: 10px;
   margin-top: 8px;
@@ -432,7 +408,6 @@
   color: var(--color-text);
 }
 
-/* 새 이메일 뱃지 — Emails 링크 옆에 붙는 숫자 */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -461,14 +436,13 @@
 }
 
 @media (max-width: 767px) {
-  /* 터치에서 hover 없으므로 폴더 액션 버튼 항상 표시 */
+
   .folderRow .folderActions,
   .folderRowDragOver .folderActions,
   .folderRowReorderOver .folderActions {
     opacity: 1;
   }
 
-  /* 드래그 핸들은 터치에서 쓸 수 없으므로 숨김 */
   .dragHandle {
     display: none;
   }

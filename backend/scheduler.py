@@ -16,12 +16,9 @@ from routers.briefing import _generate_briefing_text
 from datetime import datetime, timezone, timedelta
 import logging
 
-# 스케줄러 로그 — INFO 레벨로 작업 시작/완료를 콘솔에 출력
 logger = logging.getLogger(__name__)
 
-# BackgroundScheduler : FastAPI 메인 프로세스와 함께 백그라운드 스레드에서 실행
 scheduler = BackgroundScheduler()
-
 
 def sync_all_premium_emails():
     """
@@ -30,7 +27,7 @@ def sync_all_premium_emails():
     """
     db = SessionLocal()
     try:
-        # Premium이고 Gmail이 연결된 사용자만 대상
+
         users = db.query(User).filter(
             User.plan == "PREMIUM",
             User.gmail_access_token != None,
@@ -45,7 +42,6 @@ def sync_all_premium_emails():
                 logger.warning(f"[sync] user={user.id} 실패: {e}")
     finally:
         db.close()
-
 
 def generate_daily_briefings():
     """
@@ -64,7 +60,7 @@ def generate_daily_briefings():
 
         for user in premium_users:
             try:
-                # 오늘 추가된 문서 목록
+
                 docs = (
                     db.query(Document)
                     .filter(
@@ -76,11 +72,10 @@ def generate_daily_briefings():
                     .all()
                 )
                 if not docs:
-                    continue  # 오늘 문서 없으면 브리핑 생략
+                    continue
 
                 briefing_text = _generate_briefing_text(docs)
 
-                # 이미 오늘 브리핑이 있으면 업데이트, 없으면 새로 생성
                 existing = (
                     db.query(Document)
                     .filter(
@@ -108,7 +103,6 @@ def generate_daily_briefings():
     finally:
         db.close()
 
-
 def cleanup_old_trash():
     """
     매일 새벽 3시 실행 — 30일 이상 지난 휴지통 문서를 영구 삭제.
@@ -128,7 +122,6 @@ def cleanup_old_trash():
     finally:
         db.close()
 
-
 def start_scheduler():
     """
     FastAPI 앱 시작 시 호출 — 스케줄러를 시작하고 두 작업을 등록한다.
@@ -137,15 +130,13 @@ def start_scheduler():
     if scheduler.running:
         return
 
-    # 작업 1: 2분마다 이메일 동기화
     scheduler.add_job(
         sync_all_premium_emails,
         trigger=IntervalTrigger(minutes=2),
         id="email_sync",
-        replace_existing=True,  # 같은 id가 있으면 교체 — 중복 방지
+        replace_existing=True,
     )
 
-    # 작업 2: 매일 오전 9시 일간 브리핑
     scheduler.add_job(
         generate_daily_briefings,
         trigger=CronTrigger(hour=8, minute=0),
@@ -153,7 +144,6 @@ def start_scheduler():
         replace_existing=True,
     )
 
-    # 작업 3: 매일 새벽 3시 30일 이상 된 휴지통 영구 삭제
     scheduler.add_job(
         cleanup_old_trash,
         trigger=CronTrigger(hour=3, minute=0),

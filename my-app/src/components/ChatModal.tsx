@@ -12,10 +12,8 @@ const IMG_PREFIX = "__img__:";
 const WS_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000").replace(/^http/, "ws");
 import styles from "./ChatModal.module.css";
 
-// ─── 타입 ────────────────────────────────────────────────
 type Tab = "rooms" | "friends" | "add";
 
-// WsMessage : 채팅 WebSocket에서 오는 메시지 형식
 type WsMessage = {
     type: "message" | "system" | "read";
     id?: string;
@@ -26,7 +24,6 @@ type WsMessage = {
     read_at?: string;
 };
 
-// ─── JWT에서 내 user_id 추출 ────────────────────────────
 function getMyUserId(): string {
     const token = localStorage.getItem("token");
     if (!token) return "";
@@ -38,7 +35,6 @@ function getMyUserId(): string {
     }
 }
 
-// "A, B" 형식의 DM 방 이름에서 내 이름을 제거해 상대방 이름만 표시
 function formatRoomName(name: string): string {
     const myName = localStorage.getItem("userName") ?? "";
     if (!myName) return name;
@@ -64,14 +60,12 @@ function formatDate(iso: string) {
     return isToday ? formatTime(iso) : d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
 }
 
-// ─── 메인 컴포넌트 ────────────────────────────────────────
 export default function ChatModal() {
     const { showToast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [tab, setTab] = useState<Tab>("rooms");
     const [activeRoom, setActiveRoom] = useState<{ id: string; name: string } | null>(null);
 
-    // 채팅방 탭
     const [rooms, setRooms] = useState<ChatRoom[]>([]);
     const [roomsLoading, setRoomsLoading] = useState(false);
     const [roomSearch, setRoomSearch] = useState("");
@@ -80,35 +74,28 @@ export default function ChatModal() {
     const [joinId, setJoinId] = useState("");
     const [showJoinInput, setShowJoinInput] = useState(false);
 
-    // 친구 탭 — 실제 친구 목록
     const [friends, setFriends] = useState<Contact[]>([]);
     const [friendSearch, setFriendSearch] = useState("");
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
     const [showHidden, setShowHidden] = useState(false);
     const [showBlocked, setShowBlocked] = useState(false);
 
-    // 친구 추가 탭 — 유저 검색 후 친구 추가
     const [addQuery, setAddQuery] = useState("");
     const [addResults, setAddResults] = useState<Contact[]>([]);
     const [addSearching, setAddSearching] = useState(false);
     const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
-    // addedIds : 이미 친구 추가한 유저 ID 집합
 
-    // Presence WebSocket — 온라인 상태 + 알림
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
     const [unreadCount, setUnreadCount] = useState(0);
     const presenceWsRef = useRef<WebSocket | null>(null);
 
-    // 멤버 초대 패널
     const [showInvite, setShowInvite] = useState(false);
     const [inviteQuery, setInviteQuery] = useState("");
     const [inviteResults, setInviteResults] = useState<Contact[]>([]);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
 
-    // 읽음 상태 — { userId: lastReadAt ISO | null }
     const [readStatus, setReadStatus] = useState<Record<string, string | null>>({});
 
-    // 채팅창
     const [messages, setMessages] = useState<WsMessage[]>([]);
     const [chatInput, setChatInput] = useState("");
     const [connected, setConnected] = useState(false);
@@ -119,18 +106,14 @@ export default function ChatModal() {
     const [uploading, setUploading] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
 
-    // ── Presence WS — 컴포넌트 마운트 시 연결, 언마운트 시 해제 ──────
-    // 모달이 닫혀 있어도 알림을 받기 위해 항상 유지
     useEffect(() => {
         const token = localStorage.getItem("token") ?? "";
         if (!token) return;
 
-        // 브라우저 알림 권한 요청 (최초 1회) — iOS Safari는 Notification 미지원
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
 
-        // 마운트 시 방 목록 로드 → 초기 안읽음 배지 표시
         getRooms().then((loadedRooms) => {
             setRooms(loadedRooms);
             const total = loadedRooms.reduce((sum, r) => sum + (r.unread_count ?? 0), 0);
@@ -178,26 +161,23 @@ export default function ChatModal() {
         };
     }, []);
 
-    // ── 모달 열릴 때 데이터 로드 ──────────────────────────
     useEffect(() => {
         if (!isOpen) return;
 
         setRoomsLoading(true);
         getRooms().then((loadedRooms) => {
             setRooms(loadedRooms);
-            // rooms 실제 unread_count 합계로 배지 재계산
+
             const total = loadedRooms.reduce((sum, r) => sum + (r.unread_count ?? 0), 0);
             setUnreadCount(total);
         }).finally(() => setRoomsLoading(false));
         getFriends().then(setFriends).catch(() => {});
     }, [isOpen]);
 
-    // 새 메시지 올 때 스크롤 맨 아래로
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // ESC로 닫기
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
@@ -209,18 +189,15 @@ export default function ChatModal() {
         return () => window.removeEventListener("keydown", handler);
     }, [activeRoom]);
 
-    // ── 채팅방 열기 (이전 메시지 + WebSocket) ────────────
     const openRoom = useCallback(async (roomId: string, roomName: string) => {
         setActiveRoom({ id: roomId, name: roomName });
         setMessages([]);
         setConnected(false);
         setReadStatus({});
 
-        // 방 열자마자 읽음 처리 + 읽음 상태 조회
         markRoomRead(roomId).catch(() => {});
         getRoomReadStatus(roomId).then(setReadStatus).catch(() => {});
 
-        // 방 목록의 unread_count를 0으로 갱신하면서, FAB 배지에서도 해당 수만큼 차감
         setRooms((prev) => {
             const target = prev.find((r) => r.id === roomId);
             if (target && target.unread_count > 0) {
@@ -253,7 +230,7 @@ export default function ChatModal() {
                 return;
             }
             setMessages((prev) => [...prev, msg]);
-            // 내가 보고 있는 방에 메시지가 오면 자동 읽음 처리
+
             if (msg.type === "message" && msg.user_id !== myUserId.current) {
                 markRoomRead(roomId).catch(() => {});
             }
@@ -273,7 +250,6 @@ export default function ChatModal() {
         setReadStatus({});
     }, []);
 
-    // ── 채팅방 나가기 ────────────────────────────────────
     const handleLeaveRoom = () => {
         if (!activeRoom) return;
         setConfirmModal({
@@ -288,7 +264,6 @@ export default function ChatModal() {
         });
     };
 
-    // ── 멤버 초대 ────────────────────────────────────────
     const handleInviteSearch = async () => {
         if (!inviteQuery.trim()) return;
         const results = await searchUsers(inviteQuery.trim());
@@ -301,18 +276,17 @@ export default function ChatModal() {
             await inviteToRoom(activeRoom.id, userId);
             setInvitedIds((prev) => new Set([...prev, userId]));
         } catch {
-            // 이미 멤버인 경우도 초대됨으로 표시
+
             setInvitedIds((prev) => new Set([...prev, userId]));
         }
     };
 
     const handleClose = () => {
         closeRoom();
-        // presence WS는 닫지 않음 — 모달이 닫혀도 알림 수신 유지
+
         setIsOpen(false);
     };
 
-    // ── 메시지 전송 ───────────────────────────────────────
     const sendMessage = () => {
         const content = chatInput.trim();
         if (!content || chatWsRef.current?.readyState !== WebSocket.OPEN) return;
@@ -320,7 +294,6 @@ export default function ChatModal() {
         setChatInput("");
     };
 
-    // ── 이미지 전송 ───────────────────────────────────────
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -337,7 +310,6 @@ export default function ChatModal() {
         }
     };
 
-    // ── 채팅방 생성 ───────────────────────────────────────
     const handleCreateRoom = async () => {
         if (!newRoomName.trim()) return;
         setCreating(true);
@@ -351,7 +323,6 @@ export default function ChatModal() {
         }
     };
 
-    // ── 방 ID로 참여 ─────────────────────────────────────
     const handleJoinRoom = async () => {
         if (!joinId.trim()) return;
         try {
@@ -365,7 +336,6 @@ export default function ChatModal() {
         }
     };
 
-    // ── 대화 상대 클릭 → 1:1 DM 방 (양쪽이 같은 방 공유) ──
     const handleContactClick = async (contact: Contact) => {
         try {
             const room = await getOrCreateDm(contact.id);
@@ -377,7 +347,6 @@ export default function ChatModal() {
         }
     };
 
-    // ── 유저 검색 ────────────────────────────────────────
     const handleAddSearch = async () => {
         if (!addQuery.trim()) return;
         setAddSearching(true);
@@ -389,20 +358,18 @@ export default function ChatModal() {
         }
     };
 
-    // ── 친구 추가 ────────────────────────────────────────
     const handleAddFriend = async (contact: Contact) => {
         try {
             await addFriend(contact.id);
             setAddedIds((prev) => new Set([...prev, contact.id]));
-            // 친구 목록에 즉시 반영
+
             setFriends((prev) => prev.some((f) => f.id === contact.id) ? prev : [...prev, contact]);
         } catch {
-            // 이미 친구인 경우도 추가됨으로 표시
+
             setAddedIds((prev) => new Set([...prev, contact.id]));
         }
     };
 
-    // ── 친구 상태 변경 ───────────────────────────────────
     const handleFriendStatus = async (friendId: string, status: "active" | "hidden" | "blocked") => {
         await updateFriendStatus(friendId, status);
         setFriends((prev) => prev.map((f) => f.id === friendId ? { ...f, status } : f));
@@ -422,7 +389,6 @@ export default function ChatModal() {
         });
     };
 
-    // ── 필터링 ──────────────────────────────────────────
     const filteredRooms = rooms.filter((r) =>
         r.name.toLowerCase().includes(roomSearch.toLowerCase())
     );
@@ -433,10 +399,9 @@ export default function ChatModal() {
     const hiddenFriends = friends.filter((c) => (c.status ?? "active") === "hidden");
     const blockedFriends = friends.filter((c) => (c.status ?? "active") === "blocked");
 
-    // ─────────────────────────────────────────────────────
     return (
         <>
-            {/* FAB + 뱃지 */}
+
             <div className={styles.fabWrapper}>
                 <button className={styles.fab} onClick={() => isOpen ? handleClose() : setIsOpen(true)} title="채팅">
                     {isOpen ? (
@@ -461,7 +426,6 @@ export default function ChatModal() {
             {isOpen && (
                 <div className={styles.modal}>
 
-                    {/* ── 채팅창 뷰 ── */}
                     {activeRoom ? (
                         <div className={styles.chatView}>
                             <div className={styles.chatHeader}>
@@ -548,7 +512,7 @@ export default function ChatModal() {
                                         return <div key={i} className={styles.systemMsg}>{msg.content}</div>;
                                     }
                                     const isMe = msg.user_id === myUserId.current;
-                                    // 내 메시지 기준: 아직 읽지 않은 상대방 수
+
                                     const msgTime = new Date(msg.created_at).getTime();
                                     const unreadBy = isMe
                                         ? Object.entries(readStatus).filter(([uid, readAt]) => {
@@ -631,7 +595,7 @@ export default function ChatModal() {
                         </div>
 
                     ) : (
-                        /* ── 탭 목록 뷰 ── */
+
                         <div className={styles.tabView}>
                             <div className={styles.tabBar}>
                                 {(["rooms", "friends", "add"] as Tab[]).map((t) => (
@@ -645,7 +609,6 @@ export default function ChatModal() {
                                 ))}
                             </div>
 
-                            {/* ── 채팅방 탭 ── */}
                             {tab === "rooms" && (
                                 <div className={styles.tabContent}>
                                     <input className={styles.searchInput} placeholder="채팅방 검색" value={roomSearch} onChange={(e) => setRoomSearch(e.target.value)} />
@@ -690,7 +653,6 @@ export default function ChatModal() {
                                 </div>
                             )}
 
-                            {/* ── 친구 탭 ── */}
                             {tab === "friends" && (
                                 <div className={styles.tabContent}>
                                     <input className={styles.searchInput} placeholder="친구 검색" value={friendSearch} onChange={(e) => setFriendSearch(e.target.value)} />
@@ -715,7 +677,7 @@ export default function ChatModal() {
                                                             {isOnline ? "온라인" : "오프라인"}
                                                         </span>
                                                     </div>
-                                                    {/* 세 점 메뉴 */}
+
                                                     <div className={styles.friendMenuWrap}>
                                                         <button
                                                             className={styles.menuDotBtn}
@@ -738,7 +700,6 @@ export default function ChatModal() {
                                             );
                                         })}
 
-                                        {/* 숨긴 친구 섹션 */}
                                         {hiddenFriends.length > 0 && (
                                             <div className={styles.friendSection}>
                                                 <button className={styles.friendSectionToggle} onClick={() => setShowHidden((v) => !v)}>
@@ -777,7 +738,6 @@ export default function ChatModal() {
                                             </div>
                                         )}
 
-                                        {/* 차단한 사람 섹션 */}
                                         {blockedFriends.length > 0 && (
                                             <div className={styles.friendSection}>
                                                 <button className={styles.friendSectionToggle} onClick={() => setShowBlocked((v) => !v)}>
@@ -818,7 +778,6 @@ export default function ChatModal() {
                                 </div>
                             )}
 
-                            {/* ── 친구 추가 탭 (유저 검색 후 친구 추가) ── */}
                             {tab === "add" && (
                                 <div className={styles.tabContent}>
                                     <span className={styles.addDesc}>이메일 또는 이름으로 검색</span>

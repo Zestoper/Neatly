@@ -9,14 +9,13 @@
   --color-hover:        #f0efec;
   --color-button:       #1a1915;
   --color-button-text:  #ffffff;
-  --color-accent:       #5e5ef6; /* Neatly 고유 포인트 색상 — 인디고 */
-  --color-accent-soft:  #eeeeff; /* accent 배경용 */
+  --color-accent:       #5e5ef6;
+  --color-accent-soft:  #eeeeff;
   --color-surface:      #f7f6f3;
   --color-surface-hover: #f0efec;
   --color-text-muted:   #8a8784;
 }
 
-/* 기본 리셋 */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -44,12 +43,11 @@ body {
   width: 100%;
   max-width: 100vw;
   height: 100vh;
-  height: 100dvh; /* iOS Safari: dynamic viewport height */
+  height: 100dvh;
   display: flex;
   overflow-x: hidden;
 }
 
-/* 제목 */
 h1 {
   font-size: 28px;
   font-weight: 600;
@@ -81,7 +79,6 @@ hr {
   margin: 24px 0;
 }
 
-/* 버튼 */
 button {
   display: inline-flex;
   align-items: center;
@@ -129,7 +126,6 @@ ul {
   list-style: none;
 }
 
-/* iOS Safari: font-size < 16px causes auto-zoom on input focus */
 @media (max-width: 767px) {
   input, textarea, select {
     font-size: 16px !important;

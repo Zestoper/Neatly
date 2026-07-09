@@ -17,7 +17,6 @@
   margin-bottom: 20px;
 }
 
-/* 헤딩 + 동기화 버튼을 가로로 배치 */
 .pageHeader {
   display: flex;
   align-items: flex-end;
@@ -89,7 +88,6 @@
   cursor: default;
 }
 
-/* gateBox : Gmail 미연결 시 안내 박스 */
 .gateBox {
   margin-top: 60px;
   display: flex;
@@ -119,7 +117,6 @@
   cursor: pointer;
 }
 
-/* 폴더 모드 툴바 */
 .folderToolbar {
   display: flex;
   align-items: center;
@@ -185,7 +182,6 @@
   color: var(--color-text-gray);
 }
 
-/* 드래그 ghost */
 .dragGhost {
   position: absolute;
   top: -1000px;
@@ -198,7 +194,6 @@
   white-space: nowrap;
 }
 
-/* Standard 미만 안내 배너 */
 .upgradeBanner {
   display: flex;
   align-items: center;
@@ -228,7 +223,6 @@
   white-space: nowrap;
 }
 
-/* 발신자 필터 칩 */
 .senderFilterRow {
   display: flex;
   flex-wrap: wrap;
@@ -296,7 +290,6 @@
   color: var(--color-text-gray);
 }
 
-/* Notion-style 이메일 행 목록 */
 .list {
   display: flex;
   flex-direction: column;
@@ -317,7 +310,6 @@
   border-radius: 6px;
 }
 
-/* 안읽은 이메일 행 — 왼쪽에 accent 점으로 강조 */
 .emailRowUnread {
   display: flex;
   align-items: center;
@@ -351,7 +343,6 @@
   min-width: 0;
 }
 
-/* 읽은 이메일 제목 */
 .subject {
   font-size: 14px;
   font-weight: 400;
@@ -362,7 +353,6 @@
   letter-spacing: -0.01em;
 }
 
-/* 안읽은 이메일 제목 — bold, 짙은 색 */
 .subjectUnread {
   font-size: 14px;
   font-weight: 600;
@@ -382,7 +372,6 @@
   text-overflow: ellipsis;
 }
 
-/* 폴더 모드 행 삭제 버튼 — 호버 시만 표시 */
 .rowDeleteBtn {
   flex-shrink: 0;
   background: transparent;
@@ -430,7 +419,6 @@
     margin-top: 32px;
   }
 
-  /* 안읽음 점이 레이아웃 밖으로 튀어나오지 않도록 */
   .emailRowUnread::before {
     left: 0;
   }
@@ -444,7 +432,6 @@
     align-items: flex-start;
   }
 
-  /* 터치에서 hover 없으므로 삭제 버튼 항상 표시 */
   .rowDeleteBtn {
     opacity: 1;
   }

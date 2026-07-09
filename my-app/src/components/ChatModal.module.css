@@ -1,4 +1,3 @@
-/* ── FAB 래퍼 ── */
 .fabWrapper {
   position: fixed;
   bottom: 28px;
@@ -6,7 +5,6 @@
   z-index: 1000;
 }
 
-/* ── FAB 버튼 ── */
 .fab {
   width: 52px;
   height: 52px;
@@ -29,7 +27,6 @@
   opacity: 1;
 }
 
-/* ── FAB 배지 ── */
 .fabBadge {
   position: absolute;
   top: -5px;
@@ -55,14 +52,12 @@
   to   { transform: scale(1);   opacity: 1; }
 }
 
-/* ── Backdrop ── */
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: 998;
 }
 
-/* ── 모달 컨테이너 ── */
 .modal {
   position: fixed;
   bottom: 92px;
@@ -88,14 +83,12 @@
   to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
-/* ── 탭 뷰 ── */
 .tabView {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-/* ── 탭 바 ── */
 .tabBar {
   display: flex;
   gap: 2px;
@@ -137,7 +130,6 @@
   border-bottom-color: var(--color-accent);
 }
 
-/* ── 탭 콘텐츠 ── */
 .tabContent {
   display: flex;
   flex-direction: column;
@@ -147,7 +139,6 @@
   gap: 10px;
 }
 
-/* ── 검색창 ── */
 .searchInput {
   width: 100%;
   padding: 9px 14px;
@@ -167,7 +158,6 @@
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
-/* ── 방 생성 / 참여 입력 ── */
 .createRow {
   display: flex;
   gap: 6px;
@@ -229,7 +219,6 @@
 
 .joinToggleBtn:hover { opacity: 0.7; }
 
-/* ── 목록 ── */
 .list {
   flex: 1;
   overflow-y: auto;
@@ -246,7 +235,6 @@
   border-radius: 3px;
 }
 
-/* 채팅방 / 친구 목록 항목 */
 .listItem {
   display: flex;
   align-items: center;
@@ -261,7 +249,6 @@
   background: var(--color-hover);
 }
 
-/* 채팅방 / 친구 아바타 공통 */
 .roomAvatar,
 .friendAvatar {
   width: 44px;
@@ -284,7 +271,6 @@
   position: relative;
 }
 
-/* 온라인/오프라인 점 */
 .onlineDot,
 .offlineDot {
   position: absolute;
@@ -299,7 +285,6 @@
 .onlineDot { background: #22c55e; }
 .offlineDot { background: #d1d5db; }
 
-/* 항목 텍스트 */
 .itemInfo {
   flex: 1;
   min-width: 0;
@@ -346,7 +331,6 @@
   flex-shrink: 0;
 }
 
-/* 방 목록 안읽은 수 뱃지 */
 .unreadBadge {
   min-width: 18px;
   height: 18px;
@@ -362,7 +346,6 @@
   flex-shrink: 0;
 }
 
-/* 온라인/오프라인 텍스트 뱃지 */
 .onlineBadge {
   font-size: 11px;
   font-weight: 600;
@@ -391,7 +374,6 @@
   line-height: 1.6;
 }
 
-/* ── 친구 추가 탭 ── */
 .addDesc {
   font-size: 12.5px;
   color: var(--color-text-gray);
@@ -440,14 +422,12 @@
   flex-shrink: 0;
 }
 
-/* ── 채팅창 뷰 ── */
 .chatView {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-/* 채팅창 헤더 */
 .chatHeader {
   display: flex;
   align-items: center;
@@ -458,7 +438,6 @@
   background: var(--color-bg);
 }
 
-/* 헤더 버튼 공용 */
 .backBtn,
 .inviteBtn,
 .copyIdBtn,
@@ -521,7 +500,6 @@
   color: var(--color-text-gray);
 }
 
-/* ── 멤버 초대 패널 ── */
 .invitePanel {
   padding: 10px 14px;
   border-bottom: 1px solid var(--color-border);
@@ -553,7 +531,6 @@
   border-radius: 8px;
 }
 
-/* ── 메시지 목록 ── */
 .messageList {
   flex: 1;
   overflow-y: auto;
@@ -579,7 +556,6 @@
   line-height: 1.8;
 }
 
-/* 시스템 메시지 */
 .systemMsg {
   font-size: 11.5px;
   color: var(--color-text-gray);
@@ -591,7 +567,6 @@
   align-self: center;
 }
 
-/* 메시지 행 */
 .msgRowMe {
   display: flex;
   justify-content: flex-end;
@@ -606,14 +581,12 @@
   gap: 8px;
 }
 
-/* 메시지 내용 래퍼 */
 .msgContent {
   display: flex;
   flex-direction: column;
   max-width: 70%;
 }
 
-/* 상대방 이름 */
 .msgUserName {
   font-size: 11.5px;
   font-weight: 600;
@@ -623,7 +596,6 @@
   letter-spacing: -0.01em;
 }
 
-/* 상대방 아바타 */
 .avatar {
   width: 32px;
   height: 32px;
@@ -639,7 +611,6 @@
   margin-bottom: 2px;
 }
 
-/* 내 말풍선 */
 .bubbleMe {
   background: var(--color-text);
   color: #fff;
@@ -655,7 +626,6 @@
   box-shadow: none;
 }
 
-/* 상대방 말풍선 */
 .bubbleOther {
   background: var(--color-sidebar);
   color: var(--color-text);
@@ -698,7 +668,6 @@
   letter-spacing: 0;
 }
 
-/* 카톡식 읽지 않은 수 */
 .unreadMark {
   font-size: 10px;
   font-weight: 700;
@@ -708,7 +677,6 @@
   padding-bottom: 1px;
 }
 
-/* ── 채팅 입력창 ── */
 .chatInputRow {
   display: flex;
   align-items: center;
@@ -773,7 +741,6 @@
   box-shadow: none;
 }
 
-/* ── 이미지 전송 버튼 ── */
 .imageBtn {
   width: 38px;
   height: 38px;
@@ -802,7 +769,6 @@
   cursor: default;
 }
 
-/* 업로드 중 점 애니메이션 */
 .uploadingDot {
   width: 8px;
   height: 8px;
@@ -816,7 +782,6 @@
   to   { opacity: 1;   transform: scale(1.2);  }
 }
 
-/* ── 채팅 이미지 메시지 ── */
 .chatImage {
   max-width: 220px;
   max-height: 260px;
@@ -833,7 +798,6 @@
   transform: scale(1.01);
 }
 
-/* ── 친구 목록 아이템 (세 점 메뉴 포함) ── */
 .friendItem {
   display: flex;
   align-items: center;
@@ -860,7 +824,6 @@
   cursor: pointer;
 }
 
-/* 숨김/차단용 흐린 아바타 */
 .friendAvatarMuted {
   width: 44px;
   height: 44px;
@@ -876,14 +839,12 @@
   opacity: 0.55;
 }
 
-/* 세 점 버튼 래퍼 */
 .friendMenuWrap {
   position: relative;
   flex-shrink: 0;
   padding-right: 6px;
 }
 
-/* 세 점 버튼 */
 .menuDotBtn {
   width: 28px;
   height: 28px;
@@ -906,7 +867,6 @@
   opacity: 1 !important;
 }
 
-/* 드롭다운 메뉴 */
 .friendMenu {
   position: absolute;
   top: calc(100% + 4px);
@@ -954,7 +914,6 @@
   background: #fee2e2;
 }
 
-/* ── 숨김/차단 섹션 ── */
 .friendSection {
   margin-top: 4px;
   border-top: 1px solid var(--color-border);
@@ -985,7 +944,6 @@
   opacity: 1;
 }
 
-/* 차단됨 라벨 */
 .blockedLabel {
   color: #ef4444 !important;
   font-size: 11.5px;
@@ -1010,7 +968,6 @@
     max-width: 85%;
   }
 
-  /* 터치에서 hover 없으므로 메뉴 버튼 항상 표시 */
   .menuDotBtn {
     opacity: 1;
   }

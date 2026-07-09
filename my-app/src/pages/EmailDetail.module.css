@@ -3,7 +3,6 @@
   max-width: 720px;
 }
 
-/* ── 뒤로 가기 ── */
 .backButton {
   display: inline-flex;
   align-items: center;
@@ -21,7 +20,6 @@
   color: var(--color-text);
 }
 
-/* ── 제목 + 버튼 묶음 ── */
 .header {
   display: flex;
   align-items: flex-start;
@@ -46,7 +44,6 @@
   letter-spacing: -0.02em;
 }
 
-/* ── 버튼 공통 기반 ── */
 .spamButton,
 .spammedButton,
 .convertButton,
@@ -123,7 +120,6 @@
   background: var(--color-hover);
 }
 
-/* AI 답장 버튼 */
 .replyButton {
   background: var(--color-accent-soft);
   color: var(--color-accent);
@@ -135,7 +131,6 @@
   color: #fff;
 }
 
-/* ── 발신자 · 날짜 메타 ── */
 .meta {
   display: flex;
   align-items: center;
@@ -190,7 +185,6 @@
   border-radius: 8px;
 }
 
-/* ── AI 요약 박스 ── */
 .summaryBox {
   background: var(--color-accent-soft);
   border: 1px solid rgba(94, 94, 246, 0.15);
@@ -259,14 +253,12 @@
   opacity: 0.85;
 }
 
-/* ── 구분선 ── */
 .divider {
   border: none;
   border-top: 1px solid var(--color-border);
   margin: 28px 0;
 }
 
-/* ── 플레인 텍스트 본문 ── */
 .body {
   font-size: 15px;
   line-height: 1.85;
@@ -275,7 +267,6 @@
   padding: 4px 0;
 }
 
-/* ── HTML 이메일 iframe ── */
 .emailFrame {
   width: 100%;
   min-height: 120px;
@@ -283,7 +274,6 @@
   display: block;
 }
 
-/* ── AI 답장 모달 ── */
 .replyOverlay {
   position: fixed;
   inset: 0;
@@ -430,12 +420,10 @@
     width: 100%;
   }
 
-  /* 삭제 버튼 — 2열 그리드에서 전체 너비 차지 */
   .deleteButton {
     grid-column: 1 / -1;
   }
 
-  /* 모든 액션 버튼을 탭하기 좋게 높이 확보 */
   .spamButton,
   .spammedButton,
   .replyButton,
@@ -472,7 +460,6 @@
     line-height: 1.75;
   }
 
-  /* 모바일에서 답장 모달 — 바텀시트 스타일 */
   .replyOverlay {
     align-items: flex-end;
     padding: 0;
