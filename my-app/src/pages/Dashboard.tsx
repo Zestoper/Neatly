@@ -132,6 +132,7 @@ export default function Dashboard() {
             if (res.synced > 0) {
                 const docsData = await getDocuments();
                 setDocuments(docsData);
+                if (isPremium) loadBriefing(selectedFolder, selectedDate);
                 showToast(`새 이메일 ${res.synced}개 동기화됐습니다.`);
             } else {
                 showToast("새 이메일이 없습니다.");
