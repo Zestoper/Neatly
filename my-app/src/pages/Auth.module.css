@@ -78,13 +78,6 @@
   width: 400px;
 }
 
-.warmingNote {
-  font-size: 12px;
-  color: var(--color-text-gray);
-  text-align: center;
-  margin: -4px 0;
-}
-
 @media (max-width: 767px) {
   .card,
   .cardWide {

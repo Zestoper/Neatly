@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { registerUser } from "../api/users";
-import { warmUpServer } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import styles from "./Auth.module.css";
 
@@ -14,10 +13,6 @@ export default function Register() {
     const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
     const { showToast } = useToast();
-
-    useEffect(() => {
-        warmUpServer();
-    }, []);
 
     const handleRegister = async () => {
         if (!agreed) {
