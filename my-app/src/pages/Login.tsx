@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser, getMe } from "../api/auth";
-import { warmUpServer } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import styles from "./Auth.module.css";
 
@@ -10,13 +9,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const [warming, setWarming] = useState(false);
     const { showToast } = useToast();
-
-    useEffect(() => {
-        setWarming(true);
-        warmUpServer().finally(() => setWarming(false));
-    }, []);
 
     const handleLogin = async () => {
         if (!email.trim() || !password) return;
@@ -57,10 +50,6 @@ export default function Login() {
         <div className={styles.page}>
             <div className={styles.card}>
                 <p className={styles.title}>Neatly</p>
-
-                {warming && (
-                    <p className={styles.warmingNote}>서버를 시작하는 중입니다...</p>
-                )}
 
                 <input
                     className={styles.input}
