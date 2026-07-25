@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from models import User, Document, EmailFilter
 from routers.auth import get_current_user, get_db
-from groq import Groq
+from ai_client import create_chat_completion, GROQ_MODEL_SMART as GROQ_MODEL
 import os, base64, re, unicodedata
 from datetime import datetime, timezone
 from email.header import decode_header, make_header
@@ -20,9 +20,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 router = APIRouter()
-
-groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
-GROQ_MODEL = "llama-3.3-70b-versatile"
 
 EMAIL_SUMMARY_PROMPT = (
     "사용자가 받은 이메일을 읽고 핵심을 2~3문장으로 자연스럽고 간결하게 요약하세요.\n\n"
@@ -405,7 +402,7 @@ def get_email_detail(
     summary = None
     if body.strip():
         try:
-            response = groq_client.chat.completions.create(
+            response = create_chat_completion(
                 model=GROQ_MODEL,
                 temperature=0.2,
                 messages=[
@@ -673,7 +670,7 @@ def email_to_document(
     raw_html = _extract_html(msg["payload"])
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.2,
             messages=[
@@ -731,7 +728,7 @@ def generate_reply(
         return {"reply_text": ""}
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.5,
             messages=[
@@ -819,7 +816,7 @@ def generate_draft(
     prompt = f"수신자: {body.to}\n제목: {body.subject}\n요청: {body.intent}"
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.5,
             messages=[

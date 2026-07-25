@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from groq import Groq
+from ai_client import create_chat_completion, GROQ_MODEL_FAST, GROQ_MODEL_SMART
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
@@ -10,11 +10,6 @@ from routers.auth import get_current_user, get_db
 load_dotenv()
 
 router = APIRouter()
-
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
-
-GROQ_MODEL_FAST = "llama-3.1-8b-instant"
-GROQ_MODEL_SMART = "llama-3.3-70b-versatile"
 
 class SummaryRequest(BaseModel):
     content: str
@@ -32,7 +27,7 @@ class AskRequest(BaseModel):
 @router.post("/ai/summarize")
 def summarize(data: SummaryRequest):
     try:
-        response = client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL_FAST,
             messages=[
                 {
@@ -81,7 +76,7 @@ def ask_document(
     ]
 
     try:
-        response = client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL_SMART,
             temperature=0.4,
             messages=[

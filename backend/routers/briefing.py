@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from models import CalendarEvent, Document, User
 from routers.auth import get_current_user, get_db
-from groq import Groq
+from ai_client import create_chat_completion, GROQ_MODEL_SMART as GROQ_MODEL
 from datetime import datetime, timezone, timedelta
 import os
 from dotenv import load_dotenv
@@ -10,10 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 router = APIRouter()
-
-GROQ_MODEL = "llama-3.3-70b-versatile"
-
-groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent] | None = None) -> str:
     """문서 목록 + 오늘 마감인 할 일 목록을 받아 브리핑 생성."""
@@ -38,7 +34,7 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
     due_combined = "\n".join(due_parts) if due_parts else "(없음)"
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.3,
             messages=[

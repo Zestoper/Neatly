@@ -11,8 +11,8 @@ from routers.gmail import (
     _decode_header_value,
     EMAIL_SUMMARY_PROMPT,
     GROQ_MODEL,
-    groq_client,
 )
+from ai_client import create_chat_completion
 from googleapiclient.discovery import build
 import json as _json
 import re as _re
@@ -46,7 +46,7 @@ def _classify_email_doc(
     )
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.1,
             messages=[{"role": "user", "content": prompt}],
@@ -109,7 +109,7 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
     )
 
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.1,
             messages=[{"role": "user", "content": prompt}],
@@ -216,7 +216,7 @@ def sync_user_emails(user: User, db: Session) -> int:
         summary = None
         if body.strip():
             try:
-                res = groq_client.chat.completions.create(
+                res = create_chat_completion(
                     model=GROQ_MODEL,
                     temperature=0.2,
                     messages=[
