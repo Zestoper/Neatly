@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDocuments } from "../api/documents";
 import { getFolders } from "../api/folders";
@@ -122,6 +122,45 @@ export default function Dashboard() {
         getSyncStatus()
             .then((data) => setSyncStatus(data))
             .catch(() => {});
+    }, [isPremium]);
+
+    const lastSyncRef = useRef<string | null>(null);
+    lastSyncRef.current = syncStatus?.last_sync ?? null;
+    const selectedFolderRef = useRef(selectedFolder);
+    selectedFolderRef.current = selectedFolder;
+    const selectedDateRef = useRef(selectedDate);
+    selectedDateRef.current = selectedDate;
+
+    useEffect(() => {
+        if (!isPremium) return;
+
+        const checkForUpdates = async () => {
+            try {
+                const status = await getSyncStatus();
+                if (status.last_sync && status.last_sync !== lastSyncRef.current) {
+                    setSyncStatus(status);
+                    const docsData = await getDocuments();
+                    setDocuments(docsData);
+                    const nowStr = new Date().toLocaleDateString("en-CA");
+                    if (!selectedFolderRef.current && selectedDateRef.current === nowStr) {
+                        loadBriefing("", nowStr);
+                    }
+                }
+            } catch {
+
+            }
+        };
+
+        const interval = setInterval(checkForUpdates, 60 * 1000);
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") checkForUpdates();
+        };
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, [isPremium]);
 
     const handleGmailSync = async () => {
