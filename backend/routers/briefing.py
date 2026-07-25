@@ -25,7 +25,8 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
         body = (doc.summary or doc.raw_text or "").strip()[:800]
         if not body:
             body = "(본문 없음)"
-        parts.append(f"[문서 {i}] {doc.title}\n{body}")
+        sender_line = f"발신: {doc.sender}\n" if doc.sender else ""
+        parts.append(f"[문서 {i}] {doc.title}\n{sender_line}{body}")
 
     combined = "\n\n".join(parts) if parts else "(오늘 새로 추가된 문서 없음)"
     combined = combined[:9000]
@@ -47,10 +48,15 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
                         "당신은 문서 관리 도구 Neatly의 AI 브리핑 어시스턴트입니다.\n"
                         "제공된 문서와 마감 할 일 목록을 분석해 아래 형식으로 브리핑을 작성하세요.\n\n"
                         "제외 규칙 (아래에 해당하는 문서는 브리핑에서 완전히 제외):\n"
-                        "- 서비스 무료 체험판/평가판 시작 안내, 결제 유도, 구독 광고 등 프로모션성 이메일\n"
-                        "- 실제 업무나 계정 보안과 무관한 마케팅/뉴스레터성 내용\n"
+                        "- 서비스 무료 체험판/평가판 시작·종료 안내, 결제 유도, 구독/사용량/크레딧 변경 안내\n"
+                        "- 제품 업데이트, 체인지로그(changelog), 신규 기능 소개, 사용 가이드/튜토리얼 안내 메일\n"
+                        "- 뉴스레터, 커뮤니티 다이제스트(LinkedIn 알림·인맥 활동 요약 등), 광고, 프로모션\n"
+                        "- 실제 업무나 계정 보안과 무관한 마케팅성 내용\n"
+                        "- 위 항목 판단 기준: 발신자가 특정 개인이 아니라 서비스/브랜드이고, 수신자 개인에게 특정 행동을 요청한 것이 아니라 정보 전달·홍보가 목적이면 제외 대상\n"
+                        "- 발신 주소에 noreply, no-reply, updates, notifications, newsletter, changelog, news. 등이 포함되어 있으면 자동 발송 메일이므로 원칙적으로 제외 대상 (실제 동료·지인이 개인 메일 주소로 보낸 것이 아님)\n"
                         "\n"
                         "형식 규칙:\n"
+                        "0. 위 제외 규칙에 해당하지 않는 문서는 절대 누락하지 말고 반드시 모두 포함하세요.\n"
                         "1. '오늘 마감인 할 일' 목록이 비어 있지 않다면 가장 먼저 아래 블록으로 출력 (비어 있으면 이 섹션 전체 생략):\n"
                         "   ⏰ 오늘 마감인 할 일\n"
                         "   각 항목마다 '- 할 일 내용 (출처 이메일 제목)' 한 줄씩\n"

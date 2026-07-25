@@ -79,7 +79,7 @@ def _classify_email_doc(
     except Exception:
         return None, []
 
-def _extract_task_from_email(subject: str, body: str) -> dict | None:
+def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict | None:
     """
     이메일 본문에서 특정 날짜까지 처리해야 할 할 일을 AI로 추출.
     마감일이 있는 명확한 업무 요청이 아니면 None을 반환.
@@ -91,14 +91,19 @@ def _extract_task_from_email(subject: str, body: str) -> dict | None:
     prompt = (
         f"오늘 날짜는 {today_str}입니다.\n"
         f"아래 이메일에 특정 날짜까지 처리해야 할 구체적인 업무 요청(마감일이 있는 할 일)이 있는지 분석하세요.\n\n"
+        f"발신: {sender or '알 수 없음'}\n"
         f"제목: {subject}\n"
         f"본문:\n{body[:3000]}\n\n"
         f"출력은 JSON 하나만, 다른 텍스트 없이:\n"
         f'{{"has_task": true 또는 false, "task": "해야 할 일 한 줄 요약", "date": "YYYY-MM-DD"}}\n\n'
         f"규칙:\n"
         f"- 명확한 날짜 또는 '내일', '이번주 금요일'처럼 오늘 기준으로 날짜를 계산할 수 있는 표현과 함께 언급된, 발신자가 이 이메일 수신자에게 직접 요청한 업무만 has_task=true\n"
-        f"- 다음은 항상 has_task=false: 서비스 무료 체험판/평가판 시작·종료 안내, 결제·구독 유도, 광고, 뉴스레터, 단순 정보 안내, 계정 로그인/보안 알림, 날짜가 없는 요청\n"
-        f"- 특히 '평가판 종료일', '체험 기간 만료일' 같은 서비스 자체의 일정은 절대 할 일로 추출하지 말 것\n"
+        f"- 다음은 항상 has_task=false: 서비스 무료 체험판/평가판 시작·종료 안내, 결제·구독·사용량/크레딧 변경 안내, 제품 업데이트/체인지로그/신규 기능 소개, 뉴스레터, 커뮤니티 다이제스트, 광고, 단순 정보 안내, 계정 로그인/보안 알림, 날짜가 없는 요청\n"
+        f"- 발신자가 특정 개인이 아니라 서비스/브랜드이고 자동 발송된 메일이면(뉴스레터, changelog, 마케팅 등) has_task=false\n"
+        f"- 발신 주소에 noreply, no-reply, updates, notifications, newsletter, changelog, news. 등이 포함되어 있으면 자동 발송 메일이므로 has_task=false\n"
+        f"- 이름을 부르는 개인화된 인사말이 있어도, 목적이 자사 서비스의 혜택/크레딧/프로모션을 홍보하고 사용을 유도하는 것이라면 has_task=false (예: '~일까지 크레딧을 받으세요', '~일까지 청구하세요' 등 서비스가 발송한 프로모션성 안내)\n"
+        f"- 특히 '평가판 종료일', '체험 기간 만료일', '크레딧/사용량 전환일', '무료 크레딧 수령 기한' 같은 서비스 자체의 일정/혜택은 절대 할 일로 추출하지 말 것\n"
+        f"- has_task=true는 실제 사람(동료, 거래처, 지인 등)이 업무상 요청한 것에만 해당. 회사/서비스가 발송한 메일은 원칙적으로 has_task=false\n"
         f"- date는 반드시 YYYY-MM-DD 형식. 연도가 본문에 없으면 {today_str[:4]}년으로 계산하되, 그 결과가 오늘보다 이전이면 다음 해로 계산\n"
         f"- task는 한글로 간결하게, 마크다운/한자 사용 금지"
     )
@@ -245,7 +250,7 @@ def sync_user_emails(user: User, db: Session) -> int:
         for tag_id in tag_ids_auto:
             db.add(DocumentTag(document_id=new_doc.id, tag_id=tag_id))
 
-        task_info = _extract_task_from_email(subject, body)
+        task_info = _extract_task_from_email(subject, body, sender)
         if task_info:
             db.add(CalendarEvent(
                 user_id=user.id,
