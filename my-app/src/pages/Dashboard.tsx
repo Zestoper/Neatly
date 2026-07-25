@@ -5,7 +5,7 @@ import { getFolders } from "../api/folders";
 import { api } from "../api/client";
 import { generateBriefing, getBriefingByDate } from "../api/briefing";
 import { syncEmails, getSyncStatus } from "../api/emailSync";
-import { getTodayEvents, type CalendarEvent } from "../api/calendar";
+import { getTodayEvents, deleteEvent, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import styles from "./Dashboard.module.css";
 
@@ -24,6 +24,13 @@ type Document = {
 type Folder = {
     id: string;
     name: string;
+};
+
+type DueTask = {
+    id: string;
+    title: string;
+    email_subject: string | null;
+    event_date: string;
 };
 
 export default function Dashboard() {
@@ -71,7 +78,7 @@ export default function Dashboard() {
     const plan = localStorage.getItem("plan") ?? "FREE";
     const isPremium = plan === "PREMIUM";
 
-    const [briefing, setBriefing] = useState<{ id: string | null; title: string; content: string } | null>(null);
+    const [briefing, setBriefing] = useState<{ id: string | null; title: string; content: string; due_tasks?: DueTask[] } | null>(null);
     const [briefingLoading, setBriefingLoading] = useState(false);
     const [selectedFolder, setSelectedFolder] = useState<string>("");
     const [selectedDate, setSelectedDate] = useState<string>(
@@ -172,6 +179,31 @@ export default function Dashboard() {
             document.removeEventListener("visibilitychange", handleVisibility);
         };
     }, [isPremium]);
+
+    useEffect(() => {
+        if (!isPremium) return;
+        const timer = setInterval(() => {
+            setBriefing((prev) => {
+                if (!prev?.due_tasks?.length) return prev;
+                const now = new Date();
+                const remaining = prev.due_tasks.filter((t) => new Date(t.event_date) > now);
+                if (remaining.length === prev.due_tasks.length) return prev;
+                return { ...prev, due_tasks: remaining };
+            });
+        }, 30 * 1000);
+        return () => clearInterval(timer);
+    }, [isPremium]);
+
+    const handleDismissDueTask = async (id: string) => {
+        setBriefing((prev) =>
+            prev?.due_tasks ? { ...prev, due_tasks: prev.due_tasks.filter((t) => t.id !== id) } : prev
+        );
+        try {
+            await deleteEvent(id);
+        } catch {
+            showToast("할 일 삭제에 실패했습니다.");
+        }
+    };
 
     const handleGmailSync = async () => {
         setSyncingGmail(true);
@@ -341,7 +373,28 @@ export default function Dashboard() {
                         <p className={styles.briefingLoading}>브리핑 생성 중...</p>
                     ) : briefing ? (
                         <div className={styles.briefingContent}>
-                            <p className={styles.briefingText}>{briefing.content}</p>
+                            {!!briefing.due_tasks?.length && (
+                                <div className={styles.dueTaskList}>
+                                    <p className={styles.dueTaskHeading}>⏰ 오늘 마감인 할 일</p>
+                                    {briefing.due_tasks.map((t) => (
+                                        <div key={t.id} className={styles.dueTaskRow}>
+                                            <span className={styles.dueTaskText}>
+                                                {t.title}
+                                                {t.email_subject ? ` (${t.email_subject})` : ""}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className={styles.dueTaskDismiss}
+                                                onClick={() => handleDismissDueTask(t.id)}
+                                                aria-label="할 일 삭제"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {briefing.content && <p className={styles.briefingText}>{briefing.content}</p>}
                             <button
                                 className={styles.upgradeButtonOutline}
                                 onClick={handleRegenerateBriefing}

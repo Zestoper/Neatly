@@ -87,7 +87,8 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
     if not body.strip():
         return None
 
-    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now = datetime.now(timezone.utc)
+    today_str = now.strftime("%Y-%m-%d")
     prompt = (
         f"오늘 날짜는 {today_str}입니다.\n"
         f"아래 이메일에 특정 날짜까지 처리해야 할 구체적인 업무 요청(마감일이 있는 할 일)이 있는지 분석하세요.\n\n"
@@ -95,7 +96,7 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         f"제목: {subject}\n"
         f"본문:\n{body[:3000]}\n\n"
         f"출력은 JSON 하나만, 다른 텍스트 없이:\n"
-        f'{{"has_task": true 또는 false, "task": "해야 할 일 한 줄 요약", "date": "YYYY-MM-DD"}}\n\n'
+        f'{{"has_task": true 또는 false, "task": "해야 할 일 한 줄 요약", "date": "YYYY-MM-DD", "time": "HH:MM 또는 null"}}\n\n'
         f"규칙:\n"
         f"- 명확한 날짜 또는 '내일', '이번주 금요일'처럼 오늘 기준으로 날짜를 계산할 수 있는 표현과 함께 언급된, 발신자가 이 이메일 수신자에게 직접 요청한 업무만 has_task=true\n"
         f"- 다음은 항상 has_task=false: 서비스 무료 체험판/평가판 시작·종료 안내, 결제·구독·사용량/크레딧 변경 안내, 제품 업데이트/체인지로그/신규 기능 소개, 뉴스레터, 커뮤니티 다이제스트, 광고, 단순 정보 안내, 계정 로그인/보안 알림, 날짜가 없는 요청\n"
@@ -105,6 +106,7 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         f"- 특히 '평가판 종료일', '체험 기간 만료일', '크레딧/사용량 전환일', '무료 크레딧 수령 기한' 같은 서비스 자체의 일정/혜택은 절대 할 일로 추출하지 말 것\n"
         f"- has_task=true는 실제 사람(동료, 거래처, 지인 등)이 업무상 요청한 것에만 해당. 회사/서비스가 발송한 메일은 원칙적으로 has_task=false\n"
         f"- date는 반드시 YYYY-MM-DD 형식. 연도가 본문에 없으면 {today_str[:4]}년으로 계산하되, 그 결과가 오늘보다 이전이면 다음 해로 계산\n"
+        f"- time: 마감 시각이 명시되어 있으면(예: '21시까지', '오후 6시까지') 24시간제 HH:MM으로, 없으면 null\n"
         f"- task는 한글로 간결하게, 마크다운/한자 사용 금지"
     )
 
@@ -126,10 +128,15 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
 
         task = (data.get("task") or "").strip()
         date_str = (data.get("date") or "").strip()
+        time_str = (data.get("time") or "").strip()
         if not task or not date_str:
             return None
 
-        event_date = datetime.strptime(date_str, "%Y-%m-%d")
+        if _re.match(r'^\d{2}:\d{2}$', time_str):
+            event_date = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+        else:
+            event_date = datetime.strptime(f"{date_str} 23:59", "%Y-%m-%d %H:%M")
+
         return {"task": task, "event_date": event_date}
     except Exception:
         return None

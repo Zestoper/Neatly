@@ -10,9 +10,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from database import SessionLocal
-from models import User, Document, CalendarEvent
+from models import User, Document
 from routers.email_sync import sync_user_emails
-from routers.briefing import _generate_briefing_text
+from routers.briefing import _generate_briefing_text, _get_due_tasks
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -74,22 +74,12 @@ def generate_daily_briefings():
                     .all()
                 )
 
-                due_tasks = (
-                    db.query(CalendarEvent)
-                    .filter(
-                        CalendarEvent.user_id == user.id,
-                        CalendarEvent.auto_extracted == True,
-                        CalendarEvent.event_date >= today_start,
-                        CalendarEvent.event_date < today_end,
-                    )
-                    .order_by(CalendarEvent.event_date)
-                    .all()
-                )
+                due_tasks = _get_due_tasks(db, user.id, today_start, today_end)
 
                 if not docs and not due_tasks:
                     continue
 
-                briefing_text = _generate_briefing_text(docs, due_tasks)
+                briefing_text = _generate_briefing_text(docs)
 
                 existing = (
                     db.query(Document)
