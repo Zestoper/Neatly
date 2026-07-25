@@ -116,6 +116,7 @@ class CalendarEvent(Base):
     document_id   = Column(String(36), ForeignKey("Document.id"), nullable=True)
     email_id      = Column(String(255), nullable=True)
     email_subject = Column(String(500), nullable=True)
+    auto_extracted = Column(Boolean, default=False, server_default="false")
     created_at    = Column(DateTime, default=_now)
 
 class Document(Base):

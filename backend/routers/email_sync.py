@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from models import Document, DocumentTag, Folder, Tag, User
+from models import CalendarEvent, Document, DocumentTag, Folder, Tag, User
 from routers.auth import get_current_user, get_db
 from datetime import datetime, timezone
 from routers.gmail import (
@@ -78,6 +78,56 @@ def _classify_email_doc(
         return folder_id, tag_ids
     except Exception:
         return None, []
+
+def _extract_task_from_email(subject: str, body: str) -> dict | None:
+    """
+    이메일 본문에서 특정 날짜까지 처리해야 할 할 일을 AI로 추출.
+    마감일이 있는 명확한 업무 요청이 아니면 None을 반환.
+    """
+    if not body.strip():
+        return None
+
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    prompt = (
+        f"오늘 날짜는 {today_str}입니다.\n"
+        f"아래 이메일에 특정 날짜까지 처리해야 할 구체적인 업무 요청(마감일이 있는 할 일)이 있는지 분석하세요.\n\n"
+        f"제목: {subject}\n"
+        f"본문:\n{body[:3000]}\n\n"
+        f"출력은 JSON 하나만, 다른 텍스트 없이:\n"
+        f'{{"has_task": true 또는 false, "task": "해야 할 일 한 줄 요약", "date": "YYYY-MM-DD"}}\n\n'
+        f"규칙:\n"
+        f"- 명확한 날짜 또는 '내일', '이번주 금요일'처럼 오늘 기준으로 날짜를 계산할 수 있는 표현과 함께 언급된, 발신자가 이 이메일 수신자에게 직접 요청한 업무만 has_task=true\n"
+        f"- 다음은 항상 has_task=false: 서비스 무료 체험판/평가판 시작·종료 안내, 결제·구독 유도, 광고, 뉴스레터, 단순 정보 안내, 계정 로그인/보안 알림, 날짜가 없는 요청\n"
+        f"- 특히 '평가판 종료일', '체험 기간 만료일' 같은 서비스 자체의 일정은 절대 할 일로 추출하지 말 것\n"
+        f"- date는 반드시 YYYY-MM-DD 형식. 연도가 본문에 없으면 {today_str[:4]}년으로 계산하되, 그 결과가 오늘보다 이전이면 다음 해로 계산\n"
+        f"- task는 한글로 간결하게, 마크다운/한자 사용 금지"
+    )
+
+    try:
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.1,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+        )
+        text = response.choices[0].message.content.strip()
+        match = _re.search(r'\{.*?\}', text, _re.DOTALL)
+        if not match:
+            return None
+        data = _json.loads(match.group())
+
+        if not data.get("has_task"):
+            return None
+
+        task = (data.get("task") or "").strip()
+        date_str = (data.get("date") or "").strip()
+        if not task or not date_str:
+            return None
+
+        event_date = datetime.strptime(date_str, "%Y-%m-%d")
+        return {"task": task, "event_date": event_date}
+    except Exception:
+        return None
 
 def sync_user_emails(user: User, db: Session) -> int:
     """
@@ -194,6 +244,19 @@ def sync_user_emails(user: User, db: Session) -> int:
 
         for tag_id in tag_ids_auto:
             db.add(DocumentTag(document_id=new_doc.id, tag_id=tag_id))
+
+        task_info = _extract_task_from_email(subject, body)
+        if task_info:
+            db.add(CalendarEvent(
+                user_id=user.id,
+                title=task_info["task"],
+                description=f"이메일 '{subject}'에서 AI가 자동으로 추출한 할 일입니다.",
+                event_date=task_info["event_date"],
+                document_id=new_doc.id,
+                email_id=msg["id"],
+                email_subject=subject,
+                auto_extracted=True,
+            ))
 
         existing_message_ids.add(msg["id"])
         saved += 1

@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from database import SessionLocal
-from models import User, Document
+from models import User, Document, CalendarEvent
 from routers.email_sync import sync_user_emails
 from routers.briefing import _generate_briefing_text
 from datetime import datetime, timezone, timedelta
@@ -45,14 +45,15 @@ def sync_all_premium_emails():
 
 def generate_daily_briefings():
     """
-    매일 오전 9시 실행 — Premium 사용자별로 오늘의 일간 브리핑 문서 자동 생성.
-    오늘 추가된 문서가 없는 사용자는 건너뜀.
+    매일 오전 8시 실행 — Premium 사용자별로 오늘의 일간 브리핑 문서 자동 생성.
+    오늘 추가된 문서도 없고 오늘 마감인 할 일도 없는 사용자는 건너뜀.
     """
     db = SessionLocal()
     try:
         today_start = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
+        today_end = today_start + timedelta(days=1)
         today_str = datetime.now(timezone.utc).strftime("%Y년 %m월 %d일")
         title = f"AI 일간 브리핑 — {today_str}"
 
@@ -71,10 +72,23 @@ def generate_daily_briefings():
                     .order_by(Document.created_at.desc())
                     .all()
                 )
-                if not docs:
+
+                due_tasks = (
+                    db.query(CalendarEvent)
+                    .filter(
+                        CalendarEvent.user_id == user.id,
+                        CalendarEvent.auto_extracted == True,
+                        CalendarEvent.event_date >= today_start,
+                        CalendarEvent.event_date < today_end,
+                    )
+                    .order_by(CalendarEvent.event_date)
+                    .all()
+                )
+
+                if not docs and not due_tasks:
                     continue
 
-                briefing_text = _generate_briefing_text(docs)
+                briefing_text = _generate_briefing_text(docs, due_tasks)
 
                 existing = (
                     db.query(Document)
