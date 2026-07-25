@@ -12,7 +12,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from database import SessionLocal
 from models import User, Document
 from routers.email_sync import sync_user_emails
-from routers.briefing import _generate_briefing_text, _get_due_tasks
+from routers.briefing import _generate_briefing_text, _get_due_tasks, _kst_day_range, KST
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -50,11 +50,9 @@ def generate_daily_briefings():
     """
     db = SessionLocal()
     try:
-        today_start = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        today_end = today_start + timedelta(days=1)
-        today_str = datetime.now(timezone.utc).strftime("%Y년 %m월 %d일")
+        today_kst_str = datetime.now(KST).strftime("%Y-%m-%d")
+        today_start, today_end = _kst_day_range(today_kst_str)
+        today_str = datetime.strptime(today_kst_str, "%Y-%m-%d").strftime("%Y년 %m월 %d일")
         title = f"AI 일간 브리핑 — {today_str}"
 
         premium_users = db.query(User).filter(User.plan == "PREMIUM").all()
@@ -144,14 +142,14 @@ def start_scheduler():
 
     scheduler.add_job(
         generate_daily_briefings,
-        trigger=CronTrigger(hour=8, minute=0),
+        trigger=CronTrigger(hour=8, minute=0, timezone="Asia/Seoul"),
         id="daily_briefing",
         replace_existing=True,
     )
 
     scheduler.add_job(
         cleanup_old_trash,
-        trigger=CronTrigger(hour=3, minute=0),
+        trigger=CronTrigger(hour=3, minute=0, timezone="Asia/Seoul"),
         id="trash_cleanup",
         replace_existing=True,
     )
