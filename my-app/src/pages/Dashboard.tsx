@@ -143,7 +143,17 @@ export default function Dashboard() {
                     setDocuments(docsData);
                     const nowStr = new Date().toLocaleDateString("en-CA");
                     if (!selectedFolderRef.current && selectedDateRef.current === nowStr) {
-                        loadBriefing("", nowStr);
+
+                        setBriefing(null);
+                        setBriefingLoading(true);
+                        try {
+                            const generated = await generateBriefing(undefined, nowStr);
+                            setBriefing(generated);
+                        } catch {
+
+                        } finally {
+                            setBriefingLoading(false);
+                        }
                     }
                 }
             } catch {
@@ -171,7 +181,7 @@ export default function Dashboard() {
             if (res.synced > 0) {
                 const docsData = await getDocuments();
                 setDocuments(docsData);
-                if (isPremium) loadBriefing(selectedFolder, selectedDate);
+                if (isPremium) handleRegenerateBriefing();
                 showToast(`새 이메일 ${res.synced}개 동기화됐습니다.`);
             } else {
                 showToast("새 이메일이 없습니다.");
