@@ -68,6 +68,7 @@ def generate_daily_briefings():
                         Document.user_id == user.id,
                         Document.deleted_at == None,
                         Document.created_at >= today_start,
+                        Document.title != title,
                     )
                     .order_by(Document.created_at.desc())
                     .all()

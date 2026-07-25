@@ -125,11 +125,14 @@ def generate_daily_briefing(
         briefing_text = _generate_briefing_text(docs)
         return {"id": None, "title": "폴더 브리핑", "content": briefing_text}
 
+    title = f"AI 일간 브리핑 — {_date_label(target_date)}"
+
     docs = db.query(Document).filter(
         Document.user_id == current_user.id,
         Document.deleted_at == None,
         Document.created_at >= day_start,
         Document.created_at < day_end,
+        Document.title != title,
     ).order_by(Document.created_at.desc()).all()
 
     due_tasks = db.query(CalendarEvent).filter(
@@ -143,7 +146,6 @@ def generate_daily_briefing(
         raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서나 마감 할 일이 없습니다.")
 
     briefing_text = _generate_briefing_text(docs, due_tasks)
-    title = f"AI 일간 브리핑 — {_date_label(target_date)}"
 
     existing = db.query(Document).filter(
         Document.user_id == current_user.id,
