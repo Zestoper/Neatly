@@ -12,10 +12,21 @@ load_dotenv()
 
 router = APIRouter()
 
-_AUTOMATED_SENDER_RE = re.compile(r"no.?reply", re.IGNORECASE)
+KST = timezone(timedelta(hours=9))
+
+def _kst_day_range(date_str: str) -> tuple[datetime, datetime]:
+    """'YYYY-MM-DD'(한국 시간 기준 날짜)를 UTC datetime 범위 [start, end)로 변환."""
+    day_start_kst = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=KST)
+    day_end_kst = day_start_kst + timedelta(days=1)
+    return day_start_kst.astimezone(timezone.utc), day_end_kst.astimezone(timezone.utc)
+
+_AUTOMATED_SENDER_RE = re.compile(
+    r"no.?reply|updates?[-.@]|notifications?[-.@]|newsletter@|changelog@|news\.|team@mail\.",
+    re.IGNORECASE,
+)
 
 def _is_automated_sender(sender: str | None) -> bool:
-    """noreply/no-reply 발신 주소는 사람이 직접 보낸 메일이 아니므로 항상 자동 발송으로 간주."""
+    """자동 발송으로 보이는 발신 주소(noreply, changelog, newsletter 등)는 항상 자동 발송으로 간주."""
     return bool(sender and _AUTOMATED_SENDER_RE.search(sender))
 
 def _generate_briefing_text(docs: list[Document]) -> str:
@@ -25,7 +36,7 @@ def _generate_briefing_text(docs: list[Document]) -> str:
     (due_tasks API 필드) 이 텍스트에는 포함하지 않는다 — AI가 마감 항목을
     임의로 지어내거나 형식을 흐트러뜨리는 문제를 원천 차단하기 위함.
 
-    noreply/no-reply 발신 메일은 AI 판단에 맡기지 않고 코드에서 먼저 제외한다 —
+    자동 발송으로 보이는 발신 주소는 AI 판단에 맡기지 않고 코드에서 먼저 제외한다 —
     AI가 제외 규칙을 놓치는 경우가 있어 확정적으로 걸러내기 위함.
     """
 
@@ -115,7 +126,7 @@ def _date_label(date_str: str) -> str:
     return d.strftime("%Y년 %m월 %d일")
 
 def _today_str() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(KST).strftime("%Y-%m-%d")
 
 @router.post("/briefing/generate")
 def generate_daily_briefing(
@@ -129,10 +140,9 @@ def generate_daily_briefing(
 
     target_date = date or _today_str()
     try:
-        day_start = datetime.strptime(target_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        day_start, day_end = _kst_day_range(target_date)
     except ValueError:
         raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
-    day_end = day_start + timedelta(days=1)
 
     if folder_id:
 
@@ -198,11 +208,10 @@ def get_briefing_by_date(
     if current_user.plan != "PREMIUM":
         return {"briefing": None}
     try:
-        day_start = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        day_start, day_end = _kst_day_range(date)
         label = _date_label(date)
     except ValueError:
         raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
-    day_end = day_start + timedelta(days=1)
 
     title = f"AI 일간 브리핑 — {label}"
     doc = db.query(Document).filter(
@@ -228,8 +237,7 @@ def get_today_briefing(
         return {"briefing": None}
     today_str = _today_str()
     today_label = _date_label(today_str)
-    day_start = datetime.strptime(today_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    day_end = day_start + timedelta(days=1)
+    day_start, day_end = _kst_day_range(today_str)
     title = f"AI 일간 브리핑 — {today_label}"
     due_tasks_out = [_due_task_dict(t) for t in _get_due_tasks(db, current_user.id, day_start, day_end)]
     doc = db.query(Document).filter(

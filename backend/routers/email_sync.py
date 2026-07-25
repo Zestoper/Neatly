@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from models import CalendarEvent, Document, DocumentTag, Folder, Tag, User
 from routers.auth import get_current_user, get_db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
 from routers.gmail import (
     make_credentials,
     refresh_if_expired,
@@ -79,7 +81,10 @@ def _classify_email_doc(
     except Exception:
         return None, []
 
-_AUTOMATED_SENDER_RE = _re.compile(r"no.?reply", _re.IGNORECASE)
+_AUTOMATED_SENDER_RE = _re.compile(
+    r"no.?reply|updates?[-.@]|notifications?[-.@]|newsletter@|changelog@|news\.|team@mail\.",
+    _re.IGNORECASE,
+)
 
 def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict | None:
     """
@@ -92,10 +97,10 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
     if sender and _AUTOMATED_SENDER_RE.search(sender):
         return None
 
-    now = datetime.now(timezone.utc)
-    today_str = now.strftime("%Y-%m-%d")
+    now_kst = datetime.now(KST)
+    today_str = now_kst.strftime("%Y-%m-%d")
     prompt = (
-        f"오늘 날짜는 {today_str}입니다.\n"
+        f"오늘 날짜는 {today_str}입니다 (한국 시간 기준).\n"
         f"아래 이메일에 특정 날짜까지 처리해야 할 구체적인 업무 요청(마감일이 있는 할 일)이 있는지 분석하세요.\n\n"
         f"발신: {sender or '알 수 없음'}\n"
         f"제목: {subject}\n"
@@ -111,7 +116,7 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         f"- 특히 '평가판 종료일', '체험 기간 만료일', '크레딧/사용량 전환일', '무료 크레딧 수령 기한' 같은 서비스 자체의 일정/혜택은 절대 할 일로 추출하지 말 것\n"
         f"- has_task=true는 실제 사람(동료, 거래처, 지인 등)이 업무상 요청한 것에만 해당. 회사/서비스가 발송한 메일은 원칙적으로 has_task=false\n"
         f"- date는 반드시 YYYY-MM-DD 형식. 연도가 본문에 없으면 {today_str[:4]}년으로 계산하되, 그 결과가 오늘보다 이전이면 다음 해로 계산\n"
-        f"- time: 마감 시각이 명시되어 있으면(예: '21시까지', '오후 6시까지') 24시간제 HH:MM으로, 없으면 null\n"
+        f"- time: 마감 시각이 명시되어 있으면(예: '21시까지', '오후 6시까지') 24시간제 HH:MM으로(한국 시간 기준), 없으면 null\n"
         f"- task는 한글로 간결하게, 마크다운/한자 사용 금지"
     )
 
@@ -138,9 +143,12 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
             return None
 
         if _re.match(r'^\d{2}:\d{2}$', time_str):
-            event_date = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+            event_date_kst = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M").replace(tzinfo=KST)
         else:
-            event_date = datetime.strptime(f"{date_str} 23:59", "%Y-%m-%d %H:%M")
+            event_date_kst = datetime.strptime(f"{date_str} 23:59", "%Y-%m-%d %H:%M").replace(tzinfo=KST)
+
+        # DB에는 tzinfo 없이 UTC 값으로 저장 (다른 datetime 컬럼들과 동일한 관례)
+        event_date = event_date_kst.astimezone(timezone.utc).replace(tzinfo=None)
 
         return {"task": task, "event_date": event_date}
     except Exception:
