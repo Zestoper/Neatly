@@ -11,10 +11,13 @@ load_dotenv()
 
 router = APIRouter()
 
-def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent] | None = None) -> str:
-    """문서 목록 + 오늘 마감인 할 일 목록을 받아 브리핑 생성."""
+def _generate_briefing_text(docs: list[Document]) -> str:
+    """문서 목록을 받아 문서별 요약 + 전체 요약 형태의 브리핑 생성.
 
-    due_tasks = due_tasks or []
+    '오늘 마감인 할 일'은 CalendarEvent에서 직접 구조화된 데이터로 내려주므로
+    (due_tasks API 필드) 이 텍스트에는 포함하지 않는다 — AI가 마감 항목을
+    임의로 지어내거나 형식을 흐트러뜨리는 문제를 원천 차단하기 위함.
+    """
 
     parts = []
     for i, doc in enumerate(docs, 1):
@@ -27,12 +30,6 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
     combined = "\n\n".join(parts) if parts else "(오늘 새로 추가된 문서 없음)"
     combined = combined[:9000]
 
-    due_parts = [
-        f"- {t.title} (출처 이메일: {t.email_subject or '알 수 없음'})"
-        for t in due_tasks
-    ]
-    due_combined = "\n".join(due_parts) if due_parts else "(없음)"
-
     try:
         response = create_chat_completion(
             model=GROQ_MODEL,
@@ -42,7 +39,7 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
                     "role": "system",
                     "content": (
                         "당신은 문서 관리 도구 Neatly의 AI 브리핑 어시스턴트입니다.\n"
-                        "제공된 문서와 마감 할 일 목록을 분석해 아래 형식으로 브리핑을 작성하세요.\n\n"
+                        "제공된 문서들을 분석해 아래 형식으로 브리핑을 작성하세요.\n\n"
                         "제외 규칙 (아래에 해당하는 문서는 브리핑에서 완전히 제외):\n"
                         "- 서비스 무료 체험판/평가판 시작·종료 안내, 결제 유도, 구독/사용량/크레딧 변경 안내\n"
                         "- 제품 업데이트, 체인지로그(changelog), 신규 기능 소개, 사용 가이드/튜토리얼 안내 메일\n"
@@ -53,33 +50,26 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
                         "\n"
                         "형식 규칙:\n"
                         "0. 위 제외 규칙에 해당하지 않는 문서는 절대 누락하지 말고 반드시 모두 포함하세요.\n"
-                        "1. '오늘 마감인 할 일' 목록이 비어 있지 않다면 가장 먼저 아래 블록으로 출력 (비어 있으면 이 섹션 전체 생략):\n"
-                        "   ⏰ 오늘 마감인 할 일\n"
-                        "   각 항목마다 '- 할 일 내용 (출처 이메일 제목)' 한 줄씩\n"
-                        "\n"
-                        "2. 그 다음, 제외 규칙에 해당하지 않는 문서마다 아래 블록을 반복 출력:\n"
-                        "   ▪ 문서 제목\n"
+                        "1. 제외 규칙에 해당하지 않는 문서마다 아래 블록을 반복 출력:\n"
+                        "   ▪ 문서 제목 (입력의 '[문서 N] 실제 제목'에서 '실제 제목' 부분 그대로. '문서 1', '문서 2' 같은 번호를 제목으로 쓰지 말 것)\n"
                         "   핵심 내용을 2문장으로 요약\n"
                         "   → 할 일: 이 문서에서 해야 할 행동 한 줄 (없으면 생략)\n"
                         "\n"
-                        "3. 모든 블록이 끝난 후 마지막에:\n"
+                        "2. 모든 블록이 끝난 후 마지막에:\n"
                         "   ◆ 전체 요약\n"
-                        "   오늘 가장 중요한 내용 2~3문장, 마감인 할 일을 최우선으로 우선순위 순서로\n"
+                        "   오늘 가장 중요한 내용 2~3문장, 우선순위 순서로\n"
                         "\n"
                         "규칙:\n"
                         "- 마크다운 기호(#, **, -, ``` 등) 사용 금지\n"
                         "- 한글과 필요한 영어(고유명사, 숫자 등) 외에 한자(중국어 간체/번체) 사용 절대 금지 — 반드시 순수 한국어로만 작성\n"
-                        "- 제공된 문서/할 일 내용만 근거로 작성\n"
+                        "- 제공된 문서 내용만 근거로 작성\n"
                         "- 내용이 없는 문서는 '내용 확인 필요'로 표시\n"
-                        "- 오늘 마감인 할 일도 없고 제외 규칙에 해당하지 않는 문서도 없다면 '오늘은 특별히 확인할 업무 관련 내용이 없습니다.'라고만 답변"
+                        "- 제외 규칙에 해당하지 않는 문서가 하나도 없다면 '오늘은 특별히 확인할 업무 관련 내용이 없습니다.'라고만 답변"
                     ),
                 },
                 {
                     "role": "user",
-                    "content": (
-                        f"오늘 마감인 할 일 {len(due_tasks)}개:\n{due_combined}\n\n"
-                        f"오늘 새로 추가된 문서 {len(docs)}개:\n\n{combined}"
-                    ),
+                    "content": f"다음 문서 {len(docs)}개를 분석해 브리핑을 작성해주세요:\n\n{combined}",
                 },
             ],
             max_tokens=1000,
@@ -87,6 +77,25 @@ def _generate_briefing_text(docs: list[Document], due_tasks: list[CalendarEvent]
         return response.choices[0].message.content
     except Exception as e:
         raise HTTPException(status_code=502, detail="AI 브리핑 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
+
+def _due_task_dict(t: CalendarEvent) -> dict:
+    return {
+        "id": str(t.id),
+        "title": t.title,
+        "email_subject": t.email_subject,
+        "event_date": t.event_date.isoformat(),
+    }
+
+def _get_due_tasks(db: Session, user_id: str, day_start: datetime, day_end: datetime) -> list[CalendarEvent]:
+    """해당 날짜 범위의 자동 추출 할 일을 조회. 오늘 날짜라면 이미 지난 마감은 제외한다."""
+    now = datetime.now(timezone.utc)
+    lower = max(day_start, now) if day_start <= now < day_end else day_start
+    return db.query(CalendarEvent).filter(
+        CalendarEvent.user_id == user_id,
+        CalendarEvent.auto_extracted == True,
+        CalendarEvent.event_date >= lower,
+        CalendarEvent.event_date < day_end,
+    ).order_by(CalendarEvent.event_date).all()
 
 def _date_label(date_str: str) -> str:
     """'YYYY-MM-DD' → 'YYYY년 MM월 DD일'"""
@@ -135,17 +144,13 @@ def generate_daily_briefing(
         Document.title != title,
     ).order_by(Document.created_at.desc()).all()
 
-    due_tasks = db.query(CalendarEvent).filter(
-        CalendarEvent.user_id == current_user.id,
-        CalendarEvent.auto_extracted == True,
-        CalendarEvent.event_date >= day_start,
-        CalendarEvent.event_date < day_end,
-    ).order_by(CalendarEvent.event_date).all()
+    due_tasks = _get_due_tasks(db, current_user.id, day_start, day_end)
 
     if not docs and not due_tasks:
         raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서나 마감 할 일이 없습니다.")
 
-    briefing_text = _generate_briefing_text(docs, due_tasks)
+    briefing_text = _generate_briefing_text(docs)
+    due_tasks_out = [_due_task_dict(t) for t in due_tasks]
 
     existing = db.query(Document).filter(
         Document.user_id == current_user.id,
@@ -158,7 +163,7 @@ def generate_daily_briefing(
         existing.summary = briefing_text[:300]
         db.commit()
         db.refresh(existing)
-        return {"id": str(existing.id), "title": existing.title, "content": briefing_text}
+        return {"id": str(existing.id), "title": existing.title, "content": briefing_text, "due_tasks": due_tasks_out}
 
     new_doc = Document(
         user_id=current_user.id,
@@ -170,7 +175,7 @@ def generate_daily_briefing(
     db.add(new_doc)
     db.commit()
     db.refresh(new_doc)
-    return {"id": str(new_doc.id), "title": new_doc.title, "content": briefing_text}
+    return {"id": str(new_doc.id), "title": new_doc.title, "content": briefing_text, "due_tasks": due_tasks_out}
 
 @router.get("/briefing/date")
 def get_briefing_by_date(
@@ -181,9 +186,11 @@ def get_briefing_by_date(
     if current_user.plan != "PREMIUM":
         return {"briefing": None}
     try:
+        day_start = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         label = _date_label(date)
     except ValueError:
         raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
+    day_end = day_start + timedelta(days=1)
 
     title = f"AI 일간 브리핑 — {label}"
     doc = db.query(Document).filter(
@@ -192,9 +199,13 @@ def get_briefing_by_date(
         Document.deleted_at == None,
     ).first()
 
+    due_tasks_out = [_due_task_dict(t) for t in _get_due_tasks(db, current_user.id, day_start, day_end)]
+
     if not doc:
-        return {"briefing": None}
-    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text}}
+        if not due_tasks_out:
+            return {"briefing": None}
+        return {"briefing": {"id": None, "title": title, "content": "", "due_tasks": due_tasks_out}}
+    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text, "due_tasks": due_tasks_out}}
 
 @router.get("/briefing/today")
 def get_today_briefing(
@@ -203,13 +214,19 @@ def get_today_briefing(
 ):
     if current_user.plan != "PREMIUM":
         return {"briefing": None}
-    today_label = _date_label(_today_str())
+    today_str = _today_str()
+    today_label = _date_label(today_str)
+    day_start = datetime.strptime(today_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    day_end = day_start + timedelta(days=1)
     title = f"AI 일간 브리핑 — {today_label}"
+    due_tasks_out = [_due_task_dict(t) for t in _get_due_tasks(db, current_user.id, day_start, day_end)]
     doc = db.query(Document).filter(
         Document.user_id == current_user.id,
         Document.title == title,
         Document.deleted_at == None,
     ).first()
     if not doc:
-        return {"briefing": None}
-    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text}}
+        if not due_tasks_out:
+            return {"briefing": None}
+        return {"briefing": {"id": None, "title": title, "content": "", "due_tasks": due_tasks_out}}
+    return {"briefing": {"id": str(doc.id), "title": doc.title, "content": doc.raw_text, "due_tasks": due_tasks_out}}
