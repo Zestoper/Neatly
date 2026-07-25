@@ -77,7 +77,7 @@ def generate_daily_briefings():
                 if not docs and not due_tasks:
                     continue
 
-                briefing_text = _generate_briefing_text(docs)
+                briefing_text = _generate_briefing_text(docs, today_kst_str)
 
                 existing = (
                     db.query(Document)

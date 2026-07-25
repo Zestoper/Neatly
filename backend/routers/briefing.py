@@ -29,7 +29,7 @@ def _is_automated_sender(sender: str | None) -> bool:
     """자동 발송으로 보이는 발신 주소(noreply, changelog, newsletter 등)는 항상 자동 발송으로 간주."""
     return bool(sender and _AUTOMATED_SENDER_RE.search(sender))
 
-def _generate_briefing_text(docs: list[Document]) -> str:
+def _generate_briefing_text(docs: list[Document], today_str: str | None = None) -> str:
     """문서 목록을 받아 문서별 요약 + 전체 요약 형태의 브리핑 생성.
 
     '오늘 마감인 할 일'은 CalendarEvent에서 직접 구조화된 데이터로 내려주므로
@@ -40,6 +40,7 @@ def _generate_briefing_text(docs: list[Document]) -> str:
     AI가 제외 규칙을 놓치는 경우가 있어 확정적으로 걸러내기 위함.
     """
 
+    today_str = today_str or datetime.now(KST).strftime("%Y-%m-%d")
     docs = [d for d in docs if not _is_automated_sender(d.sender)]
 
     parts = []
@@ -62,6 +63,7 @@ def _generate_briefing_text(docs: list[Document]) -> str:
                     "role": "system",
                     "content": (
                         "당신은 문서 관리 도구 Neatly의 AI 브리핑 어시스턴트입니다.\n"
+                        f"오늘 날짜는 {today_str}입니다 (한국 시간 기준).\n"
                         "제공된 문서들을 분석해 아래 형식으로 브리핑을 작성하세요.\n\n"
                         "제외 규칙 (아래에 해당하는 문서는 브리핑에서 완전히 제외):\n"
                         "- 서비스 무료 체험판/평가판 시작·종료 안내, 결제 유도, 구독/사용량/크레딧 변경 안내\n"
@@ -70,6 +72,7 @@ def _generate_briefing_text(docs: list[Document]) -> str:
                         "- 실제 업무나 계정 보안과 무관한 마케팅성 내용\n"
                         "- 위 항목 판단 기준: 발신자가 특정 개인이 아니라 서비스/브랜드이고, 수신자 개인에게 특정 행동을 요청한 것이 아니라 정보 전달·홍보가 목적이면 제외 대상\n"
                         "- 발신 주소에 noreply, no-reply, updates, notifications, newsletter, changelog, news. 등이 포함되어 있으면 자동 발송 메일이므로 원칙적으로 제외 대상 (실제 동료·지인이 개인 메일 주소로 보낸 것이 아님)\n"
+                        "- 문서 내용이 오늘보다 이전 날짜에 이미 끝난 회의/일정/이벤트 안내이고 현재 시점에 새로 취할 행동이 없다면 제외 대상 (예: 오늘이 7월 25일인데 7월 21일에 열린 회의 안내)\n"
                         "\n"
                         "형식 규칙:\n"
                         "0. 위 제외 규칙에 해당하지 않는 문서는 절대 누락하지 말고 반드시 모두 포함하세요.\n"
@@ -153,7 +156,7 @@ def generate_daily_briefing(
         ).order_by(Document.created_at.desc()).all()
         if not docs:
             raise HTTPException(status_code=404, detail="해당 폴더에 문서가 없습니다.")
-        briefing_text = _generate_briefing_text(docs)
+        briefing_text = _generate_briefing_text(docs, _today_str())
         return {"id": None, "title": "폴더 브리핑", "content": briefing_text}
 
     title = f"AI 일간 브리핑 — {_date_label(target_date)}"
@@ -171,7 +174,7 @@ def generate_daily_briefing(
     if not docs and not due_tasks:
         raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서나 마감 할 일이 없습니다.")
 
-    briefing_text = _generate_briefing_text(docs)
+    briefing_text = _generate_briefing_text(docs, target_date)
     due_tasks_out = [_due_task_dict(t) for t in due_tasks]
 
     existing = db.query(Document).filter(
