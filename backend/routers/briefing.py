@@ -5,11 +5,18 @@ from routers.auth import get_current_user, get_db
 from ai_client import create_chat_completion, GROQ_MODEL_SMART as GROQ_MODEL
 from datetime import datetime, timezone, timedelta
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
 
 router = APIRouter()
+
+_AUTOMATED_SENDER_RE = re.compile(r"no.?reply", re.IGNORECASE)
+
+def _is_automated_sender(sender: str | None) -> bool:
+    """noreply/no-reply 발신 주소는 사람이 직접 보낸 메일이 아니므로 항상 자동 발송으로 간주."""
+    return bool(sender and _AUTOMATED_SENDER_RE.search(sender))
 
 def _generate_briefing_text(docs: list[Document]) -> str:
     """문서 목록을 받아 문서별 요약 + 전체 요약 형태의 브리핑 생성.
@@ -17,7 +24,12 @@ def _generate_briefing_text(docs: list[Document]) -> str:
     '오늘 마감인 할 일'은 CalendarEvent에서 직접 구조화된 데이터로 내려주므로
     (due_tasks API 필드) 이 텍스트에는 포함하지 않는다 — AI가 마감 항목을
     임의로 지어내거나 형식을 흐트러뜨리는 문제를 원천 차단하기 위함.
+
+    noreply/no-reply 발신 메일은 AI 판단에 맡기지 않고 코드에서 먼저 제외한다 —
+    AI가 제외 규칙을 놓치는 경우가 있어 확정적으로 걸러내기 위함.
     """
+
+    docs = [d for d in docs if not _is_automated_sender(d.sender)]
 
     parts = []
     for i, doc in enumerate(docs, 1):

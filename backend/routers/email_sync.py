@@ -79,12 +79,17 @@ def _classify_email_doc(
     except Exception:
         return None, []
 
+_AUTOMATED_SENDER_RE = _re.compile(r"no.?reply", _re.IGNORECASE)
+
 def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict | None:
     """
     이메일 본문에서 특정 날짜까지 처리해야 할 할 일을 AI로 추출.
     마감일이 있는 명확한 업무 요청이 아니면 None을 반환.
     """
     if not body.strip():
+        return None
+
+    if sender and _AUTOMATED_SENDER_RE.search(sender):
         return None
 
     now = datetime.now(timezone.utc)
