@@ -384,6 +384,7 @@
   background: var(--color-accent-soft);
   border-radius: 5px;
   padding: 3px 8px;
+  cursor: pointer;
 }
 
 @media (max-width: 767px) {

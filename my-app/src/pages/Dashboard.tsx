@@ -455,7 +455,14 @@ export default function Dashboard() {
                     gmailConnected ? (
                         <div className={styles.gmailSyncRow}>
                             {syncStatus?.new_count ? (
-                                <span className={styles.newEmailBadge}>새 이메일 {syncStatus.new_count}개</span>
+                                <span
+                                    className={styles.newEmailBadge}
+                                    onClick={() => navigate("/emails")}
+                                    role="button"
+                                    tabIndex={0}
+                                >
+                                    안 읽은 이메일 {syncStatus.new_count}개
+                                </span>
                             ) : null}
                             <button
                                 className={styles.upgradeButtonOutline}
