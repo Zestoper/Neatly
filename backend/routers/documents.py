@@ -4,7 +4,7 @@ from models import Document, User, Tag, DocumentTag
 from routers.auth import get_current_user
 from database import get_db
 from pydantic import BaseModel
-from groq import Groq
+from ai_client import create_chat_completion, GROQ_MODEL_SMART as GROQ_MODEL
 import os, io
 from dotenv import load_dotenv
 from datetime import datetime, timezone
@@ -12,9 +12,6 @@ import pdfplumber
 import docx
 
 load_dotenv()
-
-groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
-GROQ_MODEL = "llama-3.3-70b-versatile"
 
 router = APIRouter()
 
@@ -57,7 +54,7 @@ def generate_summary(text: str) -> str:
 
     excerpt = text.strip()[:8000]
     try:
-        response = groq_client.chat.completions.create(
+        response = create_chat_completion(
             model=GROQ_MODEL,
             temperature=0.2,
             messages=[
