@@ -9,8 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GROQ_MODEL_SMART = "llama-3.3-70b-versatile"
-GROQ_MODEL_FAST = "llama-3.1-8b-instant"
+# llama-3.3-70b-versatile / llama-3.1-8b-instant는 2026-08-16 종료 → Groq 권장 대체 모델
+GROQ_MODEL_SMART = "openai/gpt-oss-120b"
+GROQ_MODEL_FAST = "openai/gpt-oss-20b"
 
 # Groq 모델 -> 장애 시 대신 사용할 Cerebras 모델
 _CEREBRAS_FALLBACK_MODEL = {
@@ -33,12 +34,19 @@ def create_chat_completion(*, model: str, messages: list, temperature: float = 0
     Groq로 채팅 완성을 생성하고, 레이트리밋/서버 장애/타임아웃 시 Cerebras로 폴백한다.
     반환값은 Groq/Cerebras 응답 객체(양쪽 다 choices[0].message.content로 접근 가능)와 동일한 형태.
     """
+    groq_extra = {}
+    groq_max_tokens = max_tokens
+    if model.startswith("openai/gpt-oss"):
+        # 추론형 모델이라 생각하는 토큰도 max_tokens에 포함 — 추론은 짧게 하고 여유분을 준다.
+        groq_extra["reasoning_effort"] = "low"
+        groq_max_tokens = max_tokens + 512
     try:
         return _groq_client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens=groq_max_tokens,
+            extra_body=groq_extra or None,
         )
     except _FALLBACK_TRIGGERS:
         if not _cerebras_client:
