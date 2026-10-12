@@ -10,6 +10,7 @@ import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "./ConfirmModal";
 import styles from "./Sidebar.module.css";
+import { Menu, Pencil, X } from "lucide-react";
 
 type Folder = {
     id: string;
@@ -207,8 +208,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className={isOpen ? styles.sidebar : styles.sidebarCollapsed}>
 
             <div className={styles.sidebarHeader}>
-                <button className={styles.toggleButton} onClick={onToggle}>
-                    ☰
+                <button className={styles.toggleButton} onClick={onToggle} aria-label="사이드바 열기/닫기">
+                    <Menu size={16} />
                 </button>
                 {isOpen && <Link to="/dashboard" className={styles.logo}>Neatly</Link>}
             </div>
@@ -322,14 +323,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     onClick={() => handleStartEdit(folder)}
                                     title="이름 수정"
                                 >
-                                    ✎
+                                    <Pencil size={13} />
                                 </button>
                                 <button
                                     className={styles.folderActionBtn}
                                     onClick={() => handleDeleteFolder(folder.id)}
                                     title="삭제"
                                 >
-                                    ✕
+                                    <X size={13} />
                                 </button>
                             </div>
                         </div>
@@ -451,14 +452,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     onClick={() => handleStartEdit(folder)}
                                     title="이름 수정"
                                 >
-                                    ✎
+                                    <Pencil size={13} />
                                 </button>
                                 <button
                                     className={styles.folderActionBtn}
                                     onClick={() => handleDeleteFolder(folder.id)}
                                     title="삭제"
                                 >
-                                    ✕
+                                    <X size={13} />
                                 </button>
                             </div>
                         </div>
@@ -531,7 +532,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                         onClick={() => handleDeleteFilter(f.id)}
                                         title="삭제"
                                     >
-                                        ✕
+                                        <X size={13} />
                                     </button>
                                 </div>
                             </div>

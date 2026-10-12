@@ -33,12 +33,12 @@ export default function Settings() {
         Notification.requestPermission().then((perm) => {
             setNotifPerm(perm);
             if (perm === "granted") showToast("알림이 허용되었습니다.");
-            else if (perm === "denied") showToast("주소창 왼쪽 자물쇠 아이콘 → 알림 → 허용으로 변경해주세요.", "error");
+            else if (perm === "denied") showToast("주소창 왼쪽 자물쇠 아이콘 > 알림 > 허용으로 변경해주세요.", "error");
         });
     };
 
     const handleBlockNotif = () => {
-        showToast("주소창 왼쪽 자물쇠 아이콘 → 알림 → 차단으로 변경해주세요.");
+        showToast("주소창 왼쪽 자물쇠 아이콘 > 알림 > 차단으로 변경해주세요.");
     };
 
     useEffect(() => {
@@ -215,7 +215,7 @@ export default function Settings() {
                 </div>
                 {notifPerm === "denied" && (
                     <p className={styles.notifDeniedGuide}>
-                        브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽 자물쇠 아이콘을 클릭한 뒤 <strong>알림 → 허용</strong>으로 변경해주세요.
+                        브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽 자물쇠 아이콘을 클릭한 뒤 <strong>알림 &gt; 허용</strong>으로 변경해주세요.
                     </p>
                 )}
             </section>

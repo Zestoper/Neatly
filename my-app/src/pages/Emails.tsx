@@ -9,6 +9,7 @@ import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Emails.module.css";
+import { X } from "lucide-react";
 
 type Email = {
     id: string;
@@ -233,7 +234,7 @@ export default function Emails() {
                                         onClick={(e) => handleDeleteDoc(e, doc.id)}
                                         title="삭제"
                                     >
-                                        ✕
+                                        <X size={13} />
                                     </button>
                                 </div>
                             ))
@@ -391,7 +392,7 @@ export default function Emails() {
                                 disabled={deletingId === email.id}
                                 title="휴지통으로 이동"
                             >
-                                {deletingId === email.id ? "..." : "✕"}
+                                {deletingId === email.id ? "..." : <X size={13} />}
                             </button>
                         </div>
                     ))

@@ -1,25 +1,26 @@
 import { Link } from "react-router-dom";
 import styles from "./Landing.module.css";
+import { FileText, ListChecks, Mail, MessagesSquare } from "lucide-react";
 
 // 로그인 없이 보이는 첫 화면. API를 호출하지 않아서 서버가 자고 있어도 바로 뜬다.
 const FEATURES = [
     {
-        icon: "📄",
+        icon: FileText,
         title: "업로드하면 바로 요약",
         desc: "PDF · DOCX · TXT를 올리면 텍스트를 추출하고 AI가 3~4문장으로 요약해요.",
     },
     {
-        icon: "✉️",
+        icon: Mail,
         title: "Gmail을 문서처럼",
         desc: "Google 계정을 연결하면 메일을 문서로 가져와 요약까지 자동으로 붙여줘요.",
     },
     {
-        icon: "✨",
+        icon: ListChecks,
         title: "AI 브리핑과 Q&A",
         desc: "오늘 들어온 문서를 한 번에 브리핑하고 문서 내용으로 질문에 답해요.",
     },
     {
-        icon: "💬",
+        icon: MessagesSquare,
         title: "실시간 채팅",
         desc: "WebSocket 기반 그룹 채팅과 1:1 DM으로 문서를 보면서 바로 이야기해요.",
     },
@@ -92,12 +93,12 @@ export default function Landing() {
                             <div className={styles.previewMain}>
                                 <div className={styles.docCard}>
                                     <div className={styles.docHead}>
-                                        <span className={styles.docIcon}>📄</span>
+                                        <span className={styles.docIcon}><FileText size={16} /></span>
                                         <span className={styles.docTitle}>3분기_마케팅_보고서.pdf</span>
                                         <span className={styles.tag}>보고서</span>
                                     </div>
                                     <div className={styles.summary}>
-                                        <span className={styles.summaryLabel}>✨ AI 요약</span>
+                                        <span className={styles.summaryLabel}>AI 요약</span>
                                         <span className={styles.line} style={{ width: "92%" }} />
                                         <span className={styles.line} style={{ width: "78%" }} />
                                         <span className={styles.line} style={{ width: "64%" }} />
@@ -105,12 +106,12 @@ export default function Landing() {
                                 </div>
                                 <div className={styles.docCard}>
                                     <div className={styles.docHead}>
-                                        <span className={styles.docIcon}>✉️</span>
+                                        <span className={styles.docIcon}><Mail size={16} /></span>
                                         <span className={styles.docTitle}>[회의] 다음 주 일정 공유</span>
                                         <span className={styles.tag}>Gmail</span>
                                     </div>
                                     <div className={styles.summary}>
-                                        <span className={styles.summaryLabel}>✨ AI 요약</span>
+                                        <span className={styles.summaryLabel}>AI 요약</span>
                                         <span className={styles.line} style={{ width: "84%" }} />
                                         <span className={styles.line} style={{ width: "58%" }} />
                                     </div>
@@ -125,7 +126,7 @@ export default function Landing() {
                     <div className={styles.grid}>
                         {FEATURES.map((f) => (
                             <article key={f.title} className={styles.feature}>
-                                <span className={styles.featureIcon}>{f.icon}</span>
+                                <span className={styles.featureIcon}><f.icon size={20} strokeWidth={1.75} /></span>
                                 <h3>{f.title}</h3>
                                 <p>{f.desc}</p>
                             </article>

@@ -12,6 +12,7 @@ import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
 import styles from "./Calendar.module.css";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 
 type Email = { id: string; subject: string; from_: string };
 
@@ -390,9 +391,9 @@ export default function Calendar() {
                                     {formDocId ? docs.find(d => d.id === formDocId)?.title ?? "문서 선택" : "문서 선택"}
                                 </span>
                                 {formDocId ? (
-                                    <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormDocId(""); }}>✕</span>
+                                    <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormDocId(""); }}><X size={12} /></span>
                                 ) : (
-                                    <span className={styles.pickerArrow}>{docDropdownOpen ? "▲" : "▼"}</span>
+                                    <span className={styles.pickerArrow}>{docDropdownOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
                                 )}
                             </button>
                             {docDropdownOpen && (
@@ -443,9 +444,9 @@ export default function Calendar() {
                                             {formEmailId ? formEmailSubject || "메일 선택" : "메일 선택"}
                                         </span>
                                         {formEmailId ? (
-                                            <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormEmailId(""); setFormEmailSubject(""); }}>✕</span>
+                                            <span className={styles.pickerClear} onClick={(e) => { e.stopPropagation(); setFormEmailId(""); setFormEmailSubject(""); }}><X size={12} /></span>
                                         ) : (
-                                            <span className={styles.pickerArrow}>{emailDropdownOpen ? "▲" : "▼"}</span>
+                                            <span className={styles.pickerArrow}>{emailDropdownOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
                                         )}
                                     </button>
                                     {emailDropdownOpen && (
