@@ -42,7 +42,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {"status": "ok"}
 
