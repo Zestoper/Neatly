@@ -7,7 +7,7 @@ export default function Header() {
                 marginBottom: 20,
             }}
         >
-            <h1>Good Morning 👋</h1>
+            <h1>Good Morning</h1>
             <button>Upload</button>
         </div>
     );

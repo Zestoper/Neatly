@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 
 type ToastType = "success" | "error";
 
@@ -136,8 +137,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                             <button
                                 onClick={() => dismissAlert(a.id)}
                                 style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 16, lineHeight: 1, padding: "0 2px", flexShrink: 0 }}
+                                aria-label="닫기"
                             >
-                                ✕
+                                <X size={14} />
                             </button>
                         </div>
 

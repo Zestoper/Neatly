@@ -7,6 +7,7 @@ import { useRefresh } from "../context/RefreshContext";
 import AiChatFab from "../components/AiChatFab";
 import ConfirmModal from "../components/ConfirmModal";
 import styles from "./EmailDetail.module.css";
+import { ArrowLeft } from "lucide-react";
 
 export default function EmailDetail() {
     const { id } = useParams();
@@ -132,7 +133,7 @@ export default function EmailDetail() {
         <div className={styles.container}>
 
             <button className={styles.backButton} onClick={() => navigate("/emails")}>
-                ← Emails
+                <ArrowLeft size={14} /> Emails
             </button>
 
             <div className={styles.header}>

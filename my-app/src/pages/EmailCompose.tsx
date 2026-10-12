@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateDraft, sendNewEmail } from "../api/emails";
 import styles from "./EmailCompose.module.css";
+import { ArrowLeft } from "lucide-react";
 
 export default function EmailCompose() {
     const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function EmailCompose() {
         return (
             <div className={styles.container}>
                 <button className={styles.backButton} onClick={() => navigate("/emails")}>
-                    ← Emails
+                    <ArrowLeft size={14} /> Emails
                 </button>
                 <div className={styles.sentBox}>
                     <p className={styles.sentTitle}>메일이 전송되었습니다.</p>
@@ -69,7 +70,7 @@ export default function EmailCompose() {
     return (
         <div className={styles.container}>
             <button className={styles.backButton} onClick={() => navigate("/emails")}>
-                ← Emails
+                <ArrowLeft size={14} /> Emails
             </button>
 
             <h1 className={styles.heading}>메일 작성</h1>

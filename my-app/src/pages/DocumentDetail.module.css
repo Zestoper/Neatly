@@ -257,15 +257,18 @@
 }
 
 .markdownBody summary::before {
-  content: "▶";
-  font-size: 10px;
-  color: var(--color-text-gray);
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--color-text-gray);
+  border-bottom: 1.5px solid var(--color-text-gray);
+  transform: rotate(-45deg);
   transition: transform 0.15s;
   flex-shrink: 0;
 }
 
 .markdownBody details[open] > summary::before {
-  transform: rotate(90deg);
+  transform: rotate(45deg);
 }
 
 .markdownBody details > :not(summary) {
