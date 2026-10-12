@@ -8,6 +8,7 @@ import { syncEmails, getSyncStatus } from "../api/emailSync";
 import { getTodayEvents, deleteEvent, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import styles from "./Dashboard.module.css";
+import { Clock } from "lucide-react";
 
 type Tag = {
     id: string;
@@ -375,7 +376,7 @@ export default function Dashboard() {
                         <div className={styles.briefingContent}>
                             {!!briefing.due_tasks?.length && (
                                 <div className={styles.dueTaskList}>
-                                    <p className={styles.dueTaskHeading}>⏰ 오늘 마감인 할 일</p>
+                                    <p className={styles.dueTaskHeading}><Clock size="1em" /> 오늘 마감인 할 일</p>
                                     {briefing.due_tasks.map((t) => (
                                         <div key={t.id} className={styles.dueTaskRow}>
                                             <span className={styles.dueTaskText}>
