@@ -5,7 +5,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+# SQLAlchemy 2.1부터 "postgresql://"의 기본 드라이버가 psycopg2 -> psycopg(v3)로 바뀌었다.
+# requirements에는 psycopg2-binary만 있으므로 드라이버를 명시해서 고정한다.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql+psycopg2://" + DATABASE_URL[len("postgres://"):]
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = "postgresql+psycopg2://" + DATABASE_URL[len("postgresql://"):]
 
 engine = create_engine(
     DATABASE_URL,
