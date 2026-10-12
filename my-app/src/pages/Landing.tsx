@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import AiSummaryDemo from "../components/AiSummaryDemo";
 import styles from "./Landing.module.css";
 import { FileText, ListChecks, Mail, MessagesSquare } from "lucide-react";
 
@@ -91,31 +92,7 @@ export default function Landing() {
                                 <i>Insights</i>
                             </aside>
                             <div className={styles.previewMain}>
-                                <div className={styles.docCard}>
-                                    <div className={styles.docHead}>
-                                        <span className={styles.docIcon}><FileText size={16} /></span>
-                                        <span className={styles.docTitle}>3분기_마케팅_보고서.pdf</span>
-                                        <span className={styles.tag}>보고서</span>
-                                    </div>
-                                    <div className={styles.summary}>
-                                        <span className={styles.summaryLabel}>AI 요약</span>
-                                        <span className={styles.line} style={{ width: "92%" }} />
-                                        <span className={styles.line} style={{ width: "78%" }} />
-                                        <span className={styles.line} style={{ width: "64%" }} />
-                                    </div>
-                                </div>
-                                <div className={styles.docCard}>
-                                    <div className={styles.docHead}>
-                                        <span className={styles.docIcon}><Mail size={16} /></span>
-                                        <span className={styles.docTitle}>[회의] 다음 주 일정 공유</span>
-                                        <span className={styles.tag}>Gmail</span>
-                                    </div>
-                                    <div className={styles.summary}>
-                                        <span className={styles.summaryLabel}>AI 요약</span>
-                                        <span className={styles.line} style={{ width: "84%" }} />
-                                        <span className={styles.line} style={{ width: "58%" }} />
-                                    </div>
-                                </div>
+                                <AiSummaryDemo />
                             </div>
                         </div>
                     </div>
