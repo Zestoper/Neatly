@@ -40,6 +40,7 @@ import Emails from "./pages/Emails";
 import EmailDetail from "./pages/EmailDetail";
 import EmailCompose from "./pages/EmailCompose";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -54,8 +55,10 @@ export default function App() {
         <BrowserRouter>
             <Routes>
 
+                {/* 로그인 없이 보이는 소개 페이지 */}
+                <Route path="/" element={<Landing />} />
                 <Route
-                    path="/"
+                    path="/dashboard"
                     element={
                         <ProtectedRoute>
                             <Layout>

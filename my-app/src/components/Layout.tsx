@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         >
                             &#9776;
                         </button>
-                        <Link to="/" className={styles.mobileLogo}>Neatly</Link>
+                        <Link to="/dashboard" className={styles.mobileLogo}>Neatly</Link>
                     </div>
                 )}
                 <div className={styles.content}>
