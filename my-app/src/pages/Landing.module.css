@@ -221,71 +221,7 @@
   flex: 1;
   min-width: 0;
   padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.docCard {
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-
-.docHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  min-width: 0;
-}
-
-.docIcon {
-  flex-shrink: 0;
-  display: inline-flex;
-  color: var(--color-text-gray);
-}
-
-.docTitle {
-  font-weight: 600;
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.tag {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--color-sidebar);
-  color: var(--color-text-gray);
-  border: 1px solid var(--color-border);
-}
-
-.summary {
-  background: var(--color-accent-soft);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.summaryLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-accent);
-}
-
-.line {
-  display: block;
-  height: 7px;
-  border-radius: 4px;
-  background: rgba(94, 94, 246, 0.18);
+  height: 360px; /* 데모 카드가 바뀌어도 미리보기 높이는 고정 */
 }
 
 /* ── 섹션 ── */
@@ -434,6 +370,7 @@
 
   .previewMain {
     padding: 14px;
+    height: 400px;
   }
 
   .section {
