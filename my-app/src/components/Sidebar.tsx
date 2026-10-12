@@ -210,7 +210,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <button className={styles.toggleButton} onClick={onToggle}>
                     ☰
                 </button>
-                {isOpen && <Link to="/" className={styles.logo}>Neatly</Link>}
+                {isOpen && <Link to="/dashboard" className={styles.logo}>Neatly</Link>}
             </div>
 
             {isOpen && (
@@ -223,7 +223,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             </button>
 
             <nav className={styles.nav}>
-                <Link to="/" className={navClass("/")}>Dashboard</Link>
+                <Link to="/dashboard" className={navClass("/dashboard")}>Dashboard</Link>
                 <Link to="/calendar" className={navClass("/calendar")}>Calendar</Link>
                 <Link to="/search" className={navClass("/search")}>Search</Link>
                 <Link to="/documents" className={navClass("/documents")}>Documents</Link>

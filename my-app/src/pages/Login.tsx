@@ -34,7 +34,7 @@ export default function Login() {
 
             }
 
-            navigate("/");
+            navigate("/dashboard");
         } catch (err: unknown) {
             const isNetworkError = !((err as { response?: unknown })?.response);
 
