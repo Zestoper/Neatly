@@ -84,6 +84,9 @@ export default function Plans() {
         <div className={styles.container}>
             <h1 className={styles.heading}>플랜</h1>
             <p className={styles.subheading}>원하는 플랜을 선택하세요.</p>
+            <p className={styles.demoNotice}>
+                포트폴리오 데모 버전이라 실제 결제 없이 모든 플랜을 무료로 체험할 수 있어요.
+            </p>
 
             <div className={styles.cards}>
 
@@ -131,7 +134,9 @@ export default function Plans() {
                                     ? "현재 플랜"
                                     : changing
                                     ? "변경 중..."
-                                    : "이 플랜으로 변경"
+                                    : plan.id === "FREE"
+                                    ? "이 플랜으로 변경"
+                                    : "무료로 체험하기"
                                 }
 
                             </button>
