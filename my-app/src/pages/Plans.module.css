@@ -203,3 +203,14 @@
     margin-bottom: 24px;
   }
 }
+
+.demoNotice {
+    display: inline-block;
+    margin: 0 0 24px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+}
