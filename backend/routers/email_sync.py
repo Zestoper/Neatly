@@ -161,14 +161,30 @@ _sync_locks: dict[str, "threading.Lock"] = {}
 _sync_locks_guard = threading.Lock()
 
 
-def sync_user_emails(user: User, db: Session) -> int:
-    """같은 사용자의 동기화가 동시에 돌면 같은 메일이 두 번 저장될 수 있어서 한 번에 하나만 실행한다."""
+def sync_user_emails(user: User, db: Session, refresh_briefing: bool = False) -> int:
+    """같은 사용자의 동기화가 동시에 돌면 같은 메일이 두 번 저장될 수 있어서 한 번에 하나만 실행한다.
+
+    refresh_briefing=True (자동 동기화 · 실시간 알림): 새 메일이 들어왔으면 오늘 브리핑도 서버에서 바로 갱신한다.
+    예전에는 브리핑을 화면(대시보드)이 켜져 있을 때만 다시 만들어서 다른 화면에 있거나 나중에 들어오면
+    '지금 동기화'를 눌러야 최신 브리핑이 보였다.
+    """
     with _sync_locks_guard:
         lock = _sync_locks.setdefault(str(user.id), threading.Lock())
     if not lock.acquire(blocking=False):
         return 0
     try:
-        return _sync_user_emails(user, db)
+        saved = _sync_user_emails(user, db)
+        if saved and refresh_briefing and user.plan == "PREMIUM":
+            try:
+                from routers.briefing import upsert_daily_briefing
+                upsert_daily_briefing(db, user.id, datetime.now(KST).strftime("%Y-%m-%d"))
+            except Exception as e:
+                db.rollback()
+                print(f"[sync] 브리핑 갱신 실패 user={user.id} {type(e).__name__}: {str(e)[:160]}")
+            # 화면은 last_sync 가 바뀌면 새로 불러온다 → 브리핑까지 끝난 뒤의 시각으로 다시 찍는다
+            user.gmail_last_sync = datetime.now(timezone.utc)
+            db.commit()
+        return saved
     finally:
         lock.release()
 

@@ -36,7 +36,7 @@ def sync_all_premium_emails():
 
         for user in users:
             try:
-                count = sync_user_emails(user, db)
+                count = sync_user_emails(user, db, refresh_briefing=True)
                 if count > 0:
                     logger.info(f"[sync] user={user.id} 새 문서 {count}개 저장")
             except Exception as e:

@@ -5,7 +5,7 @@ import { getFolders } from "../api/folders";
 import { api } from "../api/client";
 import { generateBriefing, getBriefingByDate } from "../api/briefing";
 import { syncEmails, getSyncStatus } from "../api/emailSync";
-import { EMAILS_CHANGED } from "../api/emails";
+import { EMAILS_CHANGED, notifyEmailsChanged } from "../api/emails";
 import { getTodayEvents, deleteEvent, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import styles from "./Dashboard.module.css";
@@ -163,14 +163,16 @@ export default function Dashboard() {
                     const known = new Set(documentsRef.current.map((d) => d.id));
                     const hasNewDoc = docsData.some((d: Document) => !known.has(d.id));
                     setDocuments(docsData);
+                    if (hasNewDoc) notifyEmailsChanged();   // 일정 제안 모달 · 안 읽은 수도 바로 다시 확인
                     const nowStr = new Date().toLocaleDateString("en-CA");
                     if (hasNewDoc && !selectedFolderRef.current && selectedDateRef.current === nowStr) {
 
                         setBriefing(null);
                         setBriefingLoading(true);
                         try {
-                            const generated = await generateBriefing(undefined, nowStr);
-                            setBriefing(generated);
+                            // 서버가 새 메일 동기화 직후 브리핑을 이미 갱신해 둔다 → 저장된 것을 불러온다
+                            const existing = await getBriefingByDate(nowStr);
+                            setBriefing(existing.briefing ?? (await generateBriefing(undefined, nowStr)));
                         } catch {
 
                         } finally {

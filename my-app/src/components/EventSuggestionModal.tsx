@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { CalendarPlus, FileText, Mail, X } from "lucide-react";
 import { confirmSuggestion, deleteEvent, getSuggestions, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
+import { EMAILS_CHANGED } from "../api/emails";
 import { useRefresh } from "../context/RefreshContext";
 import styles from "./EventSuggestionModal.module.css";
 
-// 동기화가 2분마다 돌기 때문에 1분마다 새 제안이 있는지 확인한다
-const POLL_INTERVAL = 60 * 1000;
+// 메일은 실시간으로 들어오므로 15초마다 확인하고, 새 메일 · 동기화 신호가 오면 바로 확인한다
+const POLL_INTERVAL = 15 * 1000;
 
 type Draft = { title: string; date: string; time: string };
 
@@ -56,7 +57,11 @@ export default function EventSuggestionModal() {
     useEffect(() => {
         load();
         const id = setInterval(load, POLL_INTERVAL);
-        return () => clearInterval(id);
+        window.addEventListener(EMAILS_CHANGED, load);
+        return () => {
+            clearInterval(id);
+            window.removeEventListener(EMAILS_CHANGED, load);
+        };
     }, [load]);
 
     const visible = items.filter((ev) => !snoozed.has(ev.id));

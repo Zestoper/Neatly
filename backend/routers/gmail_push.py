@@ -86,7 +86,7 @@ def _sync_in_background(user_id: str) -> None:
     try:
         user = db.query(User).filter(User.id == user_id).first()
         if user:
-            n = sync_user_emails(user, db)
+            n = sync_user_emails(user, db, refresh_briefing=True)
             print(f"[gmail push] 동기화 user={user_id} 새 문서 {n}개")
     except Exception as e:
         print(f"[gmail push] 동기화 실패 user={user_id} {type(e).__name__}: {str(e)[:200]}")

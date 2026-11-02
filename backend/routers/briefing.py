@@ -167,26 +167,38 @@ def generate_daily_briefing(
         briefing_text = _generate_briefing_text(docs, _today_str())
         return {"id": None, "title": "폴더 브리핑", "content": briefing_text}
 
+    result = upsert_daily_briefing(db, current_user.id, target_date)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서나 마감 할 일이 없습니다.")
+    return result
+
+
+def upsert_daily_briefing(db: Session, user_id: str, target_date: str) -> dict | None:
+    """해당 날짜(한국 기준) 브리핑을 만들거나 갱신해서 저장. 문서도 마감 할 일도 없으면 None.
+
+    화면의 '다시 생성' 버튼과 메일 동기화(새 메일이 들어온 직후) 양쪽에서 쓴다.
+    """
+    day_start, day_end = _kst_day_range(target_date)
     title = f"AI 일간 브리핑 — {_date_label(target_date)}"
 
     docs = db.query(Document).filter(
-        Document.user_id == current_user.id,
+        Document.user_id == user_id,
         Document.deleted_at == None,
         Document.created_at >= day_start,
         Document.created_at < day_end,
         Document.title != title,
     ).order_by(Document.created_at.desc()).all()
 
-    due_tasks = _get_due_tasks(db, current_user.id, day_start, day_end)
+    due_tasks = _get_due_tasks(db, user_id, day_start, day_end)
 
     if not docs and not due_tasks:
-        raise HTTPException(status_code=404, detail=f"{_date_label(target_date)}에 추가된 문서나 마감 할 일이 없습니다.")
+        return None
 
     briefing_text = _generate_briefing_text(docs, target_date)
     due_tasks_out = [_due_task_dict(t) for t in due_tasks]
 
     existing = db.query(Document).filter(
-        Document.user_id == current_user.id,
+        Document.user_id == user_id,
         Document.title == title,
         Document.deleted_at == None,
     ).first()
@@ -199,7 +211,7 @@ def generate_daily_briefing(
         return {"id": str(existing.id), "title": existing.title, "content": briefing_text, "due_tasks": due_tasks_out}
 
     new_doc = Document(
-        user_id=current_user.id,
+        user_id=user_id,
         title=title,
         raw_text=briefing_text,
         summary=briefing_text[:300],
