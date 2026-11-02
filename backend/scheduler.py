@@ -12,6 +12,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from database import SessionLocal
 from models import User, Document
 from routers.email_sync import sync_user_emails
+from routers.gmail_push import renew_all_watches
 from routers.briefing import _generate_briefing_text, _get_due_tasks, _kst_day_range, KST
 from datetime import datetime, timezone, timedelta
 import logging
@@ -141,6 +142,15 @@ def start_scheduler():
         id="email_sync",
         replace_existing=True,
         next_run_time=datetime.now(timezone.utc) + timedelta(seconds=10),
+    )
+
+    # Gmail 실시간 수신(Pub/Sub) 감시는 7일이면 만료 → 서버가 깨어날 때와 매일 갱신
+    scheduler.add_job(
+        renew_all_watches,
+        trigger=CronTrigger(hour=4, minute=0, timezone="Asia/Seoul"),
+        id="gmail_watch_renew",
+        replace_existing=True,
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
     )
 
     scheduler.add_job(

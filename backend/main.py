@@ -21,6 +21,7 @@ from routers.email_sync import router as email_sync_router
 from routers.chat import router as chat_router
 from routers.friends import router as friends_router
 from routers.calendar import router as calendar_router
+from routers.gmail_push import router as gmail_push_router
 from scheduler import start_scheduler
 
 def _migrate_calendar() -> None:
@@ -49,8 +50,22 @@ def _migrate_calendar() -> None:
         print(f"[migrate] CalendarEvent 마이그레이션 실패: {e}")
 
 
+def _migrate_columns() -> None:
+    """새로 추가한 컬럼을 없으면 만든다 (여러 번 실행해도 안전)."""
+    from sqlalchemy import text
+    from database import engine
+    try:
+        with engine.begin() as conn:
+            conn.execute(text('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS gmail_address VARCHAR(255)'))
+            conn.execute(text('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS gmail_watch_expiry TIMESTAMP'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS ix_user_gmail_address ON "User" (gmail_address)'))
+    except Exception as e:
+        print(f"[migrate] User 컬럼 추가 실패: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _migrate_columns()
     _migrate_calendar()
     start_scheduler()
     yield
@@ -87,3 +102,4 @@ app.include_router(email_sync_router)
 app.include_router(chat_router)
 app.include_router(friends_router)
 app.include_router(calendar_router)
+app.include_router(gmail_push_router)

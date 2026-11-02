@@ -312,6 +312,10 @@ def gmail_callback(code: str, state: str, db: Session = Depends(get_db)):
         user.gmail_token_expiry = datetime.utcfromtimestamp(float(expires_at))
     db.commit()
 
+    # 실시간 수신 등록 (Pub/Sub 설정이 없으면 아무것도 안 함)
+    from routers.gmail_push import start_watch
+    start_watch(user, db)
+
     return RedirectResponse(url=f"{FRONTEND_URL}/emails?connected=true")
 
 @router.delete("/auth/gmail")

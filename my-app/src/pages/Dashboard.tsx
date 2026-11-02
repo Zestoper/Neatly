@@ -183,7 +183,8 @@ export default function Dashboard() {
             }
         };
 
-        const interval = setInterval(checkForUpdates, 60 * 1000);
+        // 메일은 Gmail 실시간 알림으로 서버에 바로 들어오므로 화면도 20초마다 확인한다
+        const interval = setInterval(checkForUpdates, 20 * 1000);
         const handleVisibility = () => {
             if (document.visibilityState === "visible") checkForUpdates();
         };

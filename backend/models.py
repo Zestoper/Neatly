@@ -25,6 +25,8 @@ class User(Base):
     gmail_token_expiry  = Column(DateTime, nullable=True)
     gmail_last_sync     = Column(DateTime, nullable=True)
     gmail_last_view     = Column(DateTime, nullable=True)
+    gmail_address       = Column(String(255), nullable=True, index=True)   # 실시간 수신(Pub/Sub) 알림을 사용자와 연결
+    gmail_watch_expiry  = Column(DateTime, nullable=True)                  # Gmail watch 만료 시각 (7일마다 갱신)
 
 class Folder(Base):
     __tablename__ = "Folder"

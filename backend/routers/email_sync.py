@@ -17,6 +17,7 @@ from routers.gmail import (
 from ai_client import create_chat_completion, GROQ_MODEL_FAST
 from googleapiclient.discovery import build
 import json as _json
+import threading
 import re as _re
 
 router = APIRouter()
@@ -156,7 +157,23 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         print(f"[메일 일정 추출] 실패 {type(e).__name__}: {str(e)[:160]} | {subject[:40]}")
         return None
 
+_sync_locks: dict[str, "threading.Lock"] = {}
+_sync_locks_guard = threading.Lock()
+
+
 def sync_user_emails(user: User, db: Session) -> int:
+    """같은 사용자의 동기화가 동시에 돌면 같은 메일이 두 번 저장될 수 있어서 한 번에 하나만 실행한다."""
+    with _sync_locks_guard:
+        lock = _sync_locks.setdefault(str(user.id), threading.Lock())
+    if not lock.acquire(blocking=False):
+        return 0
+    try:
+        return _sync_user_emails(user, db)
+    finally:
+        lock.release()
+
+
+def _sync_user_emails(user: User, db: Session) -> int:
     """
     user의 Gmail에서 마지막 동기화 이후 새 이메일을 가져와
     아직 문서로 변환되지 않은 것만 자동 저장한다.

@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 .catch(() => {});
         };
         fetchCount();
-        const timer = setInterval(fetchCount, 5 * 60 * 1000);
+        const timer = setInterval(fetchCount, 30 * 1000);
         document.addEventListener("visibilitychange", fetchCount);
         window.addEventListener(EMAILS_CHANGED, fetchCount);
         return () => {
