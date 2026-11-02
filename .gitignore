@@ -25,3 +25,6 @@ my-app/node_modules/
 my-app/dist/
 my-app/.env
 my-app/.env.*
+
+# 개인 면접 공부 노트 (로컬에만 보관)
+Study/
