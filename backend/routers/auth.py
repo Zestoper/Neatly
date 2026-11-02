@@ -119,5 +119,7 @@ def read_users_me(current_user: User = Depends(get_current_user)):
         "phone": current_user.phone,
         "birth_date": current_user.birth_date,
         "gmail_access_token": bool(current_user.gmail_access_token),
+        # 예전에 연결했다가 토큰이 만료돼 연결이 풀린 경우 (화면에서 '다시 연결' 안내용)
+        "gmail_expired": bool(getattr(current_user, "gmail_address", None) and not current_user.gmail_access_token),
 
     }
