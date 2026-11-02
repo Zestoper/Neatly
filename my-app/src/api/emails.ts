@@ -26,6 +26,13 @@ export const markEmailAsRead = async (id: string): Promise<void> => {
     notifyEmailsChanged();
 };
 
+// 받은편지함의 안 읽은 메일 전체를 읽음 처리 (Gmail에도 반영)
+export const markAllEmailsRead = async (): Promise<{ count: number }> => {
+    const res = await api.post("/emails/read-all");
+    notifyEmailsChanged();
+    return res.data;
+};
+
 export const trashEmail = async (id: string): Promise<void> => {
     await api.delete(`/emails/${id}`);
 };

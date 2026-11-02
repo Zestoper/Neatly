@@ -4,7 +4,7 @@ import { api } from "../api/client";
 import { getEmailFilters } from "../api/emailFilters";
 import { getDocuments, moveDocumentToFolder } from "../api/documents";
 import { syncEmails, getSyncStatus, markEmailsViewed } from "../api/emailSync";
-import { trashEmail } from "../api/emails";
+import { markAllEmailsRead, trashEmail } from "../api/emails";
 import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
@@ -56,6 +56,7 @@ export default function Emails() {
     const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void; confirmLabel?: string } | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [syncing, setSyncing] = useState(false);
+    const [markingAll, setMarkingAll] = useState(false);
 
     const [lastSync, setLastSync] = useState<string | null>(null);
 
@@ -115,6 +116,27 @@ export default function Emails() {
                     showToast("이메일 삭제에 실패했습니다. 다시 시도해주세요.");
                 } finally {
                     setDeletingId(null);
+                }
+            },
+        });
+    };
+
+    // 화면에 보이는 20개 밖에도 안 읽은 메일이 있을 수 있어서 버튼은 항상 누를 수 있게 둔다
+    const handleMarkAllRead = () => {
+        setConfirmModal({
+            message: "받은편지함의 안 읽은 메일을 모두 읽음으로 표시할까요? Gmail에도 똑같이 반영돼요.",
+            confirmLabel: "모두 읽음",
+            onConfirm: async () => {
+                setConfirmModal(null);
+                setMarkingAll(true);
+                try {
+                    const { count } = await markAllEmailsRead();
+                    setEmails((prev) => prev.map((m) => ({ ...m, is_unread: false })));
+                    showToast(count > 0 ? `메일 ${count}개를 읽음으로 표시했어요.` : "안 읽은 메일이 없어요.");
+                } catch (err: any) {
+                    showToast(err.response?.data?.detail ?? "읽음 처리에 실패했습니다.");
+                } finally {
+                    setMarkingAll(false);
                 }
             },
         });
@@ -312,6 +334,16 @@ export default function Emails() {
                             <span className={styles.lastSyncText}>
                                 마지막 동기화 {new Date(lastSync).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
                             </span>
+                        )}
+                        {connected && label === "INBOX" && (
+                            <button
+                                className={styles.syncButton}
+                                onClick={handleMarkAllRead}
+                                disabled={markingAll}
+                                title="받은편지함의 안 읽은 메일을 모두 읽음 처리"
+                            >
+                                {markingAll ? "처리 중..." : "전체 읽음"}
+                            </button>
                         )}
                         {isPremium && (
                             <button

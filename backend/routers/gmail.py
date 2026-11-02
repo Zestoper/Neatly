@@ -428,6 +428,44 @@ def get_email_detail(
         "summary": summary,
     }
 
+@router.post("/emails/read-all")
+def mark_all_as_read(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """받은편지함의 안 읽은 메일을 모두 읽음 처리 (Gmail에도 반영).
+
+    화면에 보이는 20개만이 아니라 받은편지함 전체가 대상이다.
+    Gmail batchModify는 한 번에 1000개까지라 나눠서 보낸다. 한 번에 최대 5000개.
+    """
+    if not current_user.gmail_access_token:
+        raise HTTPException(status_code=400, detail="Gmail이 연결되지 않았습니다.")
+
+    creds = make_credentials(current_user)
+    refresh_if_expired(creds, current_user, db)
+    service = build("gmail", "v1", credentials=creds)
+
+    ids: list[str] = []
+    page_token = None
+    try:
+        while len(ids) < 5000:
+            res = service.users().messages().list(
+                userId="me", q="is:unread in:inbox -in:spam", maxResults=500, pageToken=page_token,
+            ).execute()
+            ids += [m["id"] for m in res.get("messages", [])]
+            page_token = res.get("nextPageToken")
+            if not page_token:
+                break
+        for i in range(0, len(ids), 1000):
+            service.users().messages().batchModify(
+                userId="me", body={"ids": ids[i:i + 1000], "removeLabelIds": ["UNREAD"]},
+            ).execute()
+    except HttpError as e:
+        print(f"[전체 읽음] Gmail 오류: {e}")
+        raise HTTPException(status_code=502, detail="Gmail에 읽음 처리를 하지 못했습니다. 잠시 후 다시 시도해주세요.")
+
+    return {"count": len(ids)}
+
 @router.patch("/emails/{message_id}/read")
 def mark_as_read(
     message_id: str,
