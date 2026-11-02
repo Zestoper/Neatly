@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import ChatModal from "./ChatModal";
+import EventSuggestionModal from "./EventSuggestionModal";
 import { getMe } from "../api/auth";
 import { useCalendarNotifications } from "../hooks/useCalendarNotifications";
 import styles from "./Layout.module.css";
@@ -57,6 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </main>
 
             <ChatModal />
+            <EventSuggestionModal />
         </div>
     );
 }

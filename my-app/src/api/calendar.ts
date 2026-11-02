@@ -9,6 +9,7 @@ export type CalendarEvent = {
     document: { id: string; title: string } | null;
     email_id: string | null;
     email_subject: string | null;
+    auto_extracted?: boolean;
     created_at: string;
 };
 
@@ -46,4 +47,18 @@ export const updateEvent = async (
 
 export const deleteEvent = async (id: string): Promise<void> => {
     await api.delete(`/calendar/events/${id}`);
+};
+
+// 메일에서 AI가 찾은 일정 — 사용자가 확인하기 전까지 캘린더에 안 보이는 '제안'
+export const getSuggestions = async (): Promise<CalendarEvent[]> => {
+    const res = await api.get("/calendar/suggestions");
+    return res.data;
+};
+
+export const confirmSuggestion = async (
+    id: string,
+    data?: { title?: string; event_date?: string },
+): Promise<CalendarEvent> => {
+    const res = await api.post(`/calendar/suggestions/${id}/confirm`, data ?? {});
+    return res.data;
 };

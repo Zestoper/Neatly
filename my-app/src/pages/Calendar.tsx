@@ -11,6 +11,7 @@ import { getDocuments } from "../api/documents";
 import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
+import { useRefresh } from "../context/RefreshContext";
 import styles from "./Calendar.module.css";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 
@@ -70,7 +71,9 @@ export default function Calendar() {
         getEvents(year, month).then(setEvents).catch(() => {});
     };
 
-    useEffect(() => { load(); }, [year, month]);
+    // refreshKey: 메일 일정 확인 모달에서 일정을 추가하면 바뀐다 → 달력 다시 불러오기
+    const { refreshKey } = useRefresh();
+    useEffect(() => { load(); }, [year, month, refreshKey]);
 
     useEffect(() => {
         if (!("Notification" in window)) return;

@@ -23,8 +23,35 @@ from routers.friends import router as friends_router
 from routers.calendar import router as calendar_router
 from scheduler import start_scheduler
 
+def _migrate_calendar() -> None:
+    """CalendarEvent.confirmed 컬럼이 없으면 추가하고, 그때 한 번만 자동 추출 일정 시각을 보정한다.
+
+    예전에는 메일에서 뽑은 일정을 UTC로, 화면에서 만든 일정을 한국 시각으로 저장해서
+    메일 일정이 캘린더에 9시간 일찍 보였다. 이제 모두 한국 시각으로 저장한다.
+    컬럼 추가와 보정을 한 트랜잭션에서 해서 서버가 여러 번 재시작돼도 보정은 한 번만 된다.
+    """
+    from sqlalchemy import text
+    from database import engine
+    try:
+        with engine.begin() as conn:
+            exists = conn.execute(text(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name = 'CalendarEvent' AND column_name = 'confirmed'"
+            )).first()
+            if exists:
+                return
+            conn.execute(text('ALTER TABLE "CalendarEvent" ADD COLUMN confirmed BOOLEAN NOT NULL DEFAULT TRUE'))
+            fixed = conn.execute(text(
+                'UPDATE "CalendarEvent" SET event_date = event_date + INTERVAL \'9 hours\' WHERE auto_extracted = TRUE'
+            )).rowcount
+            print(f"[migrate] CalendarEvent.confirmed 추가 / 메일 일정 {fixed}개 시각 보정")
+    except Exception as e:
+        print(f"[migrate] CalendarEvent 마이그레이션 실패: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _migrate_calendar()
     start_scheduler()
     yield
 

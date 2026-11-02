@@ -147,8 +147,9 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         else:
             event_date_kst = datetime.strptime(f"{date_str} 23:59", "%Y-%m-%d %H:%M").replace(tzinfo=KST)
 
-        # DB에는 tzinfo 없이 UTC 값으로 저장 (다른 datetime 컬럼들과 동일한 관례)
-        event_date = event_date_kst.astimezone(timezone.utc).replace(tzinfo=None)
+        # 캘린더 일정은 화면에서 직접 추가하는 일정과 같은 기준인 '한국 시각(시간대 없음)'으로 저장한다.
+        # (예전에는 UTC로 저장해서 '21시까지' 할 일이 캘린더에 12시로 보였다)
+        event_date = event_date_kst.replace(tzinfo=None)
 
         return {"task": task, "event_date": event_date}
     except Exception:
@@ -281,6 +282,7 @@ def sync_user_emails(user: User, db: Session) -> int:
                 email_id=msg["id"],
                 email_subject=subject,
                 auto_extracted=True,
+                confirmed=False,   # 사용자가 확인 모달에서 "추가"를 눌러야 캘린더에 들어감
             ))
 
         existing_message_ids.add(msg["id"])

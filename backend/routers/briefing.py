@@ -114,11 +114,15 @@ def _due_task_dict(t: CalendarEvent) -> dict:
 
 def _get_due_tasks(db: Session, user_id: str, day_start: datetime, day_end: datetime) -> list[CalendarEvent]:
     """해당 날짜 범위의 자동 추출 할 일을 조회. 오늘 날짜라면 이미 지난 마감은 제외한다."""
-    now = datetime.now(timezone.utc)
+    # 캘린더 일정(event_date)은 한국 시각(시간대 없음)으로 저장되므로 범위도 한국 시각으로 바꿔 비교한다
+    day_start = day_start.astimezone(KST).replace(tzinfo=None)
+    day_end = day_end.astimezone(KST).replace(tzinfo=None)
+    now = datetime.now(KST).replace(tzinfo=None)
     lower = max(day_start, now) if day_start <= now < day_end else day_start
     return db.query(CalendarEvent).filter(
         CalendarEvent.user_id == user_id,
         CalendarEvent.auto_extracted == True,
+        CalendarEvent.confirmed == True,
         CalendarEvent.event_date >= lower,
         CalendarEvent.event_date < day_end,
     ).order_by(CalendarEvent.event_date).all()

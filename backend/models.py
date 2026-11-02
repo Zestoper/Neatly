@@ -117,6 +117,8 @@ class CalendarEvent(Base):
     email_id      = Column(String(255), nullable=True)
     email_subject = Column(String(500), nullable=True)
     auto_extracted = Column(Boolean, default=False, server_default="false")
+    # AI가 메일에서 찾은 일정은 사용자가 "추가"를 누르기 전까지 confirmed=False (캘린더에 안 보임)
+    confirmed     = Column(Boolean, default=True, server_default="true", nullable=False)
     created_at    = Column(DateTime, default=_now)
 
 class Document(Base):

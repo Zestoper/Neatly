@@ -4,7 +4,9 @@ from models import CalendarEvent, User, Document
 from routers.auth import get_current_user
 from database import get_db
 from pydantic import BaseModel
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
+
+_KST = timezone(timedelta(hours=9))
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -39,6 +41,7 @@ def _event_dict(ev: CalendarEvent, db: Session) -> dict:
         "document": doc,
         "email_id": ev.email_id,
         "email_subject": ev.email_subject,
+        "auto_extracted": bool(ev.auto_extracted),
         "created_at": ev.created_at.isoformat(),
     }
 
@@ -49,7 +52,10 @@ def list_events(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    q = db.query(CalendarEvent).filter(CalendarEvent.user_id == current_user.id)
+    q = db.query(CalendarEvent).filter(
+        CalendarEvent.user_id == current_user.id,
+        CalendarEvent.confirmed == True,
+    )
     if year and month:
         from calendar import monthrange
         _, last_day = monthrange(year, month)
@@ -78,6 +84,7 @@ def today_events(
         db.query(CalendarEvent)
         .filter(
             CalendarEvent.user_id == current_user.id,
+            CalendarEvent.confirmed == True,
             CalendarEvent.event_date >= start,
             CalendarEvent.event_date <= end,
         )
@@ -85,6 +92,58 @@ def today_events(
         .all()
     )
     return [_event_dict(e, db) for e in events]
+
+# ── 메일에서 찾은 일정 확인 ──
+# 동기화 중 AI가 메일에서 마감일이 있는 할 일을 찾으면 바로 캘린더에 넣지 않고 '제안'으로 저장한다.
+# 화면이 제안 목록을 받아 모달로 보여주고 사용자가 추가/안 함을 고른다.
+
+class SuggestionConfirm(BaseModel):
+    title: str | None = None
+    event_date: datetime | None = None
+
+
+@router.get("/suggestions")
+def list_suggestions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """아직 확인하지 않은 메일 일정 제안 (이미 지난 일정은 제외)."""
+    now_kst = datetime.now(_KST).replace(tzinfo=None)
+    events = (
+        db.query(CalendarEvent)
+        .filter(
+            CalendarEvent.user_id == current_user.id,
+            CalendarEvent.confirmed == False,
+            CalendarEvent.event_date >= now_kst,
+        )
+        .order_by(CalendarEvent.event_date)
+        .all()
+    )
+    return [_event_dict(e, db) for e in events]
+
+
+@router.post("/suggestions/{event_id}/confirm")
+def confirm_suggestion(
+    event_id: str,
+    body: SuggestionConfirm | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ev = db.query(CalendarEvent).filter(
+        CalendarEvent.id == event_id,
+        CalendarEvent.user_id == current_user.id,
+    ).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
+    if body and body.title and body.title.strip():
+        ev.title = body.title.strip()
+    if body and body.event_date:
+        ev.event_date = body.event_date.replace(tzinfo=None)
+    ev.confirmed = True
+    db.commit()
+    db.refresh(ev)
+    return _event_dict(ev, db)
+
 
 @router.post("/events")
 def create_event(
