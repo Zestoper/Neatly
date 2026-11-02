@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarPlus, Mail, X } from "lucide-react";
+import { CalendarPlus, FileText, Mail, X } from "lucide-react";
 import { confirmSuggestion, deleteEvent, getSuggestions, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import { useRefresh } from "../context/RefreshContext";
@@ -114,12 +114,12 @@ export default function EventSuggestionModal() {
             <div className={styles.box} role="dialog" aria-modal="true" aria-labelledby="sugg-title" onClick={(e) => e.stopPropagation()}>
                 <div className={styles.header}>
                     <CalendarPlus size={18} />
-                    <h2 id="sugg-title">메일에서 일정을 찾았어요</h2>
+                    <h2 id="sugg-title">새 일정을 찾았어요</h2>
                     <button className={styles.close} onClick={later} aria-label="나중에">
                         <X size={16} />
                     </button>
                 </div>
-                <p className={styles.desc}>캘린더에 추가할 일정을 골라주세요. 제목과 시간은 고쳐서 넣을 수 있어요.</p>
+                <p className={styles.desc}>메일과 문서에서 AI가 찾은 일정이에요. 캘린더에 넣을 것만 골라주세요. 제목과 시간은 고쳐서 넣을 수 있어요.</p>
 
                 <ul className={styles.list}>
                     {visible.map((ev) => {
@@ -137,11 +137,15 @@ export default function EventSuggestionModal() {
                                     <input type="time" value={d.time} onChange={(e) => setDraft(ev.id, { time: e.target.value })} aria-label="시간" />
                                     <span className={styles.whenLabel}>{d.date && dateLabel(d.date, d.time || "23:59")}</span>
                                 </div>
-                                {ev.email_subject && (
+                                {ev.email_subject ? (
                                     <p className={styles.source}>
                                         <Mail size={12} /> {ev.email_subject}
                                     </p>
-                                )}
+                                ) : ev.document ? (
+                                    <p className={styles.source}>
+                                        <FileText size={12} /> {ev.document.title}
+                                    </p>
+                                ) : null}
                                 <div className={styles.actions}>
                                     <button className={styles.rejectBtn} disabled={busy === ev.id} onClick={() => reject(ev)}>
                                         안 함

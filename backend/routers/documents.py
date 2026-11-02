@@ -9,6 +9,7 @@ import os, io
 from dotenv import load_dotenv
 from datetime import datetime, timezone
 import pdfplumber
+from document_tasks import suggest_tasks_in_background
 import docx
 
 load_dotenv()
@@ -352,6 +353,9 @@ async def upload_document(
     db.commit()
     db.refresh(new_doc)
 
+    # 문서 속 날짜 있는 할 일을 찾아 캘린더 '제안'으로 저장 (응답은 기다리지 않음)
+    suggest_tasks_in_background(current_user.id, new_doc.id, new_doc.title, new_doc.raw_text or new_doc.summary or "")
+
     return doc_with_tags(new_doc, db)
 
 @router.post("/documents")
@@ -386,5 +390,8 @@ def create_document(
     db.add(new_doc)
     db.commit()
     db.refresh(new_doc)
+
+    # 문서 속 날짜 있는 할 일을 찾아 캘린더 '제안'으로 저장 (응답은 기다리지 않음)
+    suggest_tasks_in_background(current_user.id, new_doc.id, new_doc.title, new_doc.raw_text or new_doc.summary or "")
 
     return doc_with_tags(new_doc, db)
