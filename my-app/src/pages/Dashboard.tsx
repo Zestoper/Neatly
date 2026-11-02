@@ -141,6 +141,8 @@ export default function Dashboard() {
 
     const lastSyncRef = useRef<string | null>(null);
     lastSyncRef.current = syncStatus?.last_sync ?? null;
+    const documentsRef = useRef(documents);
+    documentsRef.current = documents;
     const selectedFolderRef = useRef(selectedFolder);
     selectedFolderRef.current = selectedFolder;
     const selectedDateRef = useRef(selectedDate);
@@ -155,9 +157,14 @@ export default function Dashboard() {
                 if (status.last_sync && status.last_sync !== lastSyncRef.current) {
                     setSyncStatus(status);
                     const docsData = await getDocuments();
+                    // 자동 동기화는 새 메일이 없어도 2분마다 last_sync를 바꾼다.
+                    // 예전에는 그때마다 브리핑을 다시 만들어서 대시보드를 켜두면 AI 하루 한도가 금방 바닥났다
+                    // → 문서가 실제로 늘었을 때만 브리핑을 다시 만든다.
+                    const known = new Set(documentsRef.current.map((d) => d.id));
+                    const hasNewDoc = docsData.some((d: Document) => !known.has(d.id));
                     setDocuments(docsData);
                     const nowStr = new Date().toLocaleDateString("en-CA");
-                    if (!selectedFolderRef.current && selectedDateRef.current === nowStr) {
+                    if (hasNewDoc && !selectedFolderRef.current && selectedDateRef.current === nowStr) {
 
                         setBriefing(null);
                         setBriefingLoading(true);

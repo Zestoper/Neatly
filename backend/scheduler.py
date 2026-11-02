@@ -133,11 +133,14 @@ def start_scheduler():
     if scheduler.running:
         return
 
+    # Render 무료 서버는 15분간 요청이 없으면 잠들고 그동안 스케줄러도 멈춘다.
+    # 깨어나자마자 한 번 바로 동기화하고 그 뒤로 2분마다 돈다 (예전에는 깨어나고 2분 뒤 첫 동기화).
     scheduler.add_job(
         sync_all_premium_emails,
         trigger=IntervalTrigger(minutes=2),
         id="email_sync",
         replace_existing=True,
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=10),
     )
 
     scheduler.add_job(
