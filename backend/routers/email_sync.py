@@ -14,7 +14,7 @@ from routers.gmail import (
     EMAIL_SUMMARY_PROMPT,
     GROQ_MODEL,
 )
-from ai_client import create_chat_completion
+from ai_client import create_chat_completion, GROQ_MODEL_FAST
 from googleapiclient.discovery import build
 import json as _json
 import re as _re
@@ -49,7 +49,7 @@ def _classify_email_doc(
 
     try:
         response = create_chat_completion(
-            model=GROQ_MODEL,
+            model=GROQ_MODEL_FAST,   # 2분마다 도는 작업이라 가벼운 모델로 (120b 하루 한도 절약)
             temperature=0.1,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=120,
@@ -122,10 +122,10 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
 
     try:
         response = create_chat_completion(
-            model=GROQ_MODEL,
+            model=GROQ_MODEL_FAST,   # 2분마다 도는 작업이라 가벼운 모델로 (120b 하루 한도 절약)
             temperature=0.1,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
+            max_tokens=300,
         )
         text = response.choices[0].message.content.strip()
         match = _re.search(r'\{.*?\}', text, _re.DOTALL)
@@ -152,7 +152,8 @@ def _extract_task_from_email(subject: str, body: str, sender: str = "") -> dict 
         event_date = event_date_kst.replace(tzinfo=None)
 
         return {"task": task, "event_date": event_date}
-    except Exception:
+    except Exception as e:
+        print(f"[메일 일정 추출] 실패 {type(e).__name__}: {str(e)[:160]} | {subject[:40]}")
         return None
 
 def sync_user_emails(user: User, db: Session) -> int:

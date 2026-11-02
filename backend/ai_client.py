@@ -29,48 +29,68 @@ if os.environ.get("CEREBRAS_API_KEY"):
     from cerebras.cloud.sdk import Cerebras
     _cerebras_client = Cerebras(api_key=os.environ["CEREBRAS_API_KEY"])
 
-def create_chat_completion(*, model: str, messages: list, temperature: float = 0.3, max_tokens: int = 1000):
-    """
-    Groq로 채팅 완성을 생성하고, 레이트리밋/서버 장애/타임아웃 시 Cerebras로 폴백한다.
-    반환값은 Groq/Cerebras 응답 객체(양쪽 다 choices[0].message.content로 접근 가능)와 동일한 형태.
-    """
-    groq_extra = {}
-    groq_max_tokens = max_tokens
+# Groq는 모델마다 하루 토큰 한도(TPD)가 따로 있다.
+# 120b 한도가 바닥나면(실제로 2026-11-02 하루 20만 토큰 소진) 같은 Groq의 20b로 먼저 넘긴다.
+_GROQ_FALLBACK_MODEL = {
+    GROQ_MODEL_SMART: GROQ_MODEL_FAST,
+}
+
+
+def _groq_call(model: str, messages: list, temperature: float, max_tokens: int):
+    extra = {}
     if model.startswith("openai/gpt-oss"):
         # 추론형 모델이라 생각하는 토큰도 max_tokens에 포함 — 추론은 짧게 하고 여유분을 준다.
-        groq_extra["reasoning_effort"] = "low"
-        groq_max_tokens = max_tokens + 512
+        extra["reasoning_effort"] = "low"
+        max_tokens = max_tokens + 512
+    return _groq_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        extra_body=extra or None,
+    )
+
+
+def _should_fallback(e: Exception) -> bool:
+    # 한도 초과(429) · 요청이 분당 한도보다 큼(413) · 서버 장애 · 타임아웃만 다른 모델로 넘긴다.
+    # 그 밖의 4xx(잘못된 요청)는 다른 곳으로 넘겨도 같으므로 그대로 올린다.
+    if isinstance(e, _FALLBACK_TRIGGERS):
+        return True
+    return isinstance(e, APIStatusError) and getattr(e, "status_code", None) == 413
+
+
+def create_chat_completion(*, model: str, messages: list, temperature: float = 0.3, max_tokens: int = 1000):
+    """
+    Groq(요청 모델) → Groq(대체 모델) → Cerebras 순서로 시도한다.
+    반환값은 Groq/Cerebras 응답 객체(양쪽 다 choices[0].message.content로 접근 가능)와 동일한 형태.
+    실패할 때마다 원인을 로그로 남긴다.
+    """
+    last_err: Exception | None = None
+    for groq_model in dict.fromkeys([model, _GROQ_FALLBACK_MODEL.get(model, model)]):
+        try:
+            return _groq_call(groq_model, messages, temperature, max_tokens)
+        except (*_FALLBACK_TRIGGERS, APIStatusError) as e:
+            print(f"[AI] Groq 실패 model={groq_model} {type(e).__name__} status={getattr(e, 'status_code', None)}: {str(e)[:160]}")
+            if not _should_fallback(e):
+                raise
+            last_err = e
+
+    if not _cerebras_client:
+        raise last_err
+    fallback_model = _CEREBRAS_FALLBACK_MODEL.get(model, _CEREBRAS_DEFAULT_MODEL)
+    extra = {}
+    if fallback_model == "gpt-oss-120b":
+        # 추론형 모델이라 reasoning 토큰을 먼저 소모함 - effort를 낮추고 여유분을 더 준다.
+        extra["reasoning_effort"] = "low"
+        max_tokens = max_tokens + 80
     try:
-        return _groq_client.chat.completions.create(
-            model=model,
+        return _cerebras_client.chat.completions.create(
+            model=fallback_model,
             messages=messages,
             temperature=temperature,
-            max_tokens=groq_max_tokens,
-            extra_body=groq_extra or None,
+            max_tokens=max_tokens,
+            **extra,
         )
-    except (*_FALLBACK_TRIGGERS, APIStatusError) as e:
-        # 413(요청이 분당 토큰 한도보다 큼)도 Cerebras로 넘긴다 — 문서가 많이 쌓인 날 브리핑이 여기서 실패했다.
-        # 그 밖의 4xx(잘못된 요청)는 다른 곳으로 넘겨도 같으므로 그대로 올린다.
-        status = getattr(e, "status_code", None)
-        print(f"[AI] Groq 실패 model={model} {type(e).__name__} status={status}: {str(e)[:200]}")
-        if isinstance(e, APIStatusError) and not isinstance(e, _FALLBACK_TRIGGERS) and status != 413:
-            raise
-        if not _cerebras_client:
-            raise
-        fallback_model = _CEREBRAS_FALLBACK_MODEL.get(model, _CEREBRAS_DEFAULT_MODEL)
-        extra = {}
-        if fallback_model == "gpt-oss-120b":
-            # 추론형 모델이라 reasoning 토큰을 먼저 소모함 - effort를 낮추고 여유분을 더 준다.
-            extra["reasoning_effort"] = "low"
-            max_tokens = max_tokens + 80
-        try:
-            return _cerebras_client.chat.completions.create(
-                model=fallback_model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                **extra,
-            )
-        except Exception as e2:
-            print(f"[AI] Cerebras 폴백도 실패 model={fallback_model} {type(e2).__name__}: {str(e2)[:200]}")
-            raise
+    except Exception as e2:
+        print(f"[AI] Cerebras 폴백도 실패 model={fallback_model} {type(e2).__name__}: {str(e2)[:200]}")
+        raise
