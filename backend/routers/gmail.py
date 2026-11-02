@@ -727,19 +727,29 @@ def generate_reply(
     if not body.strip():
         return {"reply_text": ""}
 
-    try:
-        response = create_chat_completion(
-            model=GROQ_MODEL,
-            temperature=0.5,
-            messages=[
-                {"role": "system", "content": EMAIL_REPLY_PROMPT},
-                {"role": "user", "content": f"원본 이메일:\n\n{body[:4000]}"},
-            ],
-            max_tokens=600,
-        )
-        reply_text = _sanitize_ai_output(response.choices[0].message.content)
-    except Exception:
-        raise HTTPException(status_code=500, detail="AI 답장 생성에 실패했습니다.")
+    # 추론형 모델(gpt-oss)은 생각하는 토큰이 많으면 답장 본문(content)이 비어서(None) 오는 경우가 있다.
+    # 예전에는 그대로 None을 후처리하다 오류가 나서 '실패'만 떴다 → 출력 한도를 늘려 한 번 더 시도하고 원인을 로그로 남긴다.
+    reply_text = ""
+    for attempt, limit in enumerate((600, 1500)):
+        try:
+            response = create_chat_completion(
+                model=GROQ_MODEL,
+                temperature=0.5,
+                messages=[
+                    {"role": "system", "content": EMAIL_REPLY_PROMPT},
+                    {"role": "user", "content": f"원본 이메일:\n\n{body[:4000]}"},
+                ],
+                max_tokens=limit,
+            )
+            choice = response.choices[0]
+            reply_text = _sanitize_ai_output(choice.message.content or "")
+            if reply_text:
+                break
+            print(f"[AI 답장] 빈 응답 (시도 {attempt + 1}, finish_reason={getattr(choice, 'finish_reason', None)}) {message_id}")
+        except Exception as e:
+            print(f"[AI 답장] 실패 (시도 {attempt + 1}) {type(e).__name__}: {str(e)[:200]} {message_id}")
+    if not reply_text:
+        raise HTTPException(status_code=502, detail="AI 답장 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
 
     return {"reply_text": reply_text}
 
