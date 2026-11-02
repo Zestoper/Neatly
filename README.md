@@ -2,7 +2,7 @@
 
 AI 기반 문서 관리 플랫폼. 문서 업로드, Gmail 연동, AI 요약·브리핑, 실시간 채팅을 하나의 서비스에서 제공합니다.
 
-**서비스**: https://neatly-wheat.vercel.app · **API**: https://neatly-backend-xzdm.onrender.com/docs
+**서비스**: https://neatly-wheat.vercel.app
 > 백엔드는 Render 무료 플랜이라 처음 접속 시 서버가 깨어나는 데 최대 1분 정도 걸립니다.
 
 ---
