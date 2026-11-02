@@ -5,6 +5,7 @@ import { getEmailFilters, createEmailFilter, deleteEmailFilter } from "../api/em
 import type { EmailFilter } from "../api/emailFilters";
 import { moveDocumentToFolder } from "../api/documents";
 import { getSyncStatus } from "../api/emailSync";
+import { EMAILS_CHANGED } from "../api/emails";
 import { api } from "../api/client";
 import { useRefresh } from "../context/RefreshContext";
 import { useToast } from "../context/ToastContext";
@@ -64,9 +65,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         fetchCount();
         const timer = setInterval(fetchCount, 5 * 60 * 1000);
         document.addEventListener("visibilitychange", fetchCount);
+        window.addEventListener(EMAILS_CHANGED, fetchCount);
         return () => {
             clearInterval(timer);
             document.removeEventListener("visibilitychange", fetchCount);
+            window.removeEventListener(EMAILS_CHANGED, fetchCount);
         };
     }, [isPremium]);
 

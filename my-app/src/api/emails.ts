@@ -17,8 +17,13 @@ export const getEmailDetail = async (id: string): Promise<EmailDetail> => {
     return res.data;
 };
 
+// 안 읽은 메일 수가 바뀌는 동작 뒤에 보내는 신호 — 사이드바·대시보드 숫자가 바로 다시 불러온다
+export const EMAILS_CHANGED = "neatly:emails-changed";
+export const notifyEmailsChanged = () => window.dispatchEvent(new Event(EMAILS_CHANGED));
+
 export const markEmailAsRead = async (id: string): Promise<void> => {
     await api.patch(`/emails/${id}/read`);
+    notifyEmailsChanged();
 };
 
 export const trashEmail = async (id: string): Promise<void> => {

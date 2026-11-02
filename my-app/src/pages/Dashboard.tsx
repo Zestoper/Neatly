@@ -5,6 +5,7 @@ import { getFolders } from "../api/folders";
 import { api } from "../api/client";
 import { generateBriefing, getBriefingByDate } from "../api/briefing";
 import { syncEmails, getSyncStatus } from "../api/emailSync";
+import { EMAILS_CHANGED } from "../api/emails";
 import { getTodayEvents, deleteEvent, type CalendarEvent } from "../api/calendar";
 import { useToast } from "../context/ToastContext";
 import styles from "./Dashboard.module.css";
@@ -127,9 +128,15 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!isPremium) return;
-        getSyncStatus()
-            .then((data) => setSyncStatus(data))
-            .catch(() => {});
+        const load = () => {
+            getSyncStatus()
+                .then((data) => setSyncStatus(data))
+                .catch(() => {});
+        };
+        load();
+        // 동기화 · 메일 읽음 뒤에는 안 읽은 메일 수를 다시 불러온다
+        window.addEventListener(EMAILS_CHANGED, load);
+        return () => window.removeEventListener(EMAILS_CHANGED, load);
     }, [isPremium]);
 
     const lastSyncRef = useRef<string | null>(null);

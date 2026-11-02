@@ -318,6 +318,19 @@ def sync_status(
     if current_user.plan != "PREMIUM":
         return {"last_sync": None, "new_count": 0}
 
+    # '안 읽은 이메일'은 Gmail 받은편지함의 실제 안 읽은 메일 수를 쓴다.
+    # 예전에는 'Emails 화면을 마지막으로 연 뒤 문서로 정리된 메일 수'를 세서
+    # 동기화를 누르거나 메일을 읽어도 숫자가 그대로였다.
+    if current_user.gmail_access_token:
+        try:
+            creds = make_credentials(current_user)
+            refresh_if_expired(creds, current_user, db)
+            service = build("gmail", "v1", credentials=creds)
+            inbox = service.users().labels().get(userId="me", id="INBOX").execute()
+            return {"last_sync": current_user.gmail_last_sync, "new_count": int(inbox.get("messagesUnread", 0))}
+        except Exception as e:
+            print(f"[sync status] Gmail 안 읽은 수 조회 실패: {type(e).__name__}: {str(e)[:120]}")
+
     since = current_user.gmail_last_view or current_user.gmail_last_sync
     new_count = 0
     if since:

@@ -1,7 +1,9 @@
 import { api } from "./client";
+import { notifyEmailsChanged } from "./emails";
 
 export const syncEmails = async () => {
     const res = await api.post("/emails/sync");
+    notifyEmailsChanged();
     return res.data;
 };
 
