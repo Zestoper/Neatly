@@ -4,7 +4,7 @@ CEREBRAS_API_KEY가 설정되어 있지 않으면 폴백 없이 Groq 오류를 �
 """
 import os
 from groq import Groq
-from groq import RateLimitError, InternalServerError, APIConnectionError, APITimeoutError
+from groq import RateLimitError, InternalServerError, APIConnectionError, APITimeoutError, APIStatusError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -48,7 +48,13 @@ def create_chat_completion(*, model: str, messages: list, temperature: float = 0
             max_tokens=groq_max_tokens,
             extra_body=groq_extra or None,
         )
-    except _FALLBACK_TRIGGERS:
+    except (*_FALLBACK_TRIGGERS, APIStatusError) as e:
+        # 413(요청이 분당 토큰 한도보다 큼)도 Cerebras로 넘긴다 — 문서가 많이 쌓인 날 브리핑이 여기서 실패했다.
+        # 그 밖의 4xx(잘못된 요청)는 다른 곳으로 넘겨도 같으므로 그대로 올린다.
+        status = getattr(e, "status_code", None)
+        print(f"[AI] Groq 실패 model={model} {type(e).__name__} status={status}: {str(e)[:200]}")
+        if isinstance(e, APIStatusError) and not isinstance(e, _FALLBACK_TRIGGERS) and status != 413:
+            raise
         if not _cerebras_client:
             raise
         fallback_model = _CEREBRAS_FALLBACK_MODEL.get(model, _CEREBRAS_DEFAULT_MODEL)
@@ -57,10 +63,14 @@ def create_chat_completion(*, model: str, messages: list, temperature: float = 0
             # 추론형 모델이라 reasoning 토큰을 먼저 소모함 - effort를 낮추고 여유분을 더 준다.
             extra["reasoning_effort"] = "low"
             max_tokens = max_tokens + 80
-        return _cerebras_client.chat.completions.create(
-            model=fallback_model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **extra,
-        )
+        try:
+            return _cerebras_client.chat.completions.create(
+                model=fallback_model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **extra,
+            )
+        except Exception as e2:
+            print(f"[AI] Cerebras 폴백도 실패 model={fallback_model} {type(e2).__name__}: {str(e2)[:200]}")
+            raise

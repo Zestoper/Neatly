@@ -100,8 +100,12 @@ def _generate_briefing_text(docs: list[Document], today_str: str | None = None) 
             ],
             max_tokens=1000,
         )
-        return response.choices[0].message.content
+        text = response.choices[0].message.content
+        if not text:
+            raise ValueError(f"빈 응답 (finish_reason={response.choices[0].finish_reason})")
+        return text
     except Exception as e:
+        print(f"[AI 브리핑] 실패 {type(e).__name__}: {str(e)[:300]}")
         raise HTTPException(status_code=502, detail="AI 브리핑 생성에 실패했습니다. 잠시 후 다시 시도해주세요.")
 
 def _due_task_dict(t: CalendarEvent) -> dict:
