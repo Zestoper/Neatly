@@ -19,8 +19,14 @@ AI 기반 문서 관리 플랫폼. 문서 업로드, Gmail 연동, AI 요약·�
 - Premium 플랜: 2분마다 자동 동기화, 발신자 필터·스팸 관리
 - Gmail 휴지통 이동 / 받은편지함 복원
 
+### 메일 일정 자동 추출
+- 동기화된 메일에서 AI가 마감일 있는 업무 요청을 찾아 일정으로 제안
+- 바로 넣지 않고 **확인 모달**로 물어봄 — 제목·날짜·시간을 고쳐서 추가하거나 무시
+- 자동 발송 메일(noreply·뉴스레터·프로모션)은 코드에서 먼저 걸러 AI 판단에서 제외
+- 캘린더 일정 시작 전 브라우저 알림
+
 ### AI 기능
-- **문서 요약**: 업로드 시 LLaMA 3로 3~4문장 요약
+- **문서 요약**: 업로드 시 LLM(gpt-oss)으로 3~4문장 요약
 - **문서 Q&A**: 문서 본문을 컨텍스트로 자연어 질의응답 (Standard 이상)
 - **AI 일간 브리핑**: 오늘 추가된 문서 전체를 분석해 핵심 요약 + 할 일 추천 (Premium)
 - **폴더 브리핑**: 특정 폴더의 문서를 선택해 즉시 브리핑 생성
@@ -60,7 +66,7 @@ AI 기반 문서 관리 플랫폼. 문서 업로드, Gmail 연동, AI 요약·�
 |------|-----------|
 | Frontend | React 18, TypeScript, Vite, React Router v6 |
 | Backend | FastAPI, SQLAlchemy, MySQL |
-| AI | Groq API (LLaMA 3.3 70B / LLaMA 3.1 8B) |
+| AI | Groq API (gpt-oss-120b / gpt-oss-20b) · 장애·한도 초과 시 Cerebras 자동 전환 |
 | 인증 | JWT, Google OAuth 2.0 |
 | 실시간 | WebSocket |
 | 스케줄러 | APScheduler |
