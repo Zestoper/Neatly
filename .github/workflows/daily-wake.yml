@@ -1,0 +1,35 @@
+# 매일 서버 깨우기 — Gmail 실시간 수신(watch) 갱신용
+# Gmail 감시(watch)는 7일이면 만료되고, 갱신은 서버가 깨어날 때(시작 30초 뒤)와 매일 04:00(KST)에만 돈다.
+# Render 무료 서버는 요청이 없으면 잠들기 때문에 7일 동안 메일이 한 통도 안 오면 감시가 끊기고
+# 그 뒤로는 새 메일이 와도 서버를 깨우지 못한다 → 매일 03:53(KST)에 깨워 04:00 갱신까지 유지한다.
+name: Daily wake (Gmail watch renewal)
+
+on:
+  schedule:
+    - cron: "53 18 * * *"   # UTC 18:53 = 한국 시간 03:53
+  workflow_dispatch: {}
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API: https://neatly-backend-xzdm.onrender.com
+    steps:
+      - name: Wake up server
+        run: |
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$API/health" || true)
+            echo "wake $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 15
+          done
+          echo "서버가 깨어나지 않았습니다" && exit 1
+
+      - name: Keep awake until 04:00 renewal (10 min)
+        run: |
+          for i in $(seq 1 4); do
+            sleep 150
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$API/health" || true)
+            echo "keep-alive $i: $code"
+          done
