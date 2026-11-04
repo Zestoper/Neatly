@@ -19,7 +19,8 @@ AI 기반 문서 관리 플랫폼. 문서 업로드, Gmail 연동, AI 요약·�
 ### Gmail 연동
 - Google OAuth 2.0 인증으로 Gmail 계정 연결
 - 이메일을 문서로 변환 + AI 요약 자동 생성
-- Premium 플랜: 2분마다 자동 동기화, 발신자 필터·스팸 관리
+- **실시간 수신**: Gmail Pub/Sub 푸시로 새 메일이 오면 바로 문서화 · 브리핑 (서버가 깨어 있을 땐 2분마다 보조 동기화)
+- Premium 플랜: 발신자 필터·스팸 관리
 - Gmail 휴지통 이동 / 받은편지함 복원
 
 ### 메일 일정 자동 추출
@@ -68,11 +69,12 @@ AI 기반 문서 관리 플랫폼. 문서 업로드, Gmail 연동, AI 요약·�
 | 구분 | 사용 기술 |
 |------|-----------|
 | Frontend | React 18, TypeScript, Vite, React Router v6 |
-| Backend | FastAPI, SQLAlchemy, MySQL |
+| Backend | FastAPI, SQLAlchemy, PostgreSQL (Supabase) |
 | AI | Groq API (gpt-oss-120b / gpt-oss-20b) · 장애·한도 초과 시 Cerebras 자동 전환 |
 | 인증 | JWT, Google OAuth 2.0 |
 | 실시간 | WebSocket |
-| 스케줄러 | APScheduler |
+| 스케줄러 | APScheduler (보조 동기화 · 매일 04:00 Gmail 감시 갱신) · GitHub Actions (매일 03:53 서버 깨우기) |
+| 배포 | Vercel (Frontend) · Render (Backend) · Supabase (DB) |
 | 파일 파싱 | pdfplumber, python-docx |
 
 ---
@@ -92,6 +94,8 @@ backend/                 # FastAPI 백엔드
     auth.py              # 로그인·회원가입·JWT
     documents.py         # 문서 CRUD + AI 요약
     gmail.py             # Gmail API 연동
+    gmail_push.py        # Gmail Pub/Sub 실시간 수신 (watch 등록 · 푸시 처리)
+    calendar.py          # 메일에서 추출한 일정
     email_sync.py        # 이메일 자동 동기화
     briefing.py          # AI 브리핑 생성
     ai.py                # 문서 Q&A
@@ -101,6 +105,8 @@ backend/                 # FastAPI 백엔드
   scheduler.py           # 주기적 백그라운드 작업
   models.py              # DB 스키마 (SQLAlchemy)
   gmail_utils.py         # Gmail 자격증명 공통 유틸
+
+.github/workflows/daily-wake.yml   # 매일 03:53 KST 서버를 깨워 04:00 Gmail 감시 갱신이 돌게 함
 ```
 
 ---
@@ -110,7 +116,7 @@ backend/                 # FastAPI 백엔드
 ### 사전 준비
 - Python 3.11+
 - Node.js 18+
-- MySQL 8.0+
+- PostgreSQL 14+ (또는 Supabase 무료 프로젝트)
 - [Groq API 키](https://console.groq.com)
 - [Google Cloud OAuth 2.0 자격증명](https://console.cloud.google.com) (Gmail API 활성화 필요)
 
@@ -124,7 +130,7 @@ pip install -r requirements.txt
 `.env` 파일 생성:
 
 ```env
-DATABASE_URL=mysql+pymysql://user:password@localhost:3306/Neatly
+DATABASE_URL=postgresql://user:password@localhost:5432/neatly
 SECRET_KEY=your-secret-key
 GROQ_API_KEY=your-groq-api-key
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -190,3 +196,4 @@ npm run dev
 | 문서 목록 API에서 N+1 쿼리 발생 | 문서마다 태그 SELECT가 개별 실행 (문서 100개 = 쿼리 101회) | `docs_with_tags_batch()`로 전체 문서 ID를 IN 쿼리 1회로 태그 일괄 조회 후 메모리 매핑 (쿼리 수 N+1 → 2) |
 | MySQL → PostgreSQL 마이그레이션 충돌 | `CHAR(36)` 타입 비교 불일치, `Enum` 타입명 미지정으로 PostgreSQL 충돌 | `String(36)`으로 교체, `Enum` 선언에 `name=` 파라미터 명시 |
 | Vercel 배포 후 직접 URL 접근 시 404 | SPA 라우팅 미설정 | `vercel.json`에 모든 경로를 `index.html`로 rewrite 설정 추가 |
+| 일주일 동안 메일이 없으면 실시간 수신이 끊김 | Gmail 감시(watch)는 7일 뒤 만료되고 갱신은 서버가 깨어 있을 때만 실행 · Render 무료 서버는 요청이 없으면 잠듦 | GitHub Actions가 매일 03:53에 서버를 깨워 10분간 유지 → 04:00 갱신 작업이 매일 실행 |
