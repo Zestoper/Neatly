@@ -148,3 +148,13 @@ class Document(Base):
     gmail_message_id = Column(String(255), nullable=True, index=True)
     deleted_at       = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=_now)
+
+
+class SocialAccount(Base):
+    """소셜 로그인 연결 정보 — 구글/카카오 계정 하나가 우리 회원 한 명에 연결된다."""
+    __tablename__ = "user_social_accounts"
+
+    provider    = Column(String(20), primary_key=True)    # google · kakao
+    provider_id = Column(String(255), primary_key=True)   # 구글/카카오가 주는 고유 번호
+    user_id     = Column(String(36), ForeignKey("User.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at  = Column(DateTime, default=_now)

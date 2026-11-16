@@ -11,6 +11,7 @@ from routers.documents import router as documents_router
 from routers.ai import router as ai_router
 from routers.users import router as users_router
 from routers.auth import router as auth_router
+from routers.oauth import router as oauth_router
 from routers.folders import router as folders_router
 from routers.gmail import router as gmail_router
 from routers.tags import router as tags_router
@@ -93,6 +94,7 @@ app.include_router(ai_router)
 app.include_router(users_router)
 app.include_router(folders_router)
 app.include_router(auth_router, prefix="/auth")
+app.include_router(oauth_router)
 app.include_router(gmail_router)
 app.include_router(tags_router)
 app.include_router(email_filters_router)
