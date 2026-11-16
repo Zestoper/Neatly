@@ -40,6 +40,7 @@ import Emails from "./pages/Emails";
 import EmailDetail from "./pages/EmailDetail";
 import EmailCompose from "./pages/EmailCompose";
 import Login from "./pages/Login";
+import OAuthCallback from "./pages/OAuthCallback";
 import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -188,6 +189,7 @@ export default function App() {
                     }
                 />
                 <Route path="/login" element={<Login />} />
+                <Route path="/oauth/callback" element={<OAuthCallback />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="*" element={
                     <div style={{ textAlign: "center", padding: "4rem" }}>

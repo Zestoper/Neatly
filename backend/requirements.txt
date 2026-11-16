@@ -19,3 +19,4 @@ cerebras_cloud_sdk
 pdfplumber
 python-docx
 websockets
+httpx
