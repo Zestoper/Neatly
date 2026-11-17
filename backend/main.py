@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from googleapiclient.errors import HttpError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
@@ -84,6 +86,18 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+@app.exception_handler(HttpError)
+async def google_http_error_handler(request: Request, exc: HttpError):
+    """Gmail · Calendar API 호출 실패를 500 대신 알아볼 수 있는 응답으로 돌려준다.
+    500으로 터지면 CORS 헤더까지 빠져서 화면에는 CORS 에러로만 보인다."""
+    status = getattr(exc.resp, "status", 0)
+    print(f"[google api] {request.method} {request.url.path} → {status} {exc}")
+    if status == 401:
+        return JSONResponse(status_code=409, content={"detail": "Gmail 연결이 만료되었습니다. 설정에서 Gmail을 다시 연결해주세요."})
+    if status == 403:
+        return JSONResponse(status_code=409, content={"detail": "Google 권한이 부족하거나 API가 꺼져 있습니다. Gmail을 다시 연결해주세요."})
+    return JSONResponse(status_code=502, content={"detail": "Google 서버 응답에 실패했습니다. 잠시 후 다시 시도해주세요."})
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():

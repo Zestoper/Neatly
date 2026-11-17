@@ -163,7 +163,9 @@ export default function Emails() {
             setEmails(res.data);
             setConnected(true);
         } catch (error: any) {
-            if (error.response?.status === 400) {
+            // 400: Gmail 미연결 · 409: 연결 만료(토큰 갱신 실패) → 둘 다 '연결하기' 화면으로
+            const status = error.response?.status;
+            if (status === 400 || status === 409) {
                 setConnected(false);
             }
         } finally {
