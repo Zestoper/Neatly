@@ -42,6 +42,11 @@ https://github.com/user-attachments/assets/dd162714-f86d-4e3a-a5b9-10f5ddbdd893
 - 온라인 상태 표시, 읽음 확인, 안읽은 메시지 뱃지
 - 이미지 전송, 브라우저 푸시 알림
 
+### 소셜 로그인
+- 카카오 · 구글 계정으로 바로 가입·로그인
+- 인증된 같은 이메일의 기존 계정은 자동 연결
+- 구글 로그인과 Gmail 연동은 같은 OAuth 클라이언트를 쓰고 권한(scope)만 따로 요청
+
 ### 그 외
 - 문서 작성 통계 인사이트 (일별·월별 차트)
 - FREE / STANDARD / PREMIUM 플랜 시스템
@@ -73,7 +78,7 @@ https://github.com/user-attachments/assets/dd162714-f86d-4e3a-a5b9-10f5ddbdd893
 | Frontend | React 18, TypeScript, Vite, React Router v6 |
 | Backend | FastAPI, SQLAlchemy, PostgreSQL (Supabase) |
 | AI | Groq API (gpt-oss-120b / gpt-oss-20b) · 장애·한도 초과 시 Cerebras 자동 전환 |
-| 인증 | JWT, Google OAuth 2.0 |
+| 인증 | JWT, Google OAuth 2.0 (Gmail 연동 · 구글 로그인), 카카오 로그인 |
 | 실시간 | WebSocket |
 | 스케줄러 | APScheduler (보조 동기화 · 매일 04:00 Gmail 감시 갱신) · GitHub Actions (매일 03:53 서버 깨우기) |
 | 배포 | Vercel (Frontend) · Render (Backend) · Supabase (DB) |
@@ -140,7 +145,17 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:8000/auth/gmail/callback
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:8000
+
+# 카카오 로그인 (선택 — 비워두면 카카오 버튼만 비활성화)
+KAKAO_REST_API_KEY=your-kakao-rest-api-key
+KAKAO_CLIENT_SECRET=                # 카카오 콘솔에서 Client Secret 을 켰을 때만
 ```
+
+> 구글 OAuth 클라이언트의 **승인된 리디렉션 URI**에 아래 두 주소를 모두 등록해야 합니다. 클라이언트를 새로 만들면 기존 사용자의 Gmail 연결 토큰을 쓸 수 없으니 하나의 클라이언트로 유지하세요.
+> - `{BACKEND_URL}/auth/gmail/callback` — Gmail 연동
+> - `{BACKEND_URL}/auth/social/google/callback` — 구글 로그인
+>
+> 카카오 콘솔 Redirect URI: `{BACKEND_URL}/auth/social/kakao/callback`
 
 ```bash
 python create_tables.py   # DB 테이블 생성
